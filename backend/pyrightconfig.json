@@ -1,0 +1,13 @@
+{
+    "include": [
+        "app",
+        "*.py"
+    ],
+    "venvPath": ".",
+    "venv": "venv",
+    "reportMissingImports": true,
+    "typeCheckingMode": "basic",
+    "extraPaths": [
+        "."
+    ]
+}
