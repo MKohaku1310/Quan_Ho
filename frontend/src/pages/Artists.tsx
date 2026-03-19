@@ -4,18 +4,27 @@ import ArtistCard from "@/components/ArtistCard";
 import SectionTitle from "@/components/SectionTitle";
 import { type Artist } from "@/data/mockData";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+
+// Định nghĩa kiểu dữ liệu từ Backend
+interface BackendArtist extends Omit<Artist, 'photo'> {
+  image_url: string;
+}
 
 export default function Artists() {
+  const { t } = useTranslation();
+  
+  // Lấy dữ liệu danh sách nghệ nhân từ API
   const { data: artists = [], isLoading } = useQuery<Artist[]>({
     queryKey: ["artists"],
     queryFn: async () => {
       const resp = await fetch("/api/artists/");
       if (!resp.ok) throw new Error("Failed to fetch artists");
-      const data: unknown = await resp.json();
-      return (data as Artist[]).map((a) => ({
+      const data = await resp.json();
+      return (data as BackendArtist[]).map((a) => ({
         ...a,
-        photo: a.image_url, // Map backend image_url to frontend photo
-      }));
+        photo: a.image_url, // Ánh xạ image_url từ backend sang photo của frontend
+      })) as Artist[];
     }
   });
 
@@ -25,25 +34,29 @@ export default function Artists() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <SectionTitle
-            title="Nghệ nhân Quan Họ"
-            subtitle="Những người nghệ sĩ đã và đang gìn giữ ngọn lửa Quan họ cho muôn đời sau"
+            title={t("artists_page.title")}
+            subtitle={t("artists_page.subtitle")}
+            translate={false}
           />
 
+          {/* Trạng thái tải dữ liệu */}
           {isLoading && (
             <div className="flex justify-center py-20">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
             </div>
           )}
 
+          {/* Danh sách nghệ nhân */}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {artists.map((artist, i) => (
               <ArtistCard key={artist.id} artist={artist} index={i} />
             ))}
           </div>
           
+          {/* Trạng thái không có dữ liệu */}
           {!isLoading && artists.length === 0 && (
              <div className="py-20 text-center text-muted-foreground">
-               Không tìm thấy nghệ nhân nào.
+               {t("artists_page.no_artists")}
              </div>
           )}
         </div>

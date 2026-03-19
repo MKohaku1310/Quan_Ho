@@ -3,7 +3,7 @@ from sqlalchemy import func, and_
 from typing import List, Optional
 from app import models, schemas, security
 import hashlib
-# User CRUD
+# CRUD Người dùng
 def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     hashed_password = security.get_password_hash(user.password)
     db_user = models.User(
@@ -19,7 +19,7 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
 def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
     return db.query(models.User).filter(models.User.email == email).first()
 
-# Melody CRUD
+# CRUD Làn điệu
 def create_melody(db: Session, melody: schemas.MelodyCreate) -> models.Melody:
     db_melody = models.Melody(**melody.model_dump())
     db.add(db_melody)
@@ -51,7 +51,7 @@ def get_melodies_by_search(db: Session, search: str, limit: int = 20) -> List[mo
         models.Melody.lyrics.contains(search)
     ).limit(limit).all()
 
-# Artist CRUD
+# CRUD Nghệ nhân
 def create_artist(db: Session, artist: schemas.ArtistCreate) -> models.Artist:
     db_artist = models.Artist(**artist.model_dump())
     db.add(db_artist)
@@ -65,7 +65,7 @@ def get_artist(db: Session, artist_id: int) -> Optional[models.Artist]:
 def get_artists(db: Session, skip: int = 0, limit: int = 100) -> List[models.Artist]:
     return db.query(models.Artist).offset(skip).limit(limit).all()
 
-# Article CRUD
+# CRUD Bài viết
 def create_article(db: Session, article: schemas.ArticleCreate, author_id: Optional[int]) -> models.Article:
     db_article = models.Article(**article.model_dump(), author_id=author_id)
     db.add(db_article)
@@ -82,7 +82,7 @@ def get_articles(db: Session, skip: int = 0, limit: int = 100, category: Optiona
 def get_article(db: Session, article_id: int) -> Optional[models.Article]:
     return db.query(models.Article).filter(models.Article.id == article_id).first()
 
-# Location CRUD
+# CRUD Địa điểm
 def create_location(db: Session, location: schemas.LocationCreate) -> models.Location:
     db_location = models.Location(**location.model_dump())
     db.add(db_location)
@@ -96,7 +96,7 @@ def get_locations(db: Session, skip: int = 0, limit: int = 100, type: Optional[s
         query = query.filter(models.Location.type == type)
     return query.offset(skip).limit(limit).all()
 
-# Event CRUD
+# CRUD Sự kiện
 def create_event(db: Session, event: schemas.EventCreate) -> models.Event:
     db_event = models.Event(**event.model_dump())
     db.add(db_event)

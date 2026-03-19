@@ -8,20 +8,25 @@ import SectionTitle from "@/components/SectionTitle";
 import { songs } from "@/data/mockData";
 import { Navigate } from "react-router-dom";
 import { User, Mail, Calendar, Heart, MessageSquare, Edit2, Check, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Profile() {
+  const { t, i18n } = useTranslation();
   const { user, isAuthenticated, updateProfile, favorites, comments } = useAuth();
   const [editingUsername, setEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState("");
   const [activeTab, setActiveTab] = useState<"favorites" | "comments" | "activity">("favorites");
 
+  // Chuyển hướng nếu chưa đăng nhập
   if (!isAuthenticated || !user) {
     return <Navigate to="/" replace />;
   }
 
+  // Lọc bài hát yêu thích và bình luận của người dùng
   const favoriteSongs = songs.filter((s) => favorites.includes(s.id));
   const userComments = comments.filter((c) => c.userId === user.id);
 
+  // Lưu tên người dùng mới
   const handleSaveUsername = () => {
     const trimmed = newUsername.trim();
     if (trimmed.length >= 3 && trimmed.length <= 30) {
@@ -31,8 +36,8 @@ export default function Profile() {
   };
 
   const tabs = [
-    { key: "favorites" as const, label: "Yêu thích", icon: Heart, count: favoriteSongs.length },
-    { key: "comments" as const, label: "Bình luận", icon: MessageSquare, count: userComments.length },
+    { key: "favorites" as const, label: t("nav.favorites"), icon: Heart, count: favoriteSongs.length },
+    { key: "comments" as const, label: t("comments.title"), icon: MessageSquare, count: userComments.length },
   ];
 
   return (
@@ -40,7 +45,7 @@ export default function Profile() {
       <Navbar />
       <section className="py-16">
         <div className="container mx-auto max-w-4xl px-4">
-          {/* Profile header */}
+          {/* Header hồ sơ người dùng */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -80,6 +85,7 @@ export default function Profile() {
                             setEditingUsername(true);
                           }}
                           className="text-primary-foreground/60 hover:text-primary-foreground"
+                          title={t("profile_page.edit_username")}
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
@@ -88,31 +94,31 @@ export default function Profile() {
                   </div>
                   <div className="mt-2 flex flex-wrap justify-center gap-4 text-sm text-primary-foreground/70 sm:justify-start">
                     <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {user.email}</span>
-                    <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> Tham gia: {user.joinedDate}</span>
+                    <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {t("profile_page.joined")} {user.joinedDate}</span>
                   </div>
                   {user.role === "admin" && (
                     <span className="mt-2 inline-block rounded-full bg-accent px-3 py-0.5 text-xs font-medium text-accent-foreground">
-                      Quản trị viên
+                      {t("profile_page.admin_role")}
                     </span>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Stats */}
+            {/* Thống kê nhanh */}
             <div className="grid grid-cols-2 border-b border-border">
               <div className="border-r border-border p-4 text-center">
                 <p className="font-display text-2xl font-bold text-primary">{favoriteSongs.length}</p>
-                <p className="text-xs text-muted-foreground">Bài hát yêu thích</p>
+                <p className="text-xs text-muted-foreground">{t("profile_page.fav_songs_stat")}</p>
               </div>
               <div className="p-4 text-center">
                 <p className="font-display text-2xl font-bold text-accent">{userComments.length}</p>
-                <p className="text-xs text-muted-foreground">Bình luận</p>
+                <p className="text-xs text-muted-foreground">{t("comments.title")}</p>
               </div>
             </div>
           </motion.div>
 
-          {/* Tabs */}
+          {/* Các tab nội dung */}
           <div className="mt-8 flex gap-2 border-b border-border">
             {tabs.map((tab) => (
               <button
@@ -131,7 +137,7 @@ export default function Profile() {
             ))}
           </div>
 
-          {/* Tab content */}
+          {/* Nội dung chi tiết của tab */}
           <div className="mt-6">
             {activeTab === "favorites" && (
               favoriteSongs.length > 0 ? (
@@ -143,8 +149,8 @@ export default function Profile() {
               ) : (
                 <div className="py-16 text-center text-muted-foreground">
                   <Heart className="mx-auto mb-3 h-10 w-10 opacity-30" />
-                  <p>Chưa có bài hát yêu thích nào.</p>
-                  <p className="text-sm">Nhấn biểu tượng ❤ trên bài hát để lưu lại.</p>
+                  <p>{t("profile_page.no_favs")}</p>
+                  <p className="text-sm">{t("profile_page.fav_hint")}</p>
                 </div>
               )
             )}
@@ -156,8 +162,14 @@ export default function Profile() {
                     <div key={comment.id} className="rounded-lg border border-border bg-card p-4 shadow-card">
                       <p className="text-sm text-foreground">{comment.content}</p>
                       <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>{comment.targetType === "song" ? "Bài hát" : comment.targetType === "article" ? "Bài viết" : "Sự kiện"} #{comment.targetId}</span>
-                        <span>{new Date(comment.createdAt).toLocaleDateString("vi-VN")}</span>
+                        <span>
+                          {comment.targetType === "song" 
+                            ? t("nav.songs") 
+                            : comment.targetType === "article" 
+                              ? t("news_page.news") 
+                              : t("news_page.event")} #{comment.targetId}
+                        </span>
+                        <span>{new Date(comment.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
                       </div>
                     </div>
                   ))}
@@ -165,7 +177,7 @@ export default function Profile() {
               ) : (
                 <div className="py-16 text-center text-muted-foreground">
                   <MessageSquare className="mx-auto mb-3 h-10 w-10 opacity-30" />
-                  <p>Chưa có bình luận nào.</p>
+                  <p>{t("comments.no_comments")}</p>
                 </div>
               )
             )}

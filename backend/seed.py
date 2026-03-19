@@ -1,5 +1,6 @@
-from app.db import engine, Base
+from app.db import engine, Base, SessionLocal
 from app import models
+from app.security import get_password_hash
 import datetime
 
 def seed_data():
@@ -11,6 +12,34 @@ def seed_data():
 
     print("Opening database session...")
     db = SessionLocal()
+
+    # Users
+    print("Seeding Users...")
+    users = [
+        models.User(
+            id=1,
+            name="Quản trị viên",
+            email="admin@quanho.vn",
+            hashed_password=get_password_hash("admin123"),
+            role=models.UserRole.admin
+        ),
+        models.User(
+            id=2,
+            name="Nguyễn Văn Hoan",
+            email="hoan.nv@gmail.com",
+            hashed_password=get_password_hash("user123"),
+            role=models.UserRole.user
+        ),
+        models.User(
+            id=3,
+            name="Trần Thị Mai",
+            email="mai.tt@gmail.com",
+            hashed_password=get_password_hash("user123"),
+            role=models.UserRole.user
+        )
+    ]
+    db.add_all(users)
+    db.commit()
 
     # Artists
     print("Seeding Artists...")
@@ -41,7 +70,7 @@ def seed_data():
             id=3,
             name="NS Xuân Mùi",
             slug="ns-xuan-mui",
-            biography="Nghệ sĩ Xuân Mùi là truyền nhân đời thứ ba trong gia đình có truyền thống Quan họ tại làng Ngang Nội. Ông nổi tiếng với giọng hát trầm ấm và phong cách biểu diễn đầy cảm xúc.",
+            biography="Nghệ sĩ Xuân Mùi là truyền nhân đời thứ ba trong gia đình có truyền thống Quan họ tại làng Ngang Nội. Ông nổi tiếng with giọng hát trầm ấm và phong cách biểu diễn đầy cảm xúc.",
             village="Ngang Nội",
             contributions="Sáng tác và cải biên hơn 50 bài Quan họ mới",
             performances=800,
@@ -169,9 +198,10 @@ def seed_data():
             title="Nguồn gốc Lễ hội Hội Lim",
             slug="nguon-goc-hoi-lim",
             content="Hội Lim là một lễ hội lớn ở tỉnh Bắc Ninh, được coi là nét kết tinh độc đáo của vùng văn hoá Kinh Bắc. Hội Lim được tổ chức vào ngày 13 tháng Giêng âm lịch hàng năm tại huyện Tiên Du...",
-            category=models.ArticleCategory.le_hoi,
+            category=models.ArticleCategory.tin_tuc,
             status=models.ArticleStatus.published,
-            image_url="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=400"
+            image_url="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=400",
+            author_id=1
         ),
         models.Article(
             id=2,
@@ -180,7 +210,8 @@ def seed_data():
             content="Trang phục của các liền anh, liền chị không chỉ là quần áo mà còn là hồn cốt của nghệ thuật Quan họ. Liền chị mặc áo tứ thân, nón quai thao, liền anh mặc áo dài đen, khăn xếp...",
             category=models.ArticleCategory.nghe_thuat,
             status=models.ArticleStatus.published,
-            image_url="https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=400"
+            image_url="https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=400",
+            author_id=1
         )
     ]
     db.add_all(articles)
@@ -211,6 +242,40 @@ def seed_data():
         )
     ]
     db.add_all(events)
+    db.commit()
+
+    # Media
+    print("Seeding Media...")
+    media_items = [
+        models.Media(
+            url="https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+            type=models.MediaType.image,
+            artist_id=1
+        ),
+        models.Media(
+            url="https://images.unsplash.com/photo-1528164344705-47542687000d",
+            type=models.MediaType.image,
+            location_id=1
+        )
+    ]
+    db.add_all(media_items)
+    db.commit()
+
+    # Comments
+    print("Seeding Comments...")
+    comments = [
+        models.Comment(
+            content="Làn điệu này thực sự rất hay và mượt mà!",
+            user_id=2,
+            melody_id=1
+        ),
+        models.Comment(
+            content="Cảm ơn tác giả đã chia sẻ bài viết rất hữu ích.",
+            user_id=3,
+            article_id=1
+        )
+    ]
+    db.add_all(comments)
     db.commit()
 
     db.close()

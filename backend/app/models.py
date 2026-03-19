@@ -51,7 +51,7 @@ class ArticleStatus(str, PyEnum):
     draft = "draft"
     published = "published"
 
-# ================= USERS =================
+# ================= NGƯỜI DÙNG =================
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -62,7 +62,7 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
-# ================= ARTICLES =================
+# ================= BÀI VIẾT =================
 class Article(Base):
     __tablename__ = "articles"
     id = Column(Integer, primary_key=True, index=True)
@@ -79,7 +79,7 @@ class Article(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     author = relationship("User")
 
-# ================= MELODIES =================
+# ================= LÀN ĐIỆU =================
 class Melody(Base):
     __tablename__ = "melodies"
     id = Column(Integer, primary_key=True, index=True)
@@ -99,7 +99,7 @@ class Melody(Base):
     created_at = Column(DateTime, server_default=func.now())
     artist = relationship("Artist")
 
-# ================= ARTISTS =================
+# ================= NGHỆ NHÂN =================
 class Artist(Base):
     __tablename__ = "artists"
     id = Column(Integer, primary_key=True, index=True)
@@ -117,7 +117,7 @@ class Artist(Base):
     generation = Column(Enum(ArtistGeneration), default=ArtistGeneration.truyen_thong)
     created_at = Column(DateTime, server_default=func.now())
 
-# ================= LOCATIONS =================
+# ================= ĐỊA ĐIỂM =================
 class Location(Base):
     __tablename__ = "locations"
     id = Column(Integer, primary_key=True, index=True)
@@ -132,7 +132,7 @@ class Location(Base):
     type = Column(Enum(LocationType), default=LocationType.lang_quan_ho, index=True)
     created_at = Column(DateTime, server_default=func.now())
 
-# ================= EVENTS =================
+# ================= SỰ KIỆN =================
 class Event(Base):
     __tablename__ = "events"
     id = Column(Integer, primary_key=True, index=True)
@@ -148,7 +148,7 @@ class Event(Base):
     created_at = Column(DateTime, server_default=func.now())
     location = relationship("Location")
 
-# ================= MEDIA =================
+# ================= PHƯƠNG TIỆN =================
 class Media(Base):
     __tablename__ = "media"
     id = Column(Integer, primary_key=True, index=True)
@@ -164,7 +164,7 @@ class Media(Base):
     upload_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, server_default=func.now())
 
-# ================= COMMENTS =================
+# ================= BÌNH LUẬN =================
 class Comment(Base):
     __tablename__ = "comments"
     id = Column(Integer, primary_key=True, index=True)

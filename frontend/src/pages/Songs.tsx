@@ -6,34 +6,60 @@ import SectionTitle from "@/components/SectionTitle";
 import { melodies, villageNames, type Song } from "@/data/mockData";
 import { Search, Filter } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+
+// Định nghĩa kiểu dữ liệu từ Backend
+interface BackendSong {
+  id: number;
+  name: string;
+  category: string;
+  image_url: string;
+  audio_url?: string;
+  video_url?: string;
+  village?: string;
+  artist?: { name: string } | string;
+}
 
 export default function Songs() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [melodyFilter, setMelodyFilter] = useState("");
   const [villageFilter, setVillageFilter] = useState("");
 
-  const { data: rawSongs = [], isLoading } = useQuery<Song[]>({
+  // Lấy dữ liệu bài hát từ API
+  const { data: rawSongs = [], isLoading } = useQuery<BackendSong[]>({
     queryKey: ["songs"],
     queryFn: async () => {
       const resp = await fetch("/api/melodies/");
       if (!resp.ok) throw new Error("Failed to fetch songs");
-      const data: unknown = await resp.json();
-      return data as Song[];
+      const data = await resp.json();
+      return data as BackendSong[];
     }
   });
 
+  // Chuyển đổi dữ liệu backend sang định dạng frontend (Song interface)
   const songsData = useMemo(() => {
-    return rawSongs.map((s) => ({
-      ...s,
-      title: s.name, // Map name to title
-      imageUrl: s.image_url,
-      audioUrl: s.audio_url,
-      videoUrl: s.video_url,
-      melody: s.category, // Map category to melody
-      artist: s.artist?.name || "Nghệ nhân Quan họ", // If relationship is loaded
-    })) as Song[];
+    return rawSongs.map((s) => {
+      const artistName =
+        typeof s.artist === "string" ? s.artist : s.artist?.name || "Nghệ nhân Quan họ";
+
+      return {
+        id: s.id,
+        title: s.name,
+        melody: s.category,
+        village: s.village || "Bắc Ninh",
+        artist: artistName,
+        artistId: 0, // Dữ liệu backend chưa cung cấp ID nghệ nhân rõ ràng trong list
+        lyrics: "", // Lyrics lấy ở trang chi tiết
+        imageUrl: s.image_url,
+        audioUrl: s.audio_url,
+        videoUrl: s.video_url,
+        duration: "4:00", // Placeholder duration
+      } as Song;
+    });
   }, [rawSongs]);
 
+  // Lọc danh sách bài hát
   const filtered = useMemo(() => {
     return songsData.filter((s) => {
       const matchSearch =
@@ -53,17 +79,18 @@ export default function Songs() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <SectionTitle
-            title="Thư viện bài hát"
-            subtitle="Khám phá kho tàng làn điệu Quan họ Bắc Ninh"
+            title={t("songs_page.title")}
+            subtitle={t("songs_page.subtitle")}
+            translate={false}
           />
 
-          {/* Search & Filters */}
+          {/* Tìm kiếm & Bộ lọc */}
           <div className="mb-8 flex flex-col gap-4 rounded-lg border border-border bg-card p-4 shadow-card sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Tìm kiếm bài hát, nghệ nhân..."
+                placeholder={t("songs_page.search_placeholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -77,7 +104,7 @@ export default function Songs() {
                   onChange={(e) => setMelodyFilter(e.target.value)}
                   className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                 >
-                  <option value="">Tất cả làn điệu</option>
+                  <option value="">{t("songs_page.all_melodies")}</option>
                   {melodies.map((m) => (
                     <option key={m} value={m}>{m}</option>
                   ))}
@@ -88,7 +115,7 @@ export default function Songs() {
                 onChange={(e) => setVillageFilter(e.target.value)}
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
               >
-                <option value="">Tất cả làng</option>
+                <option value="">{t("songs_page.all_villages")}</option>
                 {villageNames.map((v) => (
                   <option key={v} value={v}>{v}</option>
                 ))}
@@ -96,14 +123,14 @@ export default function Songs() {
             </div>
           </div>
 
-          {/* Loading state */}
+          {/* Trạng thái tải dữ liệu */}
           {isLoading && (
             <div className="flex justify-center py-20">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
             </div>
           )}
 
-          {/* Results */}
+          {/* Kết quả */}
           {!isLoading && filtered.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((song, i) => (
@@ -112,7 +139,7 @@ export default function Songs() {
             </div>
           ) : !isLoading && (
             <div className="py-20 text-center text-muted-foreground">
-              Không tìm thấy bài hát nào phù hợp.
+              {t("songs_page.no_songs")}
             </div>
           )}
         </div>

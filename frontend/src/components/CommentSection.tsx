@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useAuth, type Comment } from "@/contexts/AuthContext";
 import { MessageSquare, Edit2, Trash2, Send, X, Check } from "lucide-react";
 import { z } from "zod";
-
-const commentSchema = z.string().trim().min(1, "Bình luận không được để trống").max(1000, "Tối đa 1000 ký tự");
+import { useTranslation } from "react-i18next";
 
 interface CommentSectionProps {
   targetType: Comment["targetType"];
@@ -11,13 +10,18 @@ interface CommentSectionProps {
 }
 
 export default function CommentSection({ targetType, targetId }: CommentSectionProps) {
+  const { t } = useTranslation();
   const { user, isAuthenticated, getComments, addComment, editComment, deleteComment, setShowLoginModal } = useAuth();
+  
+  const commentSchema = z.string().trim().min(1, t("comments.empty_error")).max(1000, t("comments.max_error"));
+  
   const comments = getComments(targetType, targetId);
   const [newComment, setNewComment] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
   const [error, setError] = useState("");
 
+  // Xử lý gửi bình luận mới
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -30,6 +34,7 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
     setNewComment("");
   };
 
+  // Xử lý chỉnh sửa bình luận
   const handleEdit = (commentId: number) => {
     const result = commentSchema.safeParse(editContent);
     if (!result.success) return;
@@ -41,10 +46,10 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
     <div className="mt-10">
       <h2 className="mb-6 flex items-center gap-2 font-display text-xl font-semibold text-foreground">
         <MessageSquare className="h-5 w-5 text-primary" />
-        Bình luận ({comments.length})
+        {t("comments.title")} ({comments.length})
       </h2>
 
-      {/* New comment form */}
+      {/* Form bình luận mới */}
       {isAuthenticated ? (
         <form onSubmit={handleSubmit} className="mb-6">
           <div className="flex gap-3">
@@ -56,7 +61,7 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
                   setNewComment(e.target.value);
                   setError("");
                 }}
-                placeholder="Viết bình luận..."
+                placeholder={t("comments.placeholder")}
                 rows={3}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
               />
@@ -68,7 +73,7 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
                   disabled={!newComment.trim()}
                   className="flex items-center gap-1.5 rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
-                  <Send className="h-3.5 w-3.5" /> Gửi
+                  <Send className="h-3.5 w-3.5" /> {t("comments.send")}
                 </button>
               </div>
             </div>
@@ -78,14 +83,14 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
         <div className="mb-6 rounded-lg border border-border bg-muted p-4 text-center">
           <p className="text-sm text-muted-foreground">
             <button onClick={() => setShowLoginModal(true)} className="font-medium text-primary hover:underline">
-              Đăng nhập
+              {t("nav.login")}
             </button>{" "}
-            để bình luận
+            {t("comments.login_to_comment")}
           </p>
         </div>
       )}
 
-      {/* Comments list */}
+      {/* Danh sách bình luận */}
       {comments.length > 0 ? (
         <div className="space-y-4">
           {comments.map((comment) => (
@@ -112,13 +117,13 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
                         onClick={() => handleEdit(comment.id)}
                         className="flex items-center gap-1 rounded-md bg-primary px-3 py-1 text-xs text-primary-foreground"
                       >
-                        <Check className="h-3 w-3" /> Lưu
+                        <Check className="h-3 w-3" /> {t("comments.save")}
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
                         className="flex items-center gap-1 rounded-md bg-muted px-3 py-1 text-xs text-muted-foreground"
                       >
-                        <X className="h-3 w-3" /> Hủy
+                        <X className="h-3 w-3" /> {t("comments.cancel")}
                       </button>
                     </div>
                   </div>
@@ -126,7 +131,7 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
                   <p className="mt-1 text-sm text-muted-foreground">{comment.content}</p>
                 )}
 
-                {/* Edit/delete actions for own comments */}
+                {/* Hành động sửa/xóa cho bình luận của chính mình */}
                 {user && comment.userId === user.id && editingId !== comment.id && (
                   <div className="mt-2 flex gap-3">
                     <button
@@ -136,13 +141,13 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
                       }}
                       className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
                     >
-                      <Edit2 className="h-3 w-3" /> Sửa
+                      <Edit2 className="h-3 w-3" /> {t("comments.edit")}
                     </button>
                     <button
                       onClick={() => deleteComment(comment.id)}
                       className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive"
                     >
-                      <Trash2 className="h-3 w-3" /> Xóa
+                      <Trash2 className="h-3 w-3" /> {t("comments.delete")}
                     </button>
                   </div>
                 )}
@@ -152,7 +157,7 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
         </div>
       ) : (
         <p className="py-8 text-center text-sm text-muted-foreground">
-          Chưa có bình luận nào. Hãy là người đầu tiên!
+          {t("comments.no_comments")}
         </p>
       )}
     </div>

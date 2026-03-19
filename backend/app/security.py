@@ -3,6 +3,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Optional
 
+# ================= CẤU HÌNH BẢO MẬT =================
 SECRET_KEY = "your-super-secret-key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30

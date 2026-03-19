@@ -1,0 +1,199 @@
+{
+  "nav": {
+    "home": "Home",
+    "intro": "Introduction",
+    "songs": "Songs",
+    "artists": "Artists",
+    "villages": "Villages",
+    "news": "News",
+    "login": "Log In",
+    "register": "Register",
+    "profile": "Profile",
+    "favorites": "Favorites",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login_title": "Log In",
+    "register_title": "Create Account",
+    "register_subtitle": "Join the Quan ho Bac Ninh community",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "username": "Username",
+    "login_btn": "Log In",
+    "register_btn": "Register",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "register_now": "Register now",
+    "demo_accounts": "Demo accounts:",
+    "errors": {
+      "invalid_email": "Invalid email",
+      "password_min": "Password must be at least 6 characters",
+      "username_min": "Username must be at least 3 characters",
+      "username_max": "Username must be at most 30 characters",
+      "username_regex": "Only letters, numbers and underscores allowed",
+      "password_mismatch": "Passwords do not match"
+    }
+  },
+  "hero": {
+    "title": "Quan Ho Bac Ninh",
+    "subtitle": "UNESCO Intangible Cultural Heritage 2009",
+    "description": "Discover the exquisite beauty of Quan ho folk songs — the sweet exchange of songs along the Cau River in the Kinh Bac region.",
+    "cta_listen": "Listen now",
+    "cta_more": "Learn more"
+  },
+  "chatbot": {
+    "open_label": "Open Quan Ho Assistant",
+    "assistant_name": "Quan Ho Assistant",
+    "assistant_role": "Cultural Quan Ho Assistant",
+    "welcome": "Hello! I am the Quan Ho assistant. Ask me anything about Quan ho Bac Ninh culture!",
+    "placeholder": "Ask about Quan ho Bac Ninh...",
+    "send": "Send",
+    "close": "Close",
+    "error_general": "Sorry, an error occurred. Please try again.",
+    "error_connect": "Sorry, connection failed. Please try again later.",
+    "questions": {
+      "q1": "What is Quan ho Bac Ninh?",
+      "q2": "What are the famous Quan ho songs?",
+      "q3": "Who are the famous Quan ho artists?",
+      "q4": "When is the Quan ho festival held?",
+      "q5": "Which ancient Quan ho village is most famous?"
+    }
+  },
+  "comments": {
+    "title": "Comments",
+    "placeholder": "Write a comment...",
+    "send": "Send",
+    "login_to_comment": "Log in to comment",
+    "no_comments": "No comments yet. Be the first to comment!",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "empty_error": "Comment cannot be empty",
+    "max_error": "Maximum 1000 characters"
+  },
+  "sections": {
+    "featured_songs": "Featured Songs",
+    "featured_songs_sub": "The most beloved classic Quan ho melodies",
+    "featured_artists": "Featured Artists",
+    "featured_artists_sub": "Those who keep the flame of Quan ho heritage alive",
+    "news_events": "News & Events",
+    "news_events_sub": "Latest updates about Quan ho Bac Ninh"
+  },
+  "intro": {
+    "title_main": "Quan Ho Folk Song — ",
+    "title_accent": "Kinh Bac Essence",
+    "description": "Quan ho Bac Ninh is a duet singing art between men and women, popular in the ancient Kinh Bac region. In 2009, UNESCO recognized Quan ho as an Intangible Cultural Heritage of Humanity, affirming the unique cultural value of the Vietnamese nation.",
+    "desc_p1": "Quan ho Bac Ninh is a ritual singing practice between groups of male (liền anh) and female (liền chị) singers from different villages, traditional in the ancient Kinh Bac region (now Bac Ninh and Bac Giang provinces). It is more than just a folk song genre; it is a whole system of customs, traditions, and rituals associated with the spiritual life of the local people.",
+    "desc_p2": "Quan ho has over 300 ancient melodies, each carrying a different emotional shade — from greetings and meetings to partings and farewells. The art of singing Quan ho requires sophisticated vocal techniques like trills, vibrations, and glottal stops — creating a unique timbre that is unmistakable.",
+    "cta_history": "Discover history",
+    "counter_villages": "Ancient villages",
+    "counter_melodies": "Ancient melodies",
+    "counter_unesco": "UNESCO status",
+    "counter_years": "Year history",
+    "hero_title": "About Quan Ho",
+    "hero_subtitle": "History, origins and cultural values",
+    "what_is_title": "What is Quan Ho?",
+    "history_title": "Historical Timeline",
+    "unesco_title": "UNESCO 2009",
+    "unesco_desc": "On September 30, 2009, at the session of the UNESCO Intergovernmental Committee in Abu Dhabi, Quan ho Bac Ninh was officially recognized as an Intangible Cultural Heritage of Humanity. This is a source of great pride for the people of Bac Ninh and the Vietnamese nation as a whole.",
+    "timeline": {
+      "t1_year": "15th Century",
+      "t1_text": "Quan ho began to form in the Kinh Bac region, associated with village life and common worship of tutelary deities.",
+      "t2_year": "17th-18th Century",
+      "t2_text": "The most brilliant period of development, 49 ancient Quan ho villages were established, forming unique cultural activities.",
+      "t3_year": "19th Century",
+      "t3_text": "Quan ho was gradually recorded, researched and became a typical cultural symbol of Bac Ninh - Bac Giang region.",
+      "t4_year": "2009",
+      "t4_text": "UNESCO officially recognized Quan ho Bac Ninh as the Representative Intangible Cultural Heritage of Humanity."
+    }
+  },
+  "footer": {
+    "siteName": "Quan Ho Bac Ninh",
+    "description": "Preserving and promoting the values of Quan ho Bac Ninh intangible cultural heritage - UNESCO 2009.",
+    "explore": "Explore",
+    "about": "About",
+    "songs": "Songs",
+    "artists": "Artists",
+    "quanHoVillages": "Quan Ho Villages",
+    "contact": "Contact",
+    "contactAddress": "Department of Culture, Sports and Tourism of Bac Ninh Province",
+    "contactEmail": "Email: quanho@bacninh.gov.vn",
+    "copyright": "© 2026 Quan Ho Bac Ninh. Intangible Cultural Heritage of Humanity."
+  },
+  "artist": {
+    "village": "Village",
+    "performances": "performances"
+  },
+  "song": {
+    "remove_fav": "Remove favorite",
+    "add_fav": "Add favorite"
+  },
+  "common": {
+    "view_all": "View all",
+    "history": "Learn history",
+    "search": "Search...",
+    "filter": "Filter",
+    "all": "All",
+    "loading": "Loading...",
+    "error_load": "Unable to load data",
+    "back": "Back"
+  },
+  "villages_page": {
+    "title": "Quan Ho Villages",
+    "subtitle": "49 ancient Quan ho villages – the birthplace of singing art",
+    "search_placeholder": "Search villages...",
+    "heritage_villages": "Ancient Villages",
+    "active_villages": "Quan Ho Clubs",
+    "address": "Address",
+    "view_map": "View map",
+    "map_title": "Map of ancient Quan ho villages",
+    "map_desc": "Integrated GPS map from Backend data",
+    "updating_address": "Updating address",
+    "artist_count": "artists"
+  },
+  "artists_page": {
+    "title": "Quan Ho Artists",
+    "subtitle": "The artists who have been and are keeping the fire of Quan ho for future generations",
+    "search_placeholder": "Search artists...",
+    "filter_village": "Filter by village",
+    "biography": "Biography",
+    "awards": "Awards",
+    "famous_songs": "Related Songs",
+    "no_artists": "Artist not found.",
+    "contributions": "Key Contributions",
+    "back_to_list": "Back to list"
+  },
+  "songs_page": {
+    "title": "Song Library",
+    "subtitle": "Explore the treasury of Quan ho Bac Ninh melodies",
+    "search_placeholder": "Search songs, artists...",
+    "melody": "Melody",
+    "duration": "Duration",
+    "lyrics": "Lyrics",
+    "meaning": "Melody Meaning",
+    "performers": "Performing Artists",
+    "all_melodies": "All melodies",
+    "all_villages": "All villages",
+    "no_songs": "Song not found.",
+    "back_to_library": "Back to library"
+  },
+  "news_page": {
+    "festival": "Festival",
+    "event": "Event",
+    "news": "News"
+  },
+  "profile_page": {
+    "joined": "Joined:",
+    "admin_role": "Administrator",
+    "fav_songs_stat": "Favorite songs",
+    "no_favs": "No favorite songs yet.",
+    "fav_hint": "Click the ❤ icon on a song to save it.",
+    "edit_username": "Edit username"
+  },
+  "notfound_page": {
+    "title": "Oops! Page not found",
+    "back_home": "Return to Home"
+  }
+}

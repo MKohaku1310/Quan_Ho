@@ -10,8 +10,10 @@ import { motion } from "framer-motion";
 import { Calendar, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
+  const { t } = useTranslation();
   const { data: articles = [] } = useQuery<any[]>({
     queryKey: ["articles-list-home"],
     queryFn: async () => {
@@ -45,8 +47,8 @@ const Index = () => {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <SectionTitle
-            title="Bài hát nổi bật"
-            subtitle="Những làn điệu Quan họ kinh điển được yêu thích nhất"
+            title="sections.featured_songs"
+            subtitle="sections.featured_songs_sub"
           />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {songs.slice(0, 3).map((song, i) => (
@@ -58,7 +60,7 @@ const Index = () => {
               to="/bai-hat"
               className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
             >
-              Xem tất cả bài hát <ArrowRight className="h-4 w-4" />
+              {t("common.view_all")} <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
@@ -74,18 +76,16 @@ const Index = () => {
               viewport={{ once: true }}
             >
               <h2 className="font-display text-3xl font-bold text-foreground">
-                Dân ca Quan họ — <span className="text-primary">Tinh hoa Kinh Bắc</span>
+                {t("intro.title_main")}<span className="text-primary">{t("intro.title_accent")}</span>
               </h2>
               <p className="mt-4 leading-relaxed text-muted-foreground">
-                Quan họ Bắc Ninh là thể loại dân ca đối đáp giữa nam và nữ, phổ biến ở vùng
-                Kinh Bắc xưa. Năm 2009, UNESCO công nhận Quan họ là Di sản Văn hóa Phi vật thể
-                của Nhân loại, khẳng định giá trị văn hóa đặc sắc của dân tộc Việt Nam.
+                {t("intro.description")}
               </p>
               <Link
                 to="/gioi-thieu"
                 className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-transform hover:scale-105"
               >
-                Tìm hiểu lịch sử <ArrowRight className="h-4 w-4" />
+                {t("intro.cta_history")} <ArrowRight className="h-4 w-4" />
               </Link>
             </motion.div>
             <motion.div
@@ -96,19 +96,19 @@ const Index = () => {
             >
               <div className="rounded-lg bg-muted p-6 text-center">
                 <p className="font-display text-3xl font-bold text-primary">49</p>
-                <p className="mt-1 text-sm text-muted-foreground">Làng Quan họ gốc</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t("intro.counter_villages")}</p>
               </div>
               <div className="rounded-lg bg-muted p-6 text-center">
                 <p className="font-display text-3xl font-bold text-accent">300+</p>
-                <p className="mt-1 text-sm text-muted-foreground">Làn điệu cổ</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t("intro.counter_melodies")}</p>
               </div>
               <div className="rounded-lg bg-muted p-6 text-center">
                 <p className="font-display text-3xl font-bold text-terracotta">2009</p>
-                <p className="mt-1 text-sm text-muted-foreground">UNESCO công nhận</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t("intro.counter_unesco")}</p>
               </div>
               <div className="rounded-lg bg-muted p-6 text-center">
                 <p className="font-display text-3xl font-bold text-jade">600+</p>
-                <p className="mt-1 text-sm text-muted-foreground">Năm lịch sử</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t("intro.counter_years")}</p>
               </div>
             </motion.div>
           </div>
@@ -119,8 +119,8 @@ const Index = () => {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <SectionTitle
-            title="Nghệ nhân tiêu biểu"
-            subtitle="Những người giữ lửa cho di sản Quan họ"
+            title="sections.featured_artists"
+            subtitle="sections.featured_artists_sub"
           />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {artists.map((artist, i) => (
@@ -133,7 +133,7 @@ const Index = () => {
       {/* News */}
       <section className="bg-card py-16">
         <div className="container mx-auto px-4">
-          <SectionTitle title="Tin tức & Sự kiện" subtitle="Cập nhật mới nhất về Quan họ Bắc Ninh" />
+          <SectionTitle title="sections.news_events" subtitle="sections.news_events_sub" />
           <div className="grid gap-6 md:grid-cols-2">
             {allItems.slice(0, 4).map((item, i) => (
               <motion.div
@@ -168,7 +168,7 @@ const Index = () => {
           </div>
           <div className="mt-8 text-center">
             <Link to="/tin-tuc" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-               Xem tất cả tin tức <ArrowRight className="h-4 w-4" />
+               {t("common.view_all")} <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>

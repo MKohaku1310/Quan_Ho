@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { MapPin, Award } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import type { Artist } from "@/data/mockData";
 
 export default function ArtistCard({ artist, index = 0 }: { artist: Artist; index?: number }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -28,10 +30,10 @@ export default function ArtistCard({ artist, index = 0 }: { artist: Artist; inde
         </div>
         <div className="p-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5" /> Làng {artist.village}
+            <MapPin className="h-3.5 w-3.5" /> {t("artist.village")} {artist.village}
           </div>
           <div className="mt-1.5 flex items-center gap-2 text-sm text-muted-foreground">
-            <Award className="h-3.5 w-3.5" /> {artist.performances} buổi biểu diễn
+            <Award className="h-3.5 w-3.5" /> {artist.performances} {t("artist.performances")}
           </div>
         </div>
       </Link>

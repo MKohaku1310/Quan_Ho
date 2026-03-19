@@ -6,25 +6,28 @@ import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-const registerSchema = z
-  .object({
-    username: z
-      .string()
-      .trim()
-      .min(3, "Tên người dùng tối thiểu 3 ký tự")
-      .max(30, "Tên người dùng tối đa 30 ký tự")
-      .regex(/^[a-zA-Z0-9_]+$/, "Chỉ chấp nhận chữ cái, số và dấu gạch dưới"),
-    email: z.string().trim().email("Email không hợp lệ").max(255),
-    password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự").max(100),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmPassword"],
-  });
+import { useTranslation } from "react-i18next";
 
 export default function Register() {
+  const { t } = useTranslation();
+  
+  const registerSchema = z
+    .object({
+      username: z
+        .string()
+        .trim()
+        .min(3, t("auth.errors.username_min"))
+        .max(30, t("auth.errors.username_max"))
+        .regex(/^[a-zA-Z0-9_]+$/, t("auth.errors.username_regex")),
+      email: z.string().trim().email(t("auth.errors.invalid_email")).max(255),
+      password: z.string().min(6, t("auth.errors.password_min")).max(100),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.errors.password_mismatch"),
+      path: ["confirmPassword"],
+    });
+
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", email: "", password: "", confirmPassword: "" });
@@ -32,11 +35,13 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Cập nhật giá trị form
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
+  // Xử lý đăng ký
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -70,13 +75,13 @@ export default function Register() {
             className="overflow-hidden rounded-xl border border-border bg-card shadow-elevated"
           >
             <div className="border-b border-border bg-muted px-6 py-4">
-              <h1 className="font-display text-2xl font-bold text-card-foreground">Đăng ký tài khoản</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Tham gia cộng đồng yêu Quan họ Bắc Ninh</p>
+              <h1 className="font-display text-2xl font-bold text-card-foreground">{t("auth.register_title")}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{t("auth.register_subtitle")}</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 p-6">
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Tên người dùng</label>
+                <label className="mb-1 block text-sm font-medium text-foreground">{t("auth.username")}</label>
                 <input
                   type="text"
                   value={form.username}
@@ -88,7 +93,7 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Email</label>
+                <label className="mb-1 block text-sm font-medium text-foreground">{t("auth.email")}</label>
                 <input
                   type="email"
                   value={form.email}
@@ -100,13 +105,13 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Mật khẩu</label>
+                <label className="mb-1 block text-sm font-medium text-foreground">{t("auth.password")}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={form.password}
                     onChange={(e) => handleChange("password", e.target.value)}
-                    placeholder="Tối thiểu 6 ký tự"
+                    placeholder={t("auth.errors.password_min")}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                   <button
@@ -121,12 +126,12 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Xác nhận mật khẩu</label>
+                <label className="mb-1 block text-sm font-medium text-foreground">{t("auth.confirm_password")}</label>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={form.confirmPassword}
                   onChange={(e) => handleChange("confirmPassword", e.target.value)}
-                  placeholder="Nhập lại mật khẩu"
+                  placeholder={t("auth.confirm_password")}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 {errors.confirmPassword && <p className="mt-1 text-xs text-destructive">{errors.confirmPassword}</p>}
@@ -138,20 +143,19 @@ export default function Register() {
                 className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                Đăng ký
+                {t("auth.register_btn")}
               </button>
 
               <div className="text-center text-sm text-muted-foreground">
-                Đã có tài khoản?{" "}
+                {t("auth.have_account")}{" "}
                 <button
                   type="button"
                   onClick={() => {
                     navigate("/");
-                    // We'll trigger login modal from auth context
                   }}
                   className="font-medium text-primary hover:underline"
                 >
-                  Đăng nhập
+                  {t("auth.login_btn")}
                 </button>
               </div>
             </form>

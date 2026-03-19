@@ -2,7 +2,10 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import heroBanner from "@/assets/hero-banner.jpg";
 
+import { useTranslation } from "react-i18next";
+
 export default function HeroBanner() {
+  const { t } = useTranslation();
   return (
     <section className="relative flex min-h-[70vh] items-center overflow-hidden">
       <img
@@ -18,7 +21,7 @@ export default function HeroBanner() {
           transition={{ delay: 0.2 }}
           className="mb-4 text-sm font-medium uppercase tracking-widest text-gold-light"
         >
-          Di sản Văn hóa Phi vật thể UNESCO 2009
+          {t("hero.subtitle")}
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
@@ -35,7 +38,7 @@ export default function HeroBanner() {
           transition={{ delay: 0.6 }}
           className="mx-auto mt-6 max-w-xl text-lg text-primary-foreground/80"
         >
-          Khám phá vẻ đẹp tinh tế của dân ca Quan họ — tiếng hát giao duyên ngọt ngào bên dòng sông Cầu xứ Kinh Bắc.
+          {t("hero.description")}
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -47,13 +50,13 @@ export default function HeroBanner() {
             to="/bai-hat"
             className="rounded-lg bg-accent px-6 py-3 font-semibold text-accent-foreground shadow-elevated transition-transform hover:scale-105"
           >
-            Nghe Quan Họ
+            {t("hero.cta_listen")}
           </Link>
           <Link
             to="/gioi-thieu"
             className="rounded-lg border border-primary-foreground/30 px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary-foreground/10"
           >
-            Tìm hiểu thêm
+            {t("hero.cta_more")}
           </Link>
         </motion.div>
       </div>

@@ -48,7 +48,7 @@ class ArticleStatus(str, Enum):
     draft = "draft"
     published = "published"
 
-# ================= USER SCHEMAS =================
+# ================= SCHEMAS NGƯỜI DÙNG =================
 class UserBase(BaseModel):
     name: str
     email: str
@@ -62,7 +62,7 @@ class User(UserBase):
     role: UserRole
     created_at: datetime
 
-# ================= MELODY SCHEMAS =================
+# ================= SCHEMAS LÀN ĐIỆU =================
 class MelodyBase(BaseModel):
     name: str
     slug: Optional[str] = None
@@ -92,7 +92,7 @@ class Melody(MelodyBase):
     views: int = 0
     created_at: datetime
 
-# ================= ARTIST SCHEMAS =================
+# ================= SCHEMAS NGHỆ NHÂN =================
 class ArtistBase(BaseModel):
     name: str
     slug: Optional[str] = None
@@ -119,7 +119,7 @@ class Artist(ArtistBase):
     death_year: Optional[int] = None
     created_at: datetime
 
-# ================= ARTICLE SCHEMAS =================
+# ================= SCHEMAS BÀI VIẾT =================
 class ArticleCreate(BaseModel):
     title: str
     slug: Optional[str] = None
@@ -141,7 +141,7 @@ class Article(ArticleCreate):
     author_id: Optional[int] = None
     created_at: datetime
 
-# ================= LOCATION SCHEMAS =================
+# ================= SCHEMAS ĐỊA ĐIỂM =================
 class LocationBase(BaseModel):
     name: str
     slug: Optional[str] = None
@@ -167,7 +167,7 @@ class Location(LocationBase):
     id: int
     created_at: datetime
 
-# ================= EVENT SCHEMAS =================
+# ================= SCHEMAS SỰ KIỆN =================
 class EventBase(BaseModel):
     title: str
     slug: Optional[str] = None

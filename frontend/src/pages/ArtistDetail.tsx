@@ -5,24 +5,32 @@ import SongCard from "@/components/SongCard";
 import { artists, songs } from "@/data/mockData";
 import { ArrowLeft, MapPin, Award, Music } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export default function ArtistDetail() {
+  const { t } = useTranslation();
   const { id } = useParams();
+  
+  // Tìm nghệ nhân theo ID
   const artist = artists.find((a) => a.id === Number(id));
 
+  // Trạng thái không tìm thấy nghệ nhân
   if (!artist) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center">
-          <p className="text-muted-foreground">Không tìm thấy nghệ nhân.</p>
-          <Link to="/nghe-nhan" className="mt-4 inline-block text-primary hover:underline">← Quay lại</Link>
+          <p className="text-muted-foreground">{t("artists_page.no_artists")}</p>
+          <Link to="/nghe-nhan" className="mt-4 inline-block text-primary hover:underline">
+            ← {t("common.back")}
+          </Link>
         </div>
         <Footer />
       </div>
     );
   }
 
+  // Danh sách bài hát liên quan đến nghệ nhân
   const artistSongs = songs.filter((s) => s.artistId === artist.id);
 
   return (
@@ -31,7 +39,7 @@ export default function ArtistDetail() {
       <section className="py-16">
         <div className="container mx-auto max-w-4xl px-4">
           <Link to="/nghe-nhan" className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
-            <ArrowLeft className="h-4 w-4" /> Quay lại danh sách
+            <ArrowLeft className="h-4 w-4" /> {t("artists_page.back_to_list")}
           </Link>
 
           <motion.div
@@ -46,23 +54,27 @@ export default function ArtistDetail() {
               <div className="flex-1 p-6 md:p-8">
                 <h1 className="font-display text-3xl font-bold text-card-foreground">{artist.name}</h1>
                 <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> Làng {artist.village}</span>
-                  <span className="flex items-center gap-1"><Award className="h-4 w-4" /> {artist.performances} buổi diễn</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" /> {t("artist.village")} {artist.village}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Award className="h-4 w-4" /> {artist.performances} {t("artist.performances")}
+                  </span>
                 </div>
                 <p className="mt-4 leading-relaxed text-muted-foreground">{artist.biography}</p>
                 <div className="mt-4 rounded-lg bg-muted p-4">
-                  <h3 className="text-sm font-semibold text-foreground">Đóng góp nổi bật</h3>
+                  <h3 className="text-sm font-semibold text-foreground">{t("artists_page.contributions")}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{artist.contributions}</p>
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Related songs */}
+          {/* Các bài hát liên quan */}
           {artistSongs.length > 0 && (
             <div className="mt-12">
               <h2 className="mb-6 flex items-center gap-2 font-display text-2xl font-bold text-foreground">
-                <Music className="h-5 w-5 text-primary" /> Bài hát liên quan
+                <Music className="h-5 w-5 text-primary" /> {t("artists_page.famous_songs")}
               </h2>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {artistSongs.map((song, i) => (

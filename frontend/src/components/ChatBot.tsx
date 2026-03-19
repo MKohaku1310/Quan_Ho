@@ -3,23 +3,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, Sparkles, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import chatbotAvatar from "@/assets/chatbot-avatar.png";
+import { useTranslation } from "react-i18next";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-const SUGGESTED_QUESTIONS = [
-  "Quan họ Bắc Ninh là gì?",
-  "Những bài hát Quan họ nổi tiếng?",
-  "Nghệ nhân Quan họ nổi tiếng?",
-  "Lễ hội Quan họ tổ chức khi nào?",
-  "Làng Quan họ cổ nào nổi tiếng nhất?",
-];
-
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/quan-ho-chat`;
 
 export default function ChatBot() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -27,14 +21,17 @@ export default function ChatBot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Cuộn xuống tin nhắn mới nhất
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Tự động focus vào ô nhập khi mở chat
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
 
+  // Xử lý luồng chat từ API
   const streamChat = async (allMessages: Message[]) => {
     setIsLoading(true);
     let assistantSoFar = "";
@@ -64,7 +61,7 @@ export default function ChatBot() {
 
       if (!resp.ok || !resp.body) {
         const errData = await resp.json().catch(() => ({}));
-        upsert(errData.error || "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại.");
+        upsert(errData.error || t("chatbot.error_general"));
         setIsLoading(false);
         return;
       }
@@ -102,11 +99,12 @@ export default function ChatBot() {
         }
       }
     } catch {
-      upsert("Xin lỗi, không thể kết nối. Vui lòng thử lại sau.");
+      upsert(t("chatbot.error_connect"));
     }
     setIsLoading(false);
   };
 
+  // Gửi tin nhắn
   const send = (text: string) => {
     if (!text.trim() || isLoading) return;
     const userMsg: Message = { role: "user", content: text.trim() };
@@ -118,7 +116,7 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Floating button */}
+      {/* Nút lơ lửng */}
       <AnimatePresence>
         {!open && (
           <motion.button
@@ -129,14 +127,14 @@ export default function ChatBot() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setOpen(true)}
             className="fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full shadow-lg transition-shadow hover:shadow-xl overflow-hidden"
-            aria-label="Mở trợ lý Quan Họ"
+            aria-label={t("chatbot.open_label")}
           >
             <img src={chatbotAvatar} alt="Quan Họ Assistant" className="h-full w-full object-cover" />
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Chat window */}
+      {/* Cửa sổ Chat */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -146,7 +144,7 @@ export default function ChatBot() {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed bottom-6 right-6 z-50 flex h-[520px] w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:h-[560px]"
           >
-            {/* Header */}
+            {/* Tiêu đề */}
             <div className="flex items-center justify-between border-b border-border bg-primary px-4 py-3">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20">
@@ -154,38 +152,38 @@ export default function ChatBot() {
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-primary-foreground">
-                    Quan Họ Assistant
+                    {t("chatbot.assistant_name")}
                   </h3>
                   <p className="text-xs text-primary-foreground/70">
-                    Trợ lý văn hóa Quan họ
+                    {t("chatbot.assistant_role")}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setOpen(false)}
                 className="rounded-full p-1 text-primary-foreground/70 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
-                aria-label="Đóng"
+                aria-label={t("chatbot.close")}
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Messages */}
+            {/* Tin nhắn */}
             <div className="flex-1 overflow-y-auto px-4 py-3">
               {messages.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-4">
                   <img src={chatbotAvatar} alt="Quan Họ Assistant" className="h-12 w-12 rounded-full object-cover" />
                   <p className="text-center text-sm text-muted-foreground">
-                    Xin chào! Tôi là trợ lý Quan Họ. Hãy hỏi tôi về văn hóa Quan họ Bắc Ninh!
+                    {t("chatbot.welcome")}
                   </p>
                   <div className="flex flex-col gap-2 w-full">
-                    {SUGGESTED_QUESTIONS.map((q) => (
+                    {[1, 2, 3, 4, 5].map((i) => (
                       <button
-                        key={q}
-                        onClick={() => send(q)}
+                        key={i}
+                        onClick={() => send(t(`chatbot.questions.q${i}`))}
                         className="rounded-lg border border-border bg-background px-3 py-2 text-left text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:bg-muted hover:text-foreground"
                       >
-                        {q}
+                        {t(`chatbot.questions.q${i}`)}
                       </button>
                     ))}
                   </div>
@@ -246,7 +244,7 @@ export default function ChatBot() {
               )}
             </div>
 
-            {/* Input */}
+            {/* Đầu vào */}
             <div className="border-t border-border bg-background px-3 py-3">
               <form
                 onSubmit={(e) => {
@@ -259,7 +257,7 @@ export default function ChatBot() {
                   ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Hỏi về Quan họ Bắc Ninh..."
+                  placeholder={t("chatbot.placeholder")}
                   className="flex-1 rounded-xl border border-input bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   disabled={isLoading}
                 />
@@ -267,7 +265,7 @@ export default function ChatBot() {
                   type="submit"
                   disabled={!input.trim() || isLoading}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-                  aria-label="Gửi"
+                  aria-label={t("chatbot.send")}
                 >
                   <Send className="h-4 w-4" />
                 </button>

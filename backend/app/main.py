@@ -6,12 +6,12 @@ from app.db import engine, Base
 from app.router import auth, melodies, artists, articles, locations, events
 import os
 
-# Create tables
+# Khởi tạo bảng cơ sở dữ liệu
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Quan Họ Bắc Ninh API", version="1.0.0")
 
-# CORS
+# Cấu hình CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Đăng ký các router
 app.include_router(auth.router, prefix="/api")
 app.include_router(melodies.router, prefix="/api")
 app.include_router(artists.router, prefix="/api")
@@ -32,7 +32,7 @@ app.include_router(events.router, prefix="/api")
 def health_check():
     return {"status": "healthy"}
 
-# Serve Frontend static files
+# Phục vụ các tệp tĩnh của Frontend
 frontend_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist")
 
 if os.path.exists(frontend_path):
@@ -40,16 +40,16 @@ if os.path.exists(frontend_path):
 
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
-        # Prevent intercepting API routes correctly handled by other routers
+        # Ngăn chặn chặn các route API được xử lý bởi router khác
         if full_path.startswith("api") or full_path.startswith("/api"):
-            # If we reached here, it means no router handled the /api request
+            # Nếu đến đây nghĩa là không có router nào xử lý yêu cầu /api
             return {"error": f"API route '{full_path}' not found"}
         
         file_path = os.path.join(frontend_path, full_path)
         if os.path.isfile(file_path):
             return FileResponse(file_path)
         
-        # Fallback to index.html for SPA routing
+        # Trả về index.html cho SPA routing
         return FileResponse(os.path.join(frontend_path, "index.html"))
 else:
     @app.get("/")

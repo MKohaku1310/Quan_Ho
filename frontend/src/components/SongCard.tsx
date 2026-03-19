@@ -3,8 +3,10 @@ import { Play, Clock, Music, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Song } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 export default function SongCard({ song, index = 0 }: { song: Song; index?: number }) {
+  const { t } = useTranslation();
   const { isFavorite, toggleFavorite } = useAuth();
   const favorited = isFavorite(song.id);
 
@@ -16,7 +18,7 @@ export default function SongCard({ song, index = 0 }: { song: Song; index?: numb
       transition={{ delay: index * 0.1, duration: 0.5 }}
       className="relative"
     >
-      {/* Favorite button */}
+      {/* Nút yêu thích */}
       <button
         onClick={(e) => {
           e.preventDefault();
@@ -28,7 +30,7 @@ export default function SongCard({ song, index = 0 }: { song: Song; index?: numb
             ? "bg-primary text-primary-foreground shadow-elevated"
             : "bg-background/80 text-muted-foreground hover:bg-primary hover:text-primary-foreground backdrop-blur-sm"
         }`}
-        aria-label={favorited ? "Bỏ yêu thích" : "Thêm yêu thích"}
+        aria-label={favorited ? t("song.remove_fav") : t("song.add_fav")}
       >
         <Heart className={`h-4 w-4 ${favorited ? "fill-current" : ""}`} />
       </button>

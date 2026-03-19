@@ -3,20 +3,24 @@ import Footer from "@/components/Footer";
 import SectionTitle from "@/components/SectionTitle";
 import { motion } from "framer-motion";
 import heroBanner from "@/assets/hero-banner.jpg";
+import { useTranslation } from "react-i18next";
 
 export default function Introduction() {
+  const { t } = useTranslation();
+
+  // Dữ liệu dòng thời gian lịch sử
   const timeline = [
-    { year: "Thế kỷ 15", text: "Quan họ bắt đầu hình thành tại vùng Kinh Bắc, gắn liền với đời sống làng xã và tín ngưỡng thờ thành hoàng." },
-    { year: "Thế kỷ 17-18", text: "Thời kỳ phát triển rực rỡ nhất, 49 làng Quan họ gốc được xác lập, hình thành nét sinh hoạt văn hóa đặc sắc." },
-    { year: "Thế kỷ 19", text: "Quan họ dần được ghi chép, nghiên cứu và trở thành biểu tượng văn hóa tiêu biểu của vùng Bắc Ninh - Bắc Giang." },
-    { year: "2009", text: "UNESCO chính thức công nhận Quan họ Bắc Ninh là Di sản Văn hóa Phi vật thể đại diện của Nhân loại." },
+    { year: t("intro.timeline.t1_year"), text: t("intro.timeline.t1_text") },
+    { year: t("intro.timeline.t2_year"), text: t("intro.timeline.t2_text") },
+    { year: t("intro.timeline.t3_year"), text: t("intro.timeline.t3_text") },
+    { year: t("intro.timeline.t4_year"), text: t("intro.timeline.t4_text") },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero */}
+      {/* Phần banner giới thiệu */}
       <section className="relative flex min-h-[40vh] items-center overflow-hidden">
         <img src={heroBanner} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-hero-gradient opacity-80" />
@@ -26,36 +30,27 @@ export default function Introduction() {
             animate={{ opacity: 1, y: 0 }}
             className="font-display text-4xl font-bold text-primary-foreground md:text-5xl"
           >
-            Giới thiệu Quan Họ
+            {t("intro.hero_title")}
           </motion.h1>
-          <p className="mt-3 text-primary-foreground/80">Lịch sử, nguồn gốc và giá trị văn hóa</p>
+          <p className="mt-3 text-primary-foreground/80">{t("intro.hero_subtitle")}</p>
         </div>
       </section>
 
-      {/* Content */}
+      {/* Nội dung giới thiệu chi tiết */}
       <section className="py-16">
         <div className="container mx-auto max-w-3xl px-4">
-          <SectionTitle title="Quan họ là gì?" />
+          <SectionTitle title={t("intro.what_is_title")} translate={false} />
           <div className="prose-custom space-y-4 text-muted-foreground leading-relaxed">
-            <p>
-              Quan họ Bắc Ninh là một hình thức hát giao duyên đối đáp giữa nam (liền anh) và nữ (liền chị),
-              phổ biến tại vùng Kinh Bắc xưa, nay là tỉnh Bắc Ninh và Bắc Giang. Đây không chỉ là một thể loại
-              dân ca mà còn là cả một hệ thống phong tục, tập quán, lễ nghi gắn liền với đời sống tinh thần
-              của người dân nơi đây.
-            </p>
-            <p>
-              Quan họ có hơn 300 làn điệu cổ, mỗi làn điệu mang một sắc thái tình cảm khác nhau — từ lời
-              mời chào, gặp gỡ, đến giã bạn, tiễn biệt. Nghệ thuật hát Quan họ đòi hỏi kỹ thuật thanh nhạc
-              tinh tế như luyến láy, rung, nảy hạt — tạo nên âm sắc đặc trưng không lẫn vào đâu được.
-            </p>
+            <p>{t("intro.desc_p1")}</p>
+            <p>{t("intro.desc_p2")}</p>
           </div>
         </div>
       </section>
 
-      {/* Timeline */}
+      {/* Dòng thời gian lịch sử */}
       <section className="bg-card py-16">
         <div className="container mx-auto max-w-3xl px-4">
-          <SectionTitle title="Dòng chảy lịch sử" />
+          <SectionTitle title={t("intro.history_title")} translate={false} />
           <div className="space-y-8">
             {timeline.map((item, i) => (
               <motion.div
@@ -82,17 +77,16 @@ export default function Introduction() {
         </div>
       </section>
 
-      {/* UNESCO */}
+      {/* Phần UNESCO công nhận */}
       <section className="py-16">
         <div className="container mx-auto max-w-3xl px-4 text-center">
           <SectionTitle
-            title="UNESCO 2009"
-            subtitle="Di sản Văn hóa Phi vật thể đại diện của Nhân loại"
+            title={t("intro.unesco_title")}
+            subtitle={t("hero.subtitle")}
+            translate={false}
           />
           <p className="text-muted-foreground leading-relaxed">
-            Ngày 30 tháng 9 năm 2009, tại phiên họp Ủy ban liên chính phủ Công ước UNESCO tại Abu Dhabi,
-            Quan họ Bắc Ninh đã được chính thức công nhận là Di sản Văn hóa Phi vật thể đại diện của Nhân loại.
-            Đây là niềm tự hào to lớn của người dân Bắc Ninh nói riêng và dân tộc Việt Nam nói chung.
+            {t("intro.unesco_desc")}
           </p>
         </div>
       </section>

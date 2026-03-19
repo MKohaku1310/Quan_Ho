@@ -4,14 +4,15 @@ import { Menu, X, Sun, Moon, Search, LogIn, UserPlus, User, Heart, LogOut } from
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import lotusOrnament from "@/assets/lotus-ornament.png";
+import { useTranslation } from "react-i18next";
 
 const navItems = [
-  { path: "/", label: "Trang chủ" },
-  { path: "/gioi-thieu", label: "Giới thiệu" },
-  { path: "/bai-hat", label: "Bài hát" },
-  { path: "/nghe-nhan", label: "Nghệ nhân" },
-  { path: "/lang-quan-ho", label: "Làng Quan họ" },
-  { path: "/tin-tuc", label: "Tin tức" },
+  { path: "/", key: "home" },
+  { path: "/gioi-thieu", key: "intro" },
+  { path: "/bai-hat", key: "songs" },
+  { path: "/nghe-nhan", key: "artists" },
+  { path: "/lang-quan-ho", key: "villages" },
+  { path: "/tin-tuc", key: "news" },
 ];
 
 export default function Navbar() {
@@ -21,13 +22,18 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const { user, isAuthenticated, logout, setShowLoginModal } = useAuth();
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === "vi" ? "en" : "vi");
+  };
 
   const toggleDark = () => {
     setDark(!dark);
     document.documentElement.classList.toggle("dark");
   };
 
-  // Close dropdown on outside click
+  // Đóng dropdown khi click ra ngoài
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -38,7 +44,7 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Close mobile menu on route change
+  // Đóng menu mobile khi chuyển trang
   useEffect(() => {
     setMobileOpen(false);
     setDropdownOpen(false);
@@ -54,7 +60,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop nav */}
+        {/* Điều hướng Desktop */}
         <div className="hidden items-center gap-1 lg:flex">
           {navItems.map((item) => (
             <Link
@@ -66,7 +72,7 @@ export default function Navbar() {
                   : "text-muted-foreground"
               }`}
             >
-              {item.label}
+              {t(`nav.${item.key}`)}
             </Link>
           ))}
         </div>
@@ -87,7 +93,15 @@ export default function Navbar() {
             {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
 
-          {/* Auth section */}
+          <button
+            onClick={toggleLanguage}
+            className="flex h-9 w-9 items-center justify-center rounded-md text-sm font-bold text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+            title={i18n.language === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
+          >
+            {i18n.language === "vi" ? "EN" : "VI"}
+          </button>
+
+          {/* Phần xác thực người dùng */}
           {isAuthenticated && user ? (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -144,13 +158,13 @@ export default function Navbar() {
                 onClick={() => setShowLoginModal(true)}
                 className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
               >
-                <LogIn className="h-4 w-4" /> Đăng nhập
+                <LogIn className="h-4 w-4" /> {t("nav.login")}
               </button>
               <Link
                 to="/dang-ky"
                 className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                <UserPlus className="h-4 w-4" /> Đăng ký
+                <UserPlus className="h-4 w-4" /> {t("nav.register")}
               </Link>
             </div>
           )}
@@ -165,7 +179,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Menu Mobile */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -185,10 +199,10 @@ export default function Navbar() {
                       : "text-muted-foreground"
                   }`}
                 >
-                  {item.label}
+                  {t(`nav.${item.key}`)}
                 </Link>
               ))}
-              {/* Mobile auth */}
+              {/* Xác thực mobile */}
               <div className="mt-2 border-t border-border pt-2">
                 {isAuthenticated && user ? (
                   <>

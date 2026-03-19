@@ -4,13 +4,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { z } from "zod";
-
-const loginSchema = z.object({
-  email: z.string().trim().email("Email không hợp lệ").max(255),
-  password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự").max(100),
-});
+import { useTranslation } from "react-i18next";
 
 export default function LoginModal() {
+  const { t } = useTranslation();
+  
+  const loginSchema = z.object({
+    email: z.string().trim().email(t("auth.errors.invalid_email")).max(255),
+    password: z.string().min(6, t("auth.errors.password_min")).max(100),
+  });
+
   const { showLoginModal, setShowLoginModal, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,6 +21,7 @@ export default function LoginModal() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Xử lý đăng nhập
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -60,7 +64,7 @@ export default function LoginModal() {
             className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-card shadow-elevated"
           >
             <div className="flex items-center justify-between border-b border-border bg-muted px-6 py-4">
-              <h2 className="font-display text-xl font-bold text-card-foreground">Đăng nhập</h2>
+              <h2 className="font-display text-xl font-bold text-card-foreground">{t("auth.login_title")}</h2>
               <button
                 onClick={() => setShowLoginModal(false)}
                 className="rounded-md p-1 text-muted-foreground hover:text-foreground"
@@ -71,7 +75,7 @@ export default function LoginModal() {
 
             <form onSubmit={handleSubmit} className="space-y-4 p-6">
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Email</label>
+                <label className="mb-1 block text-sm font-medium text-foreground">{t("auth.email")}</label>
                 <input
                   type="email"
                   value={email}
@@ -83,7 +87,7 @@ export default function LoginModal() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">Mật khẩu</label>
+                <label className="mb-1 block text-sm font-medium text-foreground">{t("auth.password")}</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -109,22 +113,22 @@ export default function LoginModal() {
                 className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                Đăng nhập
+                {t("auth.login_btn")}
               </button>
 
               <div className="text-center text-sm text-muted-foreground">
-                Chưa có tài khoản?{" "}
+                {t("auth.no_account")}{" "}
                 <Link
                   to="/dang-ky"
                   onClick={() => setShowLoginModal(false)}
                   className="font-medium text-primary hover:underline"
                 >
-                  Đăng ký ngay
+                  {t("auth.register_now")}
                 </Link>
               </div>
 
               <div className="rounded-md bg-muted p-3 text-xs text-muted-foreground">
-                <p className="font-medium">Tài khoản demo:</p>
+                <p className="font-medium">{t("auth.demo_accounts")}</p>
                 <p>User: user@example.com / password123</p>
                 <p>Admin: admin@example.com / admin123</p>
               </div>
