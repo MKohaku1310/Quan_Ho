@@ -3,7 +3,6 @@ from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
-# ================= ENUMS - lowercase khớp models.py =================
 class UserRole(str, Enum):
     admin = "admin"
     user = "user"
@@ -22,7 +21,7 @@ class ArticleCategory(str, Enum):
 class MelodyCategory(str, Enum):
     co = "co"
     moi = "moi"
-    bien_tieu = "bien-tieu"
+    cai_bien = "cai-bien"
 
 class Difficulty(str, Enum):
     de = "de"
@@ -48,7 +47,6 @@ class ArticleStatus(str, Enum):
     draft = "draft"
     published = "published"
 
-# ================= SCHEMAS NGƯỜI DÙNG =================
 class UserBase(BaseModel):
     name: str
     email: str
@@ -62,7 +60,6 @@ class User(UserBase):
     role: UserRole
     created_at: datetime
 
-# ================= SCHEMAS LÀN ĐIỆU =================
 class MelodyBase(BaseModel):
     name: str
     slug: Optional[str] = None
@@ -92,7 +89,6 @@ class Melody(MelodyBase):
     views: int = 0
     created_at: datetime
 
-# ================= SCHEMAS NGHỆ NHÂN =================
 class ArtistBase(BaseModel):
     name: str
     slug: Optional[str] = None
@@ -119,7 +115,6 @@ class Artist(ArtistBase):
     death_year: Optional[int] = None
     created_at: datetime
 
-# ================= SCHEMAS BÀI VIẾT =================
 class ArticleCreate(BaseModel):
     title: str
     slug: Optional[str] = None
@@ -141,7 +136,6 @@ class Article(ArticleCreate):
     author_id: Optional[int] = None
     created_at: datetime
 
-# ================= SCHEMAS ĐỊA ĐIỂM =================
 class LocationBase(BaseModel):
     name: str
     slug: Optional[str] = None
@@ -167,7 +161,6 @@ class Location(LocationBase):
     id: int
     created_at: datetime
 
-# ================= SCHEMAS SỰ KIỆN =================
 class EventBase(BaseModel):
     title: str
     slug: Optional[str] = None

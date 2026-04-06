@@ -6,7 +6,6 @@ import { type Artist } from "@/data/mockData";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-// Định nghĩa kiểu dữ liệu từ Backend
 interface BackendArtist extends Omit<Artist, 'photo'> {
   image_url: string;
 }
@@ -14,7 +13,6 @@ interface BackendArtist extends Omit<Artist, 'photo'> {
 export default function Artists() {
   const { t } = useTranslation();
   
-  // Lấy dữ liệu danh sách nghệ nhân từ API
   const { data: artists = [], isLoading } = useQuery<Artist[]>({
     queryKey: ["artists"],
     queryFn: async () => {
@@ -39,21 +37,18 @@ export default function Artists() {
             translate={false}
           />
 
-          {/* Trạng thái tải dữ liệu */}
           {isLoading && (
             <div className="flex justify-center py-20">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
             </div>
           )}
 
-          {/* Danh sách nghệ nhân */}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {artists.map((artist, i) => (
               <ArtistCard key={artist.id} artist={artist} index={i} />
             ))}
           </div>
           
-          {/* Trạng thái không có dữ liệu */}
           {!isLoading && artists.length === 0 && (
              <div className="py-20 text-center text-muted-foreground">
                {t("artists_page.no_artists")}

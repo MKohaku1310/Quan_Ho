@@ -18,7 +18,6 @@ export default function SongCard({ song, index = 0 }: { song: Song; index?: numb
       transition={{ delay: index * 0.1, duration: 0.5 }}
       className="relative"
     >
-      {/* Nút yêu thích */}
       <button
         onClick={(e) => {
           e.preventDefault();

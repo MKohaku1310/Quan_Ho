@@ -6,7 +6,6 @@ const NotFound = () => {
   const { t } = useTranslation();
   const location = useLocation();
 
-  // Ghi nhận lỗi 404 vào console
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);

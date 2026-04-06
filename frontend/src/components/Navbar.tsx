@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Sun, Moon, Search, LogIn, UserPlus, User, Heart, LogOut } from "lucide-react";
+import { Menu, X, Sun, Moon, Search, LogIn, UserPlus, User, Heart, LogOut, Music } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import lotusOrnament from "@/assets/lotus-ornament.png";
@@ -33,7 +33,6 @@ export default function Navbar() {
     document.documentElement.classList.toggle("dark");
   };
 
-  // Đóng dropdown khi click ra ngoài
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -44,7 +43,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Đóng menu mobile khi chuyển trang
   useEffect(() => {
     setMobileOpen(false);
     setDropdownOpen(false);
@@ -60,7 +58,6 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Điều hướng Desktop */}
         <div className="hidden items-center gap-1 lg:flex">
           {navItems.map((item) => (
             <Link
@@ -101,7 +98,6 @@ export default function Navbar() {
             {i18n.language === "vi" ? "EN" : "VI"}
           </button>
 
-          {/* Phần xác thực người dùng */}
           {isAuthenticated && user ? (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -133,19 +129,31 @@ export default function Navbar() {
                         to="/ho-so"
                         className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
-                        <User className="h-4 w-4" /> Hồ sơ
+                        <User className="h-4 w-4" /> {t("nav.profile")}
                       </Link>
                       <Link
                         to="/ho-so"
                         className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
-                        <Heart className="h-4 w-4" /> Yêu thích
+                        <Heart className="h-4 w-4" /> {t("nav.favorites")}
+                      </Link>
+                      <Link
+                        to="/them-nghe-nhan"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        <UserPlus className="h-4 w-4" /> {t("nav.add_artist")}
+                      </Link>
+                      <Link
+                        to="/them-bai-hat"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        <Music className="h-4 w-4" /> {t("nav.add_song")}
                       </Link>
                       <button
                         onClick={logout}
                         className="flex w-full items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-destructive"
                       >
-                        <LogOut className="h-4 w-4" /> Đăng xuất
+                        <LogOut className="h-4 w-4" /> {t("nav.logout")}
                       </button>
                     </div>
                   </motion.div>
@@ -179,7 +187,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Menu Mobile */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -202,15 +209,20 @@ export default function Navbar() {
                   {t(`nav.${item.key}`)}
                 </Link>
               ))}
-              {/* Xác thực mobile */}
               <div className="mt-2 border-t border-border pt-2">
                 {isAuthenticated && user ? (
                   <>
                     <Link to="/ho-so" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
-                      <User className="h-4 w-4" /> Hồ sơ ({user.username})
+                      <User className="h-4 w-4" /> {t("nav.profile")} ({user.username})
+                    </Link>
+                    <Link to="/them-nghe-nhan" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                      <UserPlus className="h-4 w-4" /> {t("nav.add_artist")}
+                    </Link>
+                    <Link to="/them-bai-hat" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted">
+                      <Music className="h-4 w-4" /> {t("nav.add_song")}
                     </Link>
                     <button onClick={logout} className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-destructive">
-                      <LogOut className="h-4 w-4" /> Đăng xuất
+                      <LogOut className="h-4 w-4" /> {t("nav.logout")}
                     </button>
                   </>
                 ) : (
@@ -222,10 +234,10 @@ export default function Navbar() {
                       }}
                       className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
                     >
-                      <LogIn className="h-4 w-4" /> Đăng nhập
+                      <LogIn className="h-4 w-4" /> {t("nav.login")}
                     </button>
                     <Link to="/dang-ky" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-primary hover:bg-muted">
-                      <UserPlus className="h-4 w-4" /> Đăng ký
+                      <UserPlus className="h-4 w-4" /> {t("nav.register")}
                     </Link>
                   </>
                 )}

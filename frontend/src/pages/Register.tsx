@@ -35,13 +35,11 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Cập nhật giá trị form
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  // Xử lý đăng ký
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});

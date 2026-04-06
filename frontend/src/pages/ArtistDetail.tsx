@@ -2,20 +2,78 @@ import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SongCard from "@/components/SongCard";
-import { artists, songs } from "@/data/mockData";
 import { ArrowLeft, MapPin, Award, Music } from "lucide-react";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+
+
+interface BackendArtist {
+  id: number;
+  name: string;
+  image_url?: string | null;
+  biography?: string | null;
+  village?: string | null;
+  contributions?: string | null;
+  performances?: number | null;
+}
+
+interface BackendSong {
+  id: number;
+  name: string;
+  category: string;
+  image_url?: string | null;
+  audio_url?: string | null;
+  video_url?: string | null;
+  village?: string | null;
+  artist?: { name: string } | string | null;
+  artist_id?: number | null;
+  lyrics?: string | null;
+  duration?: string | null;
+}
 
 export default function ArtistDetail() {
   const { t } = useTranslation();
   const { id } = useParams();
   
-  // Tìm nghệ nhân theo ID
-  const artist = artists.find((a) => a.id === Number(id));
 
-  // Trạng thái không tìm thấy nghệ nhân
-  if (!artist) {
+  const { data: rawArtist, isLoading: isLoadingArtist, error: artistError } = useQuery<BackendArtist>({
+    queryKey: ["artist", id],
+    queryFn: async () => {
+      const resp = await fetch(`/api/artists/${id}`);
+      if (!resp.ok) {
+        if (resp.status === 404) return null;
+        throw new Error("Failed to fetch artist");
+      }
+      return await resp.json();
+    },
+    enabled: !!id,
+  });
+
+
+  const { data: allSongs = [] } = useQuery<BackendSong[]>({
+    queryKey: ["songs"],
+    queryFn: async () => {
+      const resp = await fetch("/api/melodies/");
+      if (!resp.ok) throw new Error("Failed to fetch songs");
+      return await resp.json();
+    }
+  });
+
+  if (isLoadingArtist) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+
+  if (!rawArtist || artistError) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -30,8 +88,34 @@ export default function ArtistDetail() {
     );
   }
 
-  // Danh sách bài hát liên quan đến nghệ nhân
-  const artistSongs = songs.filter((s) => s.artistId === artist.id);
+  const artist = {
+    id: rawArtist.id,
+    name: rawArtist.name,
+    photo: rawArtist.image_url ?? "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800",
+    biography: rawArtist.biography ?? "",
+    village: rawArtist.village ?? "Bắc Ninh",
+    contributions: rawArtist.contributions ?? "",
+    performances: rawArtist.performances ?? 0,
+  };
+
+
+  const rawArtistSongs = allSongs.filter((s) => s.artist_id === artist.id);
+  const artistSongs = rawArtistSongs.map(s => {
+    const artistName = typeof s.artist === "string" ? s.artist : s.artist?.name || artist.name;
+    return {
+      id: s.id,
+      title: s.name,
+      melody: s.category,
+      village: s.village ?? "Bắc Ninh",
+      artist: artistName,
+      artistId: s.artist_id ?? 0,
+      lyrics: s.lyrics ?? "",
+      imageUrl: s.image_url ?? "",
+      audioUrl: s.audio_url ?? undefined,
+      videoUrl: s.video_url ?? undefined,
+      duration: s.duration ?? "",
+    };
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,7 +154,7 @@ export default function ArtistDetail() {
             </div>
           </motion.div>
 
-          {/* Các bài hát liên quan */}
+
           {artistSongs.length > 0 && (
             <div className="mt-12">
               <h2 className="mb-6 flex items-center gap-2 font-display text-2xl font-bold text-foreground">

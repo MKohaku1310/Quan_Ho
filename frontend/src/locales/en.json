@@ -10,7 +10,9 @@
     "register": "Register",
     "profile": "Profile",
     "favorites": "Favorites",
-    "logout": "Logout"
+    "logout": "Logout",
+    "add_artist": "Add Artist",
+    "add_song": "Add Song"
   },
   "auth": {
     "login_title": "Log In",
@@ -107,7 +109,24 @@
       "t3_text": "Quan ho was gradually recorded, researched and became a typical cultural symbol of Bac Ninh - Bac Giang region.",
       "t4_year": "2009",
       "t4_text": "UNESCO officially recognized Quan ho Bac Ninh as the Representative Intangible Cultural Heritage of Humanity."
-    }
+    },
+    "scroll_down": "Scroll down to explore",
+    "identity_title": "Artistic Identity",
+    "identity_desc": "Discover the unique features that make up the soul of Quan Ho Bac Ninh folk singing.",
+    "id_singing_title": "Duet Singing Style",
+    "id_singing_desc": "A responsive singing style between men and women with 4 basic techniques: 'Resonant, Ringing, Grounded, Bouncing', demanding sophistication and mastery.",
+    "id_custom_title": "Twinning Custom",
+    "id_custom_desc": "A sacred bond between two Quan Ho villages, whose members take an oath never to marry each other.",
+    "id_manner_title": "Liền anh, Liền chị",
+    "id_manner_desc": "A respectful, elegant way of addressing: calling each other 'người ơi', referring to oneself as 'vang', 'thưa', displaying profound humility.",
+    "costume_title": "Traditional Costumes",
+    "costume_desc": "Every set of costume is a work of art, crystallizing grace and elegance.",
+    "female_costume_title": "Female Costume (Liền chị)",
+    "female_costume_desc": "Standing out with the radiant seven-layered dress, crow-beak scarf, traditional flat palm hat (nón quai thao), and a peach silk sash.",
+    "male_costume_title": "Male Costume (Liền anh)",
+    "male_costume_desc": "Carrying the essence of Kinh Bac gentlemen with black gauze tunic, silk trousers, turban, holding a black umbrella or paper fan.",
+    "betel_title": "Phoenix-winged Betel",
+    "betel_desc": "'When guests come, if not tea, it is betel'. The phoenix-winged betel is not just a greeting ritual but also shows the host's skill and affection."
   },
   "footer": {
     "siteName": "Quan Ho Bac Ninh",
@@ -138,7 +157,13 @@
     "all": "All",
     "loading": "Loading...",
     "error_load": "Unable to load data",
-    "back": "Back"
+    "back": "Back",
+    "back_to_list": "Back to list",
+    "not_found": "Content not found",
+    "share": "Share",
+    "date": "Date",
+    "time": "Time",
+    "location": "Location"
   },
   "villages_page": {
     "title": "Quan Ho Villages",
@@ -182,7 +207,17 @@
   "news_page": {
     "festival": "Festival",
     "event": "Event",
-    "news": "News"
+    "news": "News",
+    "discussion": "Discussion & Feedback",
+    "discussion_sub": "Please leave your thoughts on this article.",
+    "join_comment": "Join the discussion",
+    "about_event": "About this event",
+    "register_event": "Register now"
+  },
+  "event_status": {
+    "upcoming": "Upcoming",
+    "ongoing": "Ongoing",
+    "finished": "Finished"
   },
   "profile_page": {
     "joined": "Joined:",
@@ -195,5 +230,47 @@
   "notfound_page": {
     "title": "Oops! Page not found",
     "back_home": "Return to Home"
+  },
+  "add_artist": {
+    "title": "Add New Artist",
+    "subtitle": "Add Quan ho artist information",
+    "name": "Artist name",
+    "name_placeholder": "Ex: People's Artist Thuy Cai",
+    "village": "Hometown",
+    "village_placeholder": "Ex: Diem Village",
+    "performances": "Number of performances",
+    "image_url": "Image (URL)",
+    "biography": "Biography",
+    "biography_placeholder": "Enter artist biography...",
+    "contributions": "Contributions",
+    "contributions_placeholder": "Enter key contributions...",
+    "submit": "Add Artist",
+    "submitting": "Processing...",
+    "success": "Artist added successfully",
+    "error": "Error adding artist"
+  },
+  "add_song": {
+    "title": "Add New Song",
+    "subtitle": "Contribute a Quan ho melody",
+    "name": "Song title",
+    "name_placeholder": "Ex: Nguoi Oi Nguoi O Dung Ve",
+    "category": "Melody type",
+    "category_placeholder": "Ex: La Rang",
+    "village": "Hometown",
+    "village_placeholder": "Ex: Thac Buoi",
+    "artist": "Performing artist",
+    "artist_placeholder": "Select an artist",
+    "unknown_artist": "Anonymous",
+    "image_url": "Image (URL)",
+    "audio_url": "Audio Link",
+    "video_url": "Youtube Video Link",
+    "duration": "Duration",
+    "duration_placeholder": "Ex: 04:30",
+    "lyrics": "Lyrics",
+    "lyrics_placeholder": "Enter lyrics...",
+    "submit": "Add Song",
+    "submitting": "Processing...",
+    "success": "Song added successfully",
+    "error": "Error adding song"
   }
 }

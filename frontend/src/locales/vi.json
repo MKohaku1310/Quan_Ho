@@ -10,7 +10,9 @@
     "register": "Đăng ký",
     "profile": "Hồ sơ",
     "favorites": "Yêu thích",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "add_artist": "Thêm nghệ nhân",
+    "add_song": "Thêm bài hát"
   },
   "auth": {
     "login_title": "Đăng nhập",
@@ -76,7 +78,24 @@
       "t3_text": "Quan họ dần được ghi chép, nghiên cứu và trở thành biểu tượng văn hóa tiêu biểu của vùng Bắc Ninh - Bắc Giang.",
       "t4_year": "2009",
       "t4_text": "UNESCO chính thức công nhận Quan họ Bắc Ninh là Di sản Văn hóa Phi vật thể đại diện của Nhân loại."
-    }
+    },
+    "scroll_down": "Cuộn xuống để khám phá",
+    "identity_title": "Bản Sắc Nghệ Thuật",
+    "identity_desc": "Khám phá những nét đặc trưng làm nên linh hồn của dân ca Quan họ Bắc Ninh.",
+    "id_singing_title": "Lề lối hát giao duyên",
+    "id_singing_desc": "Lối hát đối đáp nam nữ với 4 kỹ thuật cơ bản 'Vang, Rền, Nền, Nảy' đòi hỏi sự tinh tế và điêu luyện.",
+    "id_custom_title": "Tục kết chạ",
+    "id_custom_desc": "Sự gắn kết thiêng liêng giữa 2 làng Quan họ, những người đã kết chạ tuyệt đối không được kết hôn với nhau.",
+    "id_manner_title": "Liền anh, Liền chị",
+    "id_manner_desc": "Cách xưng hô đầy trân trọng, thanh lịch: gọi nhau là 'người ơi', xưng 'vang', 'thưa' thể hiện sự khiêm nhường.",
+    "costume_title": "Trang Phục Truyền Thống",
+    "costume_desc": "Mỗi bộ trang phục là một tác phẩm nghệ thuật, kết tinh của sự duyên dáng và thanh lịch.",
+    "female_costume_title": "Trang phục Liền chị",
+    "female_costume_desc": "Nổi bật với chiếc áo mớ ba mớ bảy rực rỡ, vuông mỏ quạ đội đầu, thêm chiếc nón quai thao làm duyên và dải lụa đào vắt ngang lưng tròn.",
+    "male_costume_title": "Trang phục Liền anh",
+    "male_costume_desc": "Đậm chất nam nhi Kinh Bắc với áo the đen, quần lụa, đầu quấn khăn xếp, tay cầm ô đen hoặc quạt giấy.",
+    "betel_title": "Trầu têm cánh phượng",
+    "betel_desc": "'Khách đến chơi nhà, không trà thì trầu'. Miếng trầu têm cánh phượng không chỉ là một nghi thức giao tiếp mà còn thể hiện sự khéo léo, tình cảm của người mời."
   },
   "footer": {
     "siteName": "Quan Họ Bắc Ninh",
@@ -138,7 +157,13 @@
     "all": "Tất cả",
     "loading": "Đang tải...",
     "error_load": "Không thể tải dữ liệu",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "back_to_list": "Quay lại danh sách",
+    "not_found": "Không tìm thấy nội dung",
+    "share": "Chia sẻ",
+    "date": "Ngày tổ chức",
+    "time": "Thời gian",
+    "location": "Địa điểm"
   },
   "villages_page": {
     "title": "Làng Quan họ",
@@ -182,7 +207,17 @@
   "news_page": {
     "festival": "Lễ hội",
     "event": "Sự kiện",
-    "news": "Tin tức"
+    "news": "Tin tức",
+    "discussion": "Thảo luận & Góp ý",
+    "discussion_sub": "Hãy để lại cảm nghĩ của bạn về bài viết này.",
+    "join_comment": "Tham gia bình luận",
+    "about_event": "Về sự kiện này",
+    "register_event": "Đăng ký tham gia"
+  },
+  "event_status": {
+    "upcoming": "Sắp diễn ra",
+    "ongoing": "Đang diễn ra",
+    "finished": "Đã kết thúc"
   },
   "profile_page": {
     "joined": "Tham gia:",
@@ -195,5 +230,47 @@
   "notfound_page": {
     "title": "Ối! Không tìm thấy trang",
     "back_home": "Quay về trang chủ"
+  },
+  "add_artist": {
+    "title": "Thêm Nghệ Nhân Mới",
+    "subtitle": "Bổ sung thông tin nghệ nhân Quan họ",
+    "name": "Tên nghệ nhân",
+    "name_placeholder": "VD: NSND Thúy Cải",
+    "village": "Làng quê",
+    "village_placeholder": "VD: Làng Diềm",
+    "performances": "Số buổi biểu diễn",
+    "image_url": "Hình ảnh (URL)",
+    "biography": "Tiểu sử",
+    "biography_placeholder": "Nhập tiểu sử nghệ nhân...",
+    "contributions": "Đóng góp",
+    "contributions_placeholder": "Nhập các đóng góp nổi bật...",
+    "submit": "Thêm Nghệ Nhân",
+    "submitting": "Đang xử lý...",
+    "success": "Đã thêm nghệ nhân thành công",
+    "error": "Lỗi khi thêm nghệ nhân"
+  },
+  "add_song": {
+    "title": "Thêm Bài Hát Mới",
+    "subtitle": "Đóng góp làn điệu Quan họ",
+    "name": "Tên bài hát",
+    "name_placeholder": "VD: Người Ơi Người Ở Đừng Về",
+    "category": "Làn điệu",
+    "category_placeholder": "VD: La Rằng",
+    "village": "Làng quê",
+    "village_placeholder": "VD: Thác Bưởi",
+    "artist": "Nghệ nhân thể hiện",
+    "artist_placeholder": "Chọn nghệ nhân",
+    "unknown_artist": "Khuyết danh",
+    "image_url": "Hình ảnh (URL)",
+    "audio_url": "Link Audio",
+    "video_url": "Link Youtube Video",
+    "duration": "Thời lượng",
+    "duration_placeholder": "VD: 04:30",
+    "lyrics": "Lời bài hát",
+    "lyrics_placeholder": "Nhập lời bài...",
+    "submit": "Thêm Bài Hát",
+    "submitting": "Đang xử lý...",
+    "success": "Đã thêm bài hát thành công",
+    "error": "Lỗi khi thêm bài hát"
   }
 }

@@ -6,9 +6,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ================= CẤU HÌNH CƠ SỞ DỮ LIỆU =================
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+if not SQLALCHEMY_DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL is not set. Add DATABASE_URL in .env (or environment variables) "
+        "before running the backend."
+    )
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

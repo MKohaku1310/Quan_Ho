@@ -3,21 +3,23 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SongCard from "@/components/SongCard";
 import SectionTitle from "@/components/SectionTitle";
-import { melodies, villageNames, type Song } from "@/data/mockData";
+import { type Song } from "@/data/mockData";
 import { Search, Filter } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-// Định nghĩa kiểu dữ liệu từ Backend
 interface BackendSong {
   id: number;
   name: string;
   category: string;
-  image_url: string;
-  audio_url?: string;
-  video_url?: string;
-  village?: string;
-  artist?: { name: string } | string;
+  image_url?: string | null;
+  audio_url?: string | null;
+  video_url?: string | null;
+  village?: string | null;
+  artist?: { name: string } | string | null;
+  artist_id?: number | null;
+  lyrics?: string | null;
+  duration?: string | null;
 }
 
 export default function Songs() {
@@ -26,7 +28,6 @@ export default function Songs() {
   const [melodyFilter, setMelodyFilter] = useState("");
   const [villageFilter, setVillageFilter] = useState("");
 
-  // Lấy dữ liệu bài hát từ API
   const { data: rawSongs = [], isLoading } = useQuery<BackendSong[]>({
     queryKey: ["songs"],
     queryFn: async () => {
@@ -37,7 +38,6 @@ export default function Songs() {
     }
   });
 
-  // Chuyển đổi dữ liệu backend sang định dạng frontend (Song interface)
   const songsData = useMemo(() => {
     return rawSongs.map((s) => {
       const artistName =
@@ -47,19 +47,26 @@ export default function Songs() {
         id: s.id,
         title: s.name,
         melody: s.category,
-        village: s.village || "Bắc Ninh",
+        village: s.village ?? "Bắc Ninh",
         artist: artistName,
-        artistId: 0, // Dữ liệu backend chưa cung cấp ID nghệ nhân rõ ràng trong list
-        lyrics: "", // Lyrics lấy ở trang chi tiết
-        imageUrl: s.image_url,
-        audioUrl: s.audio_url,
-        videoUrl: s.video_url,
-        duration: "4:00", // Placeholder duration
-      } as Song;
+        artistId: s.artist_id ?? 0,
+        lyrics: s.lyrics ?? "",
+        imageUrl: s.image_url ?? "",
+        audioUrl: s.audio_url ?? undefined,
+        videoUrl: s.video_url ?? undefined,
+        duration: s.duration ?? "",
+      };
     });
   }, [rawSongs]);
 
-  // Lọc danh sách bài hát
+  const melodyOptions = useMemo(() => {
+    return Array.from(new Set(songsData.map((s) => s.melody))).filter(Boolean);
+  }, [songsData]);
+
+  const villageOptions = useMemo(() => {
+    return Array.from(new Set(songsData.map((s) => s.village))).filter(Boolean);
+  }, [songsData]);
+
   const filtered = useMemo(() => {
     return songsData.filter((s) => {
       const matchSearch =
@@ -84,7 +91,6 @@ export default function Songs() {
             translate={false}
           />
 
-          {/* Tìm kiếm & Bộ lọc */}
           <div className="mb-8 flex flex-col gap-4 rounded-lg border border-border bg-card p-4 shadow-card sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -105,8 +111,10 @@ export default function Songs() {
                   className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                 >
                   <option value="">{t("songs_page.all_melodies")}</option>
-                  {melodies.map((m) => (
-                    <option key={m} value={m}>{m}</option>
+                  {melodyOptions.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -116,21 +124,21 @@ export default function Songs() {
                 className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
               >
                 <option value="">{t("songs_page.all_villages")}</option>
-                {villageNames.map((v) => (
-                  <option key={v} value={v}>{v}</option>
+                {villageOptions.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {/* Trạng thái tải dữ liệu */}
           {isLoading && (
             <div className="flex justify-center py-20">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
             </div>
           )}
 
-          {/* Kết quả */}
           {!isLoading && filtered.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((song, i) => (

@@ -26,6 +26,3 @@ Nền tảng kỹ thuật số giúp bảo tồn và phát huy giá trị văn h
 1. Cài đặt Node.js.
 2. Cài đặt dependencies: `npm install`.
 3. Khởi chạy: `npm run dev`.
-
-## Giấy phép
-MIT

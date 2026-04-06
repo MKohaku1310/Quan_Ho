@@ -21,7 +21,6 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
   const [editContent, setEditContent] = useState("");
   const [error, setError] = useState("");
 
-  // Xử lý gửi bình luận mới
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -34,7 +33,6 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
     setNewComment("");
   };
 
-  // Xử lý chỉnh sửa bình luận
   const handleEdit = (commentId: number) => {
     const result = commentSchema.safeParse(editContent);
     if (!result.success) return;
@@ -49,7 +47,6 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
         {t("comments.title")} ({comments.length})
       </h2>
 
-      {/* Form bình luận mới */}
       {isAuthenticated ? (
         <form onSubmit={handleSubmit} className="mb-6">
           <div className="flex gap-3">
@@ -90,7 +87,6 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
         </div>
       )}
 
-      {/* Danh sách bình luận */}
       {comments.length > 0 ? (
         <div className="space-y-4">
           {comments.map((comment) => (
@@ -131,7 +127,6 @@ export default function CommentSection({ targetType, targetId }: CommentSectionP
                   <p className="mt-1 text-sm text-muted-foreground">{comment.content}</p>
                 )}
 
-                {/* Hành động sửa/xóa cho bình luận của chính mình */}
                 {user && comment.userId === user.id && editingId !== comment.id && (
                   <div className="mt-2 flex gap-3">
                     <button

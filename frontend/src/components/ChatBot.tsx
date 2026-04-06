@@ -21,17 +21,14 @@ export default function ChatBot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Cuộn xuống tin nhắn mới nhất
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Tự động focus vào ô nhập khi mở chat
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  // Xử lý luồng chat từ API
   const streamChat = async (allMessages: Message[]) => {
     setIsLoading(true);
     let assistantSoFar = "";
@@ -104,7 +101,6 @@ export default function ChatBot() {
     setIsLoading(false);
   };
 
-  // Gửi tin nhắn
   const send = (text: string) => {
     if (!text.trim() || isLoading) return;
     const userMsg: Message = { role: "user", content: text.trim() };
@@ -116,7 +112,6 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Nút lơ lửng */}
       <AnimatePresence>
         {!open && (
           <motion.button
@@ -134,7 +129,6 @@ export default function ChatBot() {
         )}
       </AnimatePresence>
 
-      {/* Cửa sổ Chat */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -144,7 +138,6 @@ export default function ChatBot() {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="fixed bottom-6 right-6 z-50 flex h-[520px] w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:h-[560px]"
           >
-            {/* Tiêu đề */}
             <div className="flex items-center justify-between border-b border-border bg-primary px-4 py-3">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground/20">
@@ -168,7 +161,6 @@ export default function ChatBot() {
               </button>
             </div>
 
-            {/* Tin nhắn */}
             <div className="flex-1 overflow-y-auto px-4 py-3">
               {messages.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-4">
@@ -244,7 +236,6 @@ export default function ChatBot() {
               )}
             </div>
 
-            {/* Đầu vào */}
             <div className="border-t border-border bg-background px-3 py-3">
               <form
                 onSubmit={(e) => {

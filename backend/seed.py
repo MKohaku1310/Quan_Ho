@@ -4,7 +4,6 @@ from app.security import get_password_hash
 import datetime
 
 def seed_data():
-    # Re-create tables
     print("Dropping all tables...")
     Base.metadata.drop_all(bind=engine)
     print("Creating all tables...")
@@ -13,7 +12,6 @@ def seed_data():
     print("Opening database session...")
     db = SessionLocal()
 
-    # Users
     print("Seeding Users...")
     users = [
         models.User(
@@ -41,7 +39,6 @@ def seed_data():
     db.add_all(users)
     db.commit()
 
-    # Artists
     print("Seeding Artists...")
     artists = [
         models.Artist(
@@ -52,7 +49,7 @@ def seed_data():
             village="Làng Diềm",
             contributions="Truyền dạy Quan họ cho hơn 500 học trò, thu âm hơn 200 làn điệu cổ",
             performances=1500,
-            image_url="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
+            image_url="/img/artist1.jpg",
             generation=models.ArtistGeneration.truyen_thong
         ),
         models.Artist(
@@ -63,7 +60,7 @@ def seed_data():
             village="Lũng Giang",
             contributions="Nghiên cứu và phục dựng hơn 100 làn điệu Quan họ cổ",
             performances=1200,
-            image_url="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+            image_url="/img/artist2.jpg",
             generation=models.ArtistGeneration.truyen_thong
         ),
         models.Artist(
@@ -74,7 +71,7 @@ def seed_data():
             village="Ngang Nội",
             contributions="Sáng tác và cải biên hơn 50 bài Quan họ mới",
             performances=800,
-            image_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            image_url="/img/artist3.jpg",
             generation=models.ArtistGeneration.truyen_thong
         ),
         models.Artist(
@@ -85,14 +82,13 @@ def seed_data():
             village="Viêm Xá",
             contributions="Giải nhất Tiếng hát Quan họ tỉnh Bắc Ninh 2023",
             performances=200,
-            image_url="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+            image_url="/img/artist4.jpg",
             generation=models.ArtistGeneration.the_he_moi
         )
     ]
     db.add_all(artists)
     db.commit()
 
-    # Locations
     print("Seeding Locations...")
     locations = [
         models.Location(
@@ -100,11 +96,11 @@ def seed_data():
             name="Làng Diềm (Viêm Xá)",
             slug="lang-diem",
             description="Cái nôi của Quan họ, nơi thờ Thủy tổ Quan họ. Làng còn giữ được nhiều nét kiến trúc cổ và những canh hát đối đáp mượt mà.",
-            address="Xã Hòa Long, TP Bắc Ninh",
+            address="Thôn Viêm Xá, xã Hòa Long, thành phố Bắc Ninh",
             festival="Lễ hội đền Cùng - Giếng Ngọc",
-            image_url="https://images.unsplash.com/photo-1528164344705-47542687000d?w=400",
-            latitude=21.18,
-            longitude=106.07,
+            image_url="/img/loc1.jpg",
+            latitude=21.217222,
+            longitude=106.0125,
             type=models.LocationType.lang_quan_ho
         ),
         models.Location(
@@ -112,11 +108,11 @@ def seed_data():
             name="Thủy Đình - Đền Đô",
             slug="thuy-dinh-den-do",
             description="Nơi diễn ra các buổi biểu diễn Quan họ trên thuyền rồng vào các dịp lễ lớn, đặc biệt là hội Đền Đô.",
-            address="Phường Đình Bảng, Từ Sơn, Bắc Ninh",
+            address="Phường Đình Bảng, thành phố Từ Sơn, Bắc Ninh",
             festival="Lễ hội Đền Đô (15/3 âm lịch)",
-            image_url="https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?w=400",
-            latitude=21.10,
-            longitude=105.99,
+            image_url="/img/loc2.jpg",
+            latitude=21.104167,
+            longitude=105.955556,
             type=models.LocationType.dien_xuong
         ),
         models.Location(
@@ -124,18 +120,17 @@ def seed_data():
             name="Đồi Lim",
             slug="doi-lim",
             description="Trung tâm của Hội Lim nổi tiếng, nơi tụ hội của các liền anh, liền chị từ khắp 49 làng Quan họ gốc.",
-            address="Thị trấn Lim, Tiên Du, Bắc Ninh",
+            address="Núi Hồng Vân, thị trấn Lim, huyện Tiên Du, Bắc Ninh",
             festival="Hội Lim (13 tháng Giêng)",
-            image_url="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400",
-            latitude=21.12,
-            longitude=106.02,
+            image_url="/img/loc3.jpg",
+            latitude=21.134722,
+            longitude=106.027778,
             type=models.LocationType.le_hoi
         )
     ]
     db.add_all(locations)
     db.commit()
 
-    # Melodies
     print("Seeding Melodies...")
     melodies = [
         models.Melody(
@@ -143,7 +138,8 @@ def seed_data():
             name="Người Ơi Người Ở Đừng Về",
             slug="nguoi-oi-nguoi-o-dung-ve",
             lyrics="Người ơi người ở đừng về\nNgười về em vẫn khóc thầm\nĐôi bên bạn cũ ân cần\nBõ công em đợi bõ công em chờ...",
-            image_url="https://images.unsplash.com/photo-1518639192441-8fce0a366e2e?w=400",
+            image_url="https://img.youtube.com/vi/Nflsf3SytYc/hqdefault.jpg",
+            video_url="https://www.youtube.com/embed/Nflsf3SytYc",
             duration="4:32",
             artist_id=1,
             village="Diềm",
@@ -155,11 +151,12 @@ def seed_data():
             name="Bèo Dạt Mây Trôi",
             slug="beo-dat-may-troi",
             lyrics="Bèo dạt mây trôi chốn xa xôi\nAnh ơi em vẫn đợi chờ\nBến nước con đò sang ngang...",
-            image_url="https://images.unsplash.com/photo-1528164344705-47542687000d?w=400",
+            image_url="https://img.youtube.com/vi/LBxXWnloocM/hqdefault.jpg",
+            video_url="https://www.youtube.com/embed/LBxXWnloocM",
             duration="5:10",
             artist_id=2,
             village="Lũng Giang",
-            category=models.MelodyCategory.bien_tieu,
+            category=models.MelodyCategory.cai_bien,
             difficulty=models.Difficulty.de
         ),
         models.Melody(
@@ -167,7 +164,8 @@ def seed_data():
             name="Ngồi Tựa Mạn Thuyền",
             slug="ngoi-tua-man-thuyen",
             lyrics="Ngồi tựa mạn thuyền\nTrăng in đáy nước\nHương đưa gió thoảng\nCâu ca trao gửi tình thân...",
-            image_url="https://images.unsplash.com/photo-1550985543-f47f38aee65e?w=400",
+            image_url="https://img.youtube.com/vi/uW6k0g5iQ1I/hqdefault.jpg",
+            video_url="https://www.youtube.com/embed/uW6k0g5iQ1I",
             duration="3:45",
             artist_id=3,
             village="Ngang Nội",
@@ -179,81 +177,156 @@ def seed_data():
             name="Làng Quan Họ Quê Tôi",
             slug="lang-quan-ho-que-toi",
             lyrics="Làng Quan họ quê tôi tháng Giêng mùa hát hội...\nMái đình cong cong, dòng sông Cầu lơ thơ nước chảy...",
-            image_url="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400",
+            image_url="https://img.youtube.com/vi/TQW-ToDzO5U/hqdefault.jpg",
+            video_url="https://www.youtube.com/embed/TQW-ToDzO5U",
             duration="4:15",
             artist_id=4,
             village="Bắc Ninh",
             category=models.MelodyCategory.moi,
+            difficulty=models.Difficulty.de
+        ),
+        models.Melody(
+            id=5,
+            name="Hoa Thơm Bướm Lượn",
+            slug="hoa-thom-buom-luon",
+            lyrics="Hoa thơm bướm lượn ngẩn ngơ\nAnh đi qua đây mà ngỡ vào mơ\nĐôi bờ hoa nở tình thơ...",
+            image_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",
+            duration="3:48",
+            artist_id=1,
+            village="Hoài Thượng",
+            category=models.MelodyCategory.co,
+            difficulty=models.Difficulty.trung_binh
+        ),
+        models.Melody(
+            id=6,
+            name="Xe Chỉ Luồn Kim",
+            slug="xe-chi-luon-kim",
+            lyrics="Xe chỉ luồn kim khéo léo tay\nĐêm khuya vẫn ngồi thêu hoa...",
+            image_url="https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=800",
+            duration="4:05",
+            artist_id=3,
+            village="Ngang Nội",
+            category=models.MelodyCategory.cai_bien,
+            difficulty=models.Difficulty.de
+        ),
+        models.Melody(
+            id=7,
+            name="Tình Bằng Có Cái Trống Cơm",
+            slug="tinh-bang-co-cai-trong-com",
+            lyrics="Tình bằng có cái trống cơm\nKhen ai khéo vỗ ấy mà nên bông nên bông...",
+            image_url="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800",
+            duration="3:55",
+            artist_id=2,
+            village="Diềm",
+            category=models.MelodyCategory.co,
+            difficulty=models.Difficulty.de
+        ),
+        models.Melody(
+            id=8,
+            name="Cây Trúc Xinh",
+            slug="cay-truc-xinh",
+            lyrics="Cây trúc xinh tang tình tang\nCây trúc xinh đứng bên đình\nChị Hai xinh đứng một mình cũng xinh...",
+            image_url="https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800",
+            duration="4:20",
+            artist_id=3,
+            village="Y Na",
+            category=models.MelodyCategory.co,
             difficulty=models.Difficulty.de
         )
     ]
     db.add_all(melodies)
     db.commit()
 
-    # Articles
     print("Seeding Articles...")
     articles = [
         models.Article(
             id=1,
-            title="Nguồn gốc Lễ hội Hội Lim",
-            slug="nguon-goc-hoi-lim",
-            content="Hội Lim là một lễ hội lớn ở tỉnh Bắc Ninh, được coi là nét kết tinh độc đáo của vùng văn hoá Kinh Bắc. Hội Lim được tổ chức vào ngày 13 tháng Giêng âm lịch hàng năm tại huyện Tiên Du...",
-            category=models.ArticleCategory.tin_tuc,
+            title="Kỷ niệm 15 năm Quan họ Bắc Ninh là Di sản Văn hóa Phi vật thể UNESCO",
+            slug="ky-niem-15-nam-unesco",
+            excerpt="Nhìn lại chặng đường 15 năm bảo tồn và phát huy giá trị di sản dân ca Quan họ Bắc Ninh trên trường quốc tế.",
+            content="""<p>Vào ngày 30 tháng 9 năm 2009, tại phiên họp lần thứ tư của Ủy ban Liên Chính phủ Công ước UNESCO về bảo vệ di sản văn hóa phi vật thể, dân ca Quan họ Bắc Ninh đã chính thức được ghi danh vào Danh sách Di sản văn hóa phi vật thể đại diện của nhân loại.</p>
+<p>Kể từ đó đến nay, tỉnh Bắc Ninh đã không ngừng nỗ lực trong việc truyền dạy, quảng bá và bảo tồn loại hình nghệ thuật độc đáo này. Với hơn 49 làng Quan họ gốc và hàng trăm CLB trên khắp cả nước, dân ca Quan họ vẫn đang tràn đầy sức sống trong dòng chảy hiện đại.</p>
+<p>Các hoạt động kỷ niệm bao gồm các buổi biểu diễn nghệ thuật quy mô lớn, hội thảo quốc tế và vinh danh các nghệ nhân ưu tú đã có công truyền dạy di sản cho thế hệ trẻ.</p>""",
+            category=models.ArticleCategory.lich_su,
             status=models.ArticleStatus.published,
-            image_url="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=400",
+            image_url="/img/article1.jpg",
             author_id=1
         ),
         models.Article(
             id=2,
-            title="Cách mặc trang phục Quan họ đúng chuẩn",
-            slug="trang-phuc-quan-ho",
-            content="Trang phục của các liền anh, liền chị không chỉ là quần áo mà còn là hồn cốt của nghệ thuật Quan họ. Liền chị mặc áo tứ thân, nón quai thao, liền anh mặc áo dài đen, khăn xếp...",
+            title="Làng Diềm - Điểm đến linh thiêng của những câu hát Quan họ cổ",
+            slug="lang-diem-chiec-noi-quan-ho",
+            excerpt="Khám phá ngôi làng cổ nhất - nơi thờ thủy tổ của dân ca Quan họ Bắc Ninh.",
+            content="""<p>Làng Diềm (xã Hòa Long, TP Bắc Ninh) được coi là thủy tổ của dân ca Quan họ. Đây là nơi duy nhất có đền thờ Đức Vua Bà - người đã có công sáng tạo và truyền dạy những câu hát giao duyên cho dân làng.</p>
+<p>Đến với làng Diềm, du khách không chỉ được thưởng thức những làn điệu cổ 'nguyên bản' mà còn được tham quan những kiến trúc đình chùa cổ kính, nơi diễn ra các canh hát thâu đêm suốt sáng của các liền anh, liền chị.</p>
+<p>Hiện nay, làng Diềm vẫn duy trì lối hát đối đáp mộc mạc, không cần nhạc đệm, giữ đúng phong thái cốt cách của người Quan họ xưa.</p>""",
+            category=models.ArticleCategory.tin_tuc,
+            status=models.ArticleStatus.published,
+            image_url="https://img.youtube.com/vi/Nflsf3SytYc/hqdefault.jpg",
+            author_id=1
+        ),
+        models.Article(
+            id=3,
+            title="Hướng dẫn cách mặc trang phục Quan họ đúng chuẩn Kinh Bắc",
+            slug="huong-dan-trang-phuc-quan-ho",
+            excerpt="Tìm hiểu ý nghĩa của áo mớ ba mớ bảy, nón quai thao và khăn mỏ quạ trong văn hóa Quan họ.",
+            content="""<p>Trang phục Quan họ không chỉ là trang phục biểu diễn mà còn chứa đựng triết lý nhân sinh của người Kinh Bắc. Với nữ giới, quan trọng nhất là bộ áo mớ ba mớ bảy, tượng trưng cho sự dịu dàng và kín đáo.</p>
+<p>Bộ trang phục bao gồm: Áo trong cùng là áo yếm, tiếp đến là các lớp áo lụa nhiều màu tầng tầng lớp lớp. Chiếc nón quai thao che nghiêng gương mặt, cùng chiếc khăn mỏ quạ thắt gọn gàng tạo nên nét duyên dáng đặc trưng.</p>
+<p>Với nam giới, trang phục gồm áo dài đen, quần trắng, khăn xếp và chiếc ô đen, thể hiện sự lịch lãm, trọng nghĩa trọng tình của các liền anh.</p>""",
             category=models.ArticleCategory.nghe_thuat,
             status=models.ArticleStatus.published,
-            image_url="https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=400",
+            image_url="https://images.unsplash.com/photo-1528164344705-47542687000d?w=800",
             author_id=1
         )
     ]
     db.add_all(articles)
     db.commit()
 
-    # Events
     print("Seeding Events...")
     events = [
         models.Event(
             id=1,
-            title="Đêm nhạc Quan họ Di sản",
-            slug="dem-nhac-quan-ho-di-san",
-            description="Chương trình biểu diễn các làn điệu Quan họ cổ do các nghệ sĩ nhân dân thực hiện.",
+            title="Hát Quan họ trên thuyền Rồng - Hồ Nguyên Phi Ỷ Lan",
+            slug="hat-quan-ho-thuyen-rong-2026",
+            description="Chương trình biểu diễn định kỳ hàng tuần. Du khách sẽ được hòa mình vào không gian sông nước Kinh Bắc, nghe những lời ca đối đáp mượt mà, đằm thắm của các nghệ nhân tên tuổi trên những chiếc thuyền rồng lộng lẫy.",
             start_date=datetime.date(2026, 4, 15),
             location_id=2,
             status=models.EventStatus.upcoming,
-            image_url="https://images.unsplash.com/photo-1514525253344-a812dd969dff?w=400"
+            image_url="https://img.youtube.com/vi/LBxXWnloocM/hqdefault.jpg"
         ),
         models.Event(
             id=2,
-            title="Khóa học hát Quan họ miễn phí cho thanh thiếu niên",
-            slug="khoa-hoc-quan-ho-tre",
-            description="Tìm hiểu và học hát những câu Quan họ cơ bản cùng các nghệ nhân.",
-            start_date=datetime.date(2026, 6, 1),
+            title="Đại lễ hội Hội Lim - Tiên Du 2026",
+            slug="le-hoi-hoi-lim-2026",
+            description="Lễ hội lớn nhất vùng Kinh Bắc với các hoạt động: Rước sắc, hát đối đáp tại lán trại, thi các trò chơi dân gian (đập niêu, vật, chọi gà) và đặc biệt là canh hát thâu đêm tại nhà các nghệ nhân Quan họ.",
+            start_date=datetime.date(2026, 2, 28),
             location_id=1,
             status=models.EventStatus.upcoming,
-            image_url="https://images.unsplash.com/photo-1524178232363-1fb280714572?w=400"
+            image_url="https://img.youtube.com/vi/uW6k0g5iQ1I/hqdefault.jpg"
+        ),
+        models.Event(
+            id=3,
+            title="Khóa đào tạo Nghệ nhân Quan họ nhí hè 2026",
+            slug="dao-tao-quan-ho-nhi",
+            description="Lớp học miễn phí dành cho học sinh từ 8-15 tuổi yêu thích quan họ. Các em sẽ được học cách luyến láy, nhả chữ và phong thái biểu diễn từ những nghệ nhân ưu tú nhất của 49 làng quan họ gốc.",
+            start_date=datetime.date(2026, 6, 1),
+            location_id=3,
+            status=models.EventStatus.upcoming,
+            image_url="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800"
         )
     ]
     db.add_all(events)
     db.commit()
 
-    # Media
     print("Seeding Media...")
     media_items = [
         models.Media(
-            url="https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+            url="/img/artist1.jpg",
             type=models.MediaType.image,
             artist_id=1
         ),
         models.Media(
-            url="https://images.unsplash.com/photo-1528164344705-47542687000d",
+            url="/img/loc1.jpg",
             type=models.MediaType.image,
             location_id=1
         )
@@ -261,7 +334,6 @@ def seed_data():
     db.add_all(media_items)
     db.commit()
 
-    # Comments
     print("Seeding Comments...")
     comments = [
         models.Comment(

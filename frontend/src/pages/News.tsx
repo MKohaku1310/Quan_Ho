@@ -11,20 +11,41 @@ import { useTranslation } from "react-i18next";
 interface NewsItem {
   id: number;
   title: string;
-  slug: string;
-  excerpt: string;
-  category: string;
-  created_at: string;
-  image_url: string;
-  type: 'article' | 'event';
+  slug?: string;
+  excerpt?: string;
+  description?: string;
+  category?: string;
+  created_at?: string;
+  start_date?: string;
+  image_url?: string | null;
+  type: "article" | "event";
 }
 
 export default function News() {
   const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState(t("common.all"));
 
-  // Lấy dữ liệu bài báo từ API
-  const { data: articles = [] } = useQuery<any[]>({
+  type ArticleApi = {
+    id: number;
+    title: string;
+    slug: string;
+    excerpt?: string;
+    category: string;
+    created_at: string;
+    image_url?: string | null;
+  };
+
+  type EventApi = {
+    id: number;
+    title: string;
+    slug: string;
+    description?: string;
+    start_date: string;
+    created_at?: string;
+    image_url?: string | null;
+  };
+
+  const { data: articles = [] } = useQuery<ArticleApi[]>({
     queryKey: ["articles-list"],
     queryFn: async () => {
       const resp = await fetch("/api/articles/");
@@ -32,8 +53,7 @@ export default function News() {
     }
   });
 
-  // Lấy dữ liệu sự kiện từ API
-  const { data: events = [] } = useQuery<any[]>({
+  const { data: events = [] } = useQuery<EventApi[]>({
     queryKey: ["events-list"],
     queryFn: async () => {
       const resp = await fetch("/api/events/");
@@ -41,16 +61,14 @@ export default function News() {
     }
   });
 
-  // Kết hợp và sắp xếp dữ liệu
   const allItems = useMemo(() => {
     const combined = [
-      ...articles.map(a => ({ ...a, type: 'article' })),
-      ...events.map(e => ({ ...e, type: 'event', category: 'event' }))
+      ...articles.map((a) => ({ ...a, type: "article" as const })),
+      ...events.map((e) => ({ ...e, type: "event" as const, category: "event" })),
     ];
     return combined.sort((a, b) => new Date(b.created_at || b.start_date).getTime() - new Date(a.created_at || a.start_date).getTime());
   }, [articles, events]);
 
-  // Bộ lọc dữ liệu theo tab
   const filteredItems = useMemo(() => {
     if (activeTab === t("common.all")) return allItems;
     if (activeTab === t("news_page.news")) return allItems.filter(i => i.type === 'article' && (i.category === 'tin-tuc' || i.category === 'nghe-thuat' || i.category === 'lich-su'));
@@ -72,7 +90,6 @@ export default function News() {
             translate={false}
           />
 
-          {/* Danh mục tab */}
           <div className="mb-8 flex gap-2">
             {tabs.map((tab) => (
               <button
@@ -87,7 +104,6 @@ export default function News() {
             ))}
           </div>
 
-          {/* Danh sách tin tức và sự kiện */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredItems.map((item, i) => (
               <motion.article
@@ -98,7 +114,7 @@ export default function News() {
                 transition={{ delay: i * 0.1 }}
                 className="group overflow-hidden rounded-lg border border-border bg-card shadow-card transition-all hover:shadow-elevated"
               >
-                <Link to={`/tin-tuc/${item.id}`} className="block">
+                <Link to={item.type === 'article' ? `/tin-tuc/${item.id}` : `/su-kien/${item.id}`} className="block">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img
                       src={item.image_url}

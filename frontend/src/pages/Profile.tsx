@@ -17,16 +17,13 @@ export default function Profile() {
   const [newUsername, setNewUsername] = useState("");
   const [activeTab, setActiveTab] = useState<"favorites" | "comments" | "activity">("favorites");
 
-  // Chuyển hướng nếu chưa đăng nhập
   if (!isAuthenticated || !user) {
     return <Navigate to="/" replace />;
   }
 
-  // Lọc bài hát yêu thích và bình luận của người dùng
   const favoriteSongs = songs.filter((s) => favorites.includes(s.id));
   const userComments = comments.filter((c) => c.userId === user.id);
 
-  // Lưu tên người dùng mới
   const handleSaveUsername = () => {
     const trimmed = newUsername.trim();
     if (trimmed.length >= 3 && trimmed.length <= 30) {
@@ -45,7 +42,6 @@ export default function Profile() {
       <Navbar />
       <section className="py-16">
         <div className="container mx-auto max-w-4xl px-4">
-          {/* Header hồ sơ người dùng */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -105,7 +101,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Thống kê nhanh */}
             <div className="grid grid-cols-2 border-b border-border">
               <div className="border-r border-border p-4 text-center">
                 <p className="font-display text-2xl font-bold text-primary">{favoriteSongs.length}</p>
@@ -118,7 +113,6 @@ export default function Profile() {
             </div>
           </motion.div>
 
-          {/* Các tab nội dung */}
           <div className="mt-8 flex gap-2 border-b border-border">
             {tabs.map((tab) => (
               <button
@@ -137,7 +131,6 @@ export default function Profile() {
             ))}
           </div>
 
-          {/* Nội dung chi tiết của tab */}
           <div className="mt-6">
             {activeTab === "favorites" && (
               favoriteSongs.length > 0 ? (

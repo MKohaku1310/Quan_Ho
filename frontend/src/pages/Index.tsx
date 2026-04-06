@@ -12,9 +12,27 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+type ArticleApi = {
+  id: number;
+  title: string;
+  image_url?: string | null;
+  created_at?: string;
+};
+
+type EventApi = {
+  id: number;
+  title: string;
+  image_url?: string | null;
+  start_date: string;
+  created_at?: string;
+};
+
+type FeedItem = (ArticleApi & { type: "article" }) | (EventApi & { type: "event" });
+
 const Index = () => {
   const { t } = useTranslation();
-  const { data: articles = [] } = useQuery<any[]>({
+
+  const { data: articles = [] } = useQuery<ArticleApi[]>({
     queryKey: ["articles-list-home"],
     queryFn: async () => {
       const resp = await fetch("/api/articles/");
@@ -22,7 +40,7 @@ const Index = () => {
     }
   });
 
-  const { data: events = [] } = useQuery<any[]>({
+  const { data: events = [] } = useQuery<EventApi[]>({
     queryKey: ["events-list-home"],
     queryFn: async () => {
       const resp = await fetch("/api/events/");
@@ -30,12 +48,16 @@ const Index = () => {
     }
   });
 
-  const allItems = useMemo(() => {
+  const allItems = useMemo((): FeedItem[] => {
     const combined = [
-      ...articles.map(a => ({ ...a, type: 'article' })),
-      ...events.map(e => ({ ...e, type: 'event' }))
+      ...articles.map((a) => ({ ...a, type: "article" as const })),
+      ...events.map((e) => ({ ...e, type: "event" as const })),
     ];
-    return combined.sort((a, b) => new Date(b.created_at || b.start_date).getTime() - new Date(a.created_at || a.start_date).getTime());
+    return combined.sort(
+      (a, b) =>
+        new Date(b.created_at || b.start_date).getTime() -
+        new Date(a.created_at || a.start_date).getTime(),
+    );
   }, [articles, events]);
 
   return (
@@ -43,7 +65,6 @@ const Index = () => {
       <Navbar />
       <HeroBanner />
 
-      {/* Featured Songs */}
       <section className="py-16">
         <div className="container mx-auto px-4">
           <SectionTitle
@@ -66,7 +87,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Introduction strip */}
       <section className="bg-card py-16">
         <div className="container mx-auto px-4">
           <div className="grid items-center gap-10 md:grid-cols-2">
@@ -115,7 +135,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured Artists */}
       <section className="py-16">
         <div className="container mx-auto px-4">
           <SectionTitle
@@ -130,7 +149,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* News */}
       <section className="bg-card py-16">
         <div className="container mx-auto px-4">
           <SectionTitle title="sections.news_events" subtitle="sections.news_events_sub" />

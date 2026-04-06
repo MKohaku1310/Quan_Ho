@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SectionTitle from "@/components/SectionTitle";
@@ -8,15 +8,17 @@ import { MapPin, Calendar, Users, Map as MapIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 
-// Định nghĩa kiểu dữ liệu từ Backend
-interface BackendVillage extends Omit<Village, 'imageUrl'> {
+
+interface BackendVillage extends Omit<Village, 'imageUrl' | 'lat' | 'lng'> {
   image_url: string;
+  latitude: number;
+  longitude: number;
 }
 
 export default function Villages() {
   const { t } = useTranslation();
   
-  // Lấy dữ liệu danh sách làng từ API
+
   const { data: rawVillages = [], isLoading } = useQuery<BackendVillage[]>({
     queryKey: ["locations-list"],
     queryFn: async () => {
@@ -27,14 +29,27 @@ export default function Villages() {
     }
   });
 
-  // Chuyển đổi dữ liệu để phù hợp với giao diện (mapping snake_case sang camelCase)
+
   const villages = useMemo(() => {
     return rawVillages.map((v) => ({
       ...v,
       imageUrl: v.image_url,
-      artists: [], // Placeholder nếu chưa được join
+      lat: v.latitude,
+      lng: v.longitude,
+      artists: [],
     })) as Village[];
   }, [rawVillages]);
+
+  const [selectedVillageId, setSelectedVillageId] = useState<number | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  const selectedVillage = useMemo(() => {
+    return villages.find(v => v.id === selectedVillageId) || null;
+  }, [villages, selectedVillageId]);
+
+  const mapQuery = selectedVillage 
+    ? encodeURIComponent(`${selectedVillage.name}, ${selectedVillage.address}`) 
+    : encodeURIComponent("Bắc Ninh, Việt Nam");
 
   return (
     <div className="min-h-screen bg-background">
@@ -47,25 +62,61 @@ export default function Villages() {
             translate={false}
           />
 
-          {/* Bản đồ (Placeholder) */}
-          <div className="mb-10 overflow-hidden rounded-lg border border-border bg-card shadow-card">
-            <div className="flex items-center justify-center bg-muted py-20">
-              <div className="text-center">
-                <MapPin className="mx-auto h-10 w-10 text-primary" />
-                <p className="mt-2 text-muted-foreground">{t("villages_page.map_title")}</p>
-                <p className="text-xs text-muted-foreground">({t("villages_page.map_desc")})</p>
-              </div>
+          <div ref={mapRef} className="mb-10">
+            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-card h-[400px]">
+              <iframe
+                title="Bản đồ Quan họ Bắc Ninh"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                src={`https://maps.google.com/maps?q=${mapQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+              ></iframe>
             </div>
+
+            {selectedVillage && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6 rounded-lg border-2 border-primary/50 bg-primary/5 p-6 shadow-elevated"
+              >
+                <div className="flex flex-col gap-6 md:flex-row">
+                  <div className="md:w-1/3">
+                    <img
+                      src={selectedVillage.imageUrl}
+                      alt={selectedVillage.name}
+                      className="h-48 w-full rounded-md object-cover shadow-sm"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-display text-2xl font-bold text-primary mb-3">
+                      {selectedVillage.name}
+                    </h3>
+                    <div className="mb-4 flex items-start gap-2 text-sm text-primary/80">
+                      <MapIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{selectedVillage.address}</span>
+                    </div>
+                    <p className="text-foreground leading-relaxed">
+                      {selectedVillage.description}
+                    </p>
+                    {selectedVillage.festival && (
+                      <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4 text-accent" /> Lễ hội: {selectedVillage.festival}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
 
-          {/* Trạng thái tải dữ liệu */}
           {isLoading && (
             <div className="flex justify-center py-20">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
             </div>
           )}
 
-          {/* Danh sách làng */}
           <div className="grid gap-6 md:grid-cols-2">
             {villages.map((village, i) => (
               <motion.div
@@ -74,7 +125,14 @@ export default function Villages() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="group overflow-hidden rounded-lg border border-border bg-card shadow-card transition-all hover:shadow-elevated"
+                onClick={() => {
+                  setSelectedVillageId(village.id);
+                  const y = mapRef.current ? mapRef.current.getBoundingClientRect().top + window.scrollY - 100 : 0;
+                  window.scrollTo({ top: y, behavior: 'smooth' });
+                }}
+                className={`group cursor-pointer overflow-hidden rounded-lg border bg-card shadow-card transition-all hover:shadow-elevated hover:border-primary/50 ${
+                  selectedVillageId === village.id ? "border-primary ring-1 ring-primary" : "border-border"
+                }`}
               >
                 <div className="relative aspect-[2/1] overflow-hidden">
                   <img
@@ -92,7 +150,9 @@ export default function Villages() {
                     <MapIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                     <span>{village.address || t("villages_page.updating_address")}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{village.description}</p>
+                  <p className={`text-sm text-muted-foreground ${selectedVillageId === village.id ? "" : "line-clamp-2"}`}>
+                    {village.description}
+                  </p>
                   <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3.5 w-3.5 text-accent" /> {village.festival}

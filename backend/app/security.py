@@ -2,9 +2,9 @@ from jose import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Optional
+import os
 
-# ================= CẤU HÌNH BẢO MẬT =================
-SECRET_KEY = "your-super-secret-key"
+SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

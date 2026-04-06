@@ -44,7 +44,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Mock user database for demo
 const MOCK_USERS: (User & { password: string })[] = [
   {
     id: 1,
@@ -98,7 +97,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [comments, setComments] = useState<Comment[]>(MOCK_COMMENTS);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Restore session on mount
   useEffect(() => {
     const token = localStorage.getItem("jwt_token");
     const savedUser = localStorage.getItem("user_data");
@@ -115,13 +113,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         setFavorites(JSON.parse(savedFavorites));
       } catch {
-        // ignore
       }
     }
     setIsLoading(false);
   }, []);
 
-  // Persist favorites
   useEffect(() => {
     if (user) {
       localStorage.setItem("favorites", JSON.stringify(favorites));
@@ -129,7 +125,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [favorites, user]);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call: POST /auth/login
     await new Promise((r) => setTimeout(r, 800));
     const found = MOCK_USERS.find((u) => u.email === email && u.password === password);
     if (!found) {
@@ -146,7 +141,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (username: string, email: string, password: string): Promise<boolean> => {
-    // Simulate API call: POST /auth/register
     await new Promise((r) => setTimeout(r, 800));
     if (MOCK_USERS.some((u) => u.email === email)) {
       toast.error("Email đã được sử dụng");

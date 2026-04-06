@@ -6,7 +6,6 @@ from app.db import Base
 from sqlalchemy.dialects.mysql import LONGTEXT, YEAR
 from enum import Enum as PyEnum
 
-# ================= ENUMS - TẤT CẢ lowercase =================
 class UserRole(str, PyEnum):
     admin = "admin"
     user = "user"
@@ -25,7 +24,7 @@ class ArticleCategory(str, PyEnum):
 class MelodyCategory(str, PyEnum):
     co = "co"
     moi = "moi"
-    bien_tieu = "bien-tieu"
+    cai_bien = "cai-bien"
 
 class Difficulty(str, PyEnum):
     de = "de"
@@ -51,7 +50,6 @@ class ArticleStatus(str, PyEnum):
     draft = "draft"
     published = "published"
 
-# ================= NGƯỜI DÙNG =================
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -62,7 +60,6 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
-# ================= BÀI VIẾT =================
 class Article(Base):
     __tablename__ = "articles"
     id = Column(Integer, primary_key=True, index=True)
@@ -79,7 +76,6 @@ class Article(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     author = relationship("User")
 
-# ================= LÀN ĐIỆU =================
 class Melody(Base):
     __tablename__ = "melodies"
     id = Column(Integer, primary_key=True, index=True)
@@ -99,7 +95,6 @@ class Melody(Base):
     created_at = Column(DateTime, server_default=func.now())
     artist = relationship("Artist")
 
-# ================= NGHỆ NHÂN =================
 class Artist(Base):
     __tablename__ = "artists"
     id = Column(Integer, primary_key=True, index=True)
@@ -117,7 +112,6 @@ class Artist(Base):
     generation = Column(Enum(ArtistGeneration), default=ArtistGeneration.truyen_thong)
     created_at = Column(DateTime, server_default=func.now())
 
-# ================= ĐỊA ĐIỂM =================
 class Location(Base):
     __tablename__ = "locations"
     id = Column(Integer, primary_key=True, index=True)
@@ -132,7 +126,6 @@ class Location(Base):
     type = Column(Enum(LocationType), default=LocationType.lang_quan_ho, index=True)
     created_at = Column(DateTime, server_default=func.now())
 
-# ================= SỰ KIỆN =================
 class Event(Base):
     __tablename__ = "events"
     id = Column(Integer, primary_key=True, index=True)
@@ -148,7 +141,6 @@ class Event(Base):
     created_at = Column(DateTime, server_default=func.now())
     location = relationship("Location")
 
-# ================= PHƯƠNG TIỆN =================
 class Media(Base):
     __tablename__ = "media"
     id = Column(Integer, primary_key=True, index=True)
@@ -164,7 +156,6 @@ class Media(Base):
     upload_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, server_default=func.now())
 
-# ================= BÌNH LUẬN =================
 class Comment(Base):
     __tablename__ = "comments"
     id = Column(Integer, primary_key=True, index=True)

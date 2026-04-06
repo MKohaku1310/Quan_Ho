@@ -14,9 +14,13 @@ import Artists from "./pages/Artists";
 import ArtistDetail from "./pages/ArtistDetail";
 import Villages from "./pages/Villages";
 import News from "./pages/News";
+import NewsDetail from "./pages/NewsDetail";
+import EventDetail from "./pages/EventDetail";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import AddArtist from "./pages/AddArtist";
+import AddSong from "./pages/AddSong";
 
 const queryClient = new QueryClient();
 
@@ -38,8 +42,12 @@ const App = () => (
             <Route path="/nghe-nhan/:id" element={<ArtistDetail />} />
             <Route path="/lang-quan-ho" element={<Villages />} />
             <Route path="/tin-tuc" element={<News />} />
+            <Route path="/tin-tuc/:id" element={<NewsDetail />} />
+            <Route path="/su-kien/:id" element={<EventDetail />} />
             <Route path="/dang-ky" element={<Register />} />
             <Route path="/ho-so" element={<Profile />} />
+            <Route path="/them-nghe-nhan" element={<AddArtist />} />
+            <Route path="/them-bai-hat" element={<AddSong />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
