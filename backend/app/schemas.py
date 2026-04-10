@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 
 class UserRole(str, Enum):
@@ -165,8 +165,8 @@ class EventBase(BaseModel):
     title: str
     slug: Optional[str] = None
     description: Optional[str] = None
-    start_date: datetime
-    end_date: Optional[datetime] = None
+    start_date: date
+    end_date: Optional[date] = None
     location_id: Optional[int] = None
     status: EventStatus = EventStatus.upcoming
     max_participants: int = 100

@@ -65,7 +65,7 @@ class Article(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(500), nullable=False)
     slug = Column(String(500), unique=True, index=True)
-    content = Column(LONGTEXT)
+    content = Column(Text) # Changed from LONGTEXT for SQLite compatibility
     excerpt = Column(Text)
     image_url = Column(String(500))
     category = Column(Enum(ArticleCategory), default=ArticleCategory.tin_tuc)
@@ -100,8 +100,8 @@ class Artist(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     slug = Column(String(255), unique=True, index=True)
-    birth_year = Column(YEAR)
-    death_year = Column(YEAR, nullable=True)
+    birth_year = Column(Integer) # Changed from YEAR
+    death_year = Column(Integer, nullable=True) # Changed from YEAR
     description = Column(Text)
     biography = Column(Text)
     contributions = Column(Text)
