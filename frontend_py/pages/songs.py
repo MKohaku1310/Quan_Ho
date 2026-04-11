@@ -77,31 +77,23 @@ async def song_detail_page(id: int):
                 
                 with ui.column().classes('w-full items-center mb-8'):
                     with ui.card().classes('overflow-hidden rounded-xl border border-border bg-card shadow-elevated p-0 w-full max-w-[850px]'):
-                        if embed_url:
-                            final_src = embed_url + ("&autoplay=1" if "?" in embed_url else "?autoplay=1")
-                            ui.html(f'''
-                                <style>
-                                    .vid-chk:checked ~ .vid-player {{ display: block !important; }}
-                                    .vid-chk:checked ~ .vid-btn-overlay {{ display: none !important; }}
-                                </style>
-                                <div style="position:relative; width:100%; height:0; padding-bottom:56.25%; background:#000; border-radius:12px; overflow:hidden;">
-                                    <input type="checkbox" id="vid_check_{id}" class="vid-chk" style="display:none;">
-                                    <iframe class="vid-player" src="{final_src}" 
-                                            style="position:absolute; inset:0; width:100%; height:100%; border:none; display:none; z-index:1;" 
-                                            allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                                    <label for="vid_check_{id}" class="vid-btn-overlay" 
-                                           style="position:absolute; inset:0; z-index:2; cursor:pointer; background:url('{fallback_img}') center center / cover no-repeat; display:grid; place-items:center;">
-                                        <div style="width:100%; height:100%; display:grid; place-items:center; background:rgba(0,0,0,0.4);">
-                                            <div style="display:flex; height:84px; width:84px; align-items:center; justify-content:center; border-radius:100px; background:#b4783c; color:white; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-                                                <svg style="width:48px; height:48px;" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            ''').classes('w-full')
-                        else:
-                            with ui.element('div').classes('relative w-full aspect-video bg-black/30 flex items-center justify-center'):
-                                ui.icon('music_note', size='64px').classes('text-white opacity-60')
+                        with ui.element('div').classes('relative w-full aspect-video bg-black') as video_container:
+                            if embed_url:
+                                final_src = embed_url + ("&autoplay=1" if "?" in embed_url else "?autoplay=1")
+                                
+                                def play_video():
+                                    video_container.clear()
+                                    with video_container:
+                                        ui.html(f'<iframe src="{final_src}" allow="autoplay; encrypted-media" allowfullscreen style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>').classes('w-full h-full')
+
+                                with ui.element('div').classes('absolute inset-0 cursor-pointer group').on('click', play_video):
+                                    ui.image(fallback_img).classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-105')
+                                    with ui.element('div').classes('absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/30 transition-colors'):
+                                        with ui.element('div').classes('flex h-[84px] w-[84px] items-center justify-center rounded-full bg-[#b4783c] text-white shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-transform group-hover:scale-110'):
+                                            ui.icon('play_arrow', size='48px')
+                            else:
+                                with ui.element('div').classes('absolute inset-0 flex items-center justify-center bg-black/30'):
+                                    ui.icon('music_note', size='64px').classes('text-white opacity-60')
 
                     with ui.column().classes('p-6 md:p-8 w-full'):
                         with ui.row().classes('items-start justify-between gap-4 w-full'):
