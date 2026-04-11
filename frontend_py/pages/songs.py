@@ -77,23 +77,33 @@ async def song_detail_page(id: int):
                 
                 with ui.column().classes('w-full items-center mb-8'):
                     with ui.card().classes('overflow-hidden rounded-xl border border-border bg-card shadow-elevated p-0 w-full max-w-[850px]'):
-                        with ui.element('div').classes('relative w-full aspect-video bg-black') as video_container:
-                            if embed_url:
-                                final_src = embed_url + ("&autoplay=1" if "?" in embed_url else "?autoplay=1")
-                                
-                                def play_video():
-                                    video_container.clear()
-                                    with video_container:
-                                        ui.html(f'<iframe src="{final_src}" allow="autoplay; encrypted-media" allowfullscreen style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>').classes('w-full h-full')
-
-                                with ui.element('div').classes('absolute inset-0 cursor-pointer group').on('click', play_video):
-                                    ui.image(fallback_img).classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-105')
-                                    with ui.element('div').classes('absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/30 transition-colors'):
-                                        with ui.element('div').classes('flex h-[84px] w-[84px] items-center justify-center rounded-full bg-[#b4783c] text-white shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-transform group-hover:scale-110'):
-                                            ui.icon('play_arrow', size='48px')
-                            else:
-                                with ui.element('div').classes('absolute inset-0 flex items-center justify-center bg-black/30'):
-                                    ui.icon('music_note', size='64px').classes('text-white opacity-60')
+                        video_url_raw = song_data.get('video_url', '')
+                        if video_url_raw:
+                            # Show thumbnail with Play button that opens YouTube in new tab
+                            with ui.element('div').classes('relative w-full aspect-video cursor-pointer group').on(
+                                'click', lambda: ui.run_javascript(f'window.open("{video_url_raw}", "_blank")')
+                            ):
+                                ui.image(fallback_img).classes(
+                                    'w-full h-full object-cover transition-transform duration-700 group-hover:scale-105'
+                                )
+                                # Dark overlay
+                                with ui.element('div').classes(
+                                    'absolute inset-0 flex flex-col items-center justify-center gap-4 '
+                                    'bg-black/40 group-hover:bg-black/30 transition-colors'
+                                ):
+                                    # Play button
+                                    with ui.element('div').classes(
+                                        'flex h-20 w-20 items-center justify-center rounded-full '
+                                        'bg-[#b4783c] text-white shadow-[0_10px_30px_rgba(0,0,0,0.5)] '
+                                        'transition-transform group-hover:scale-110'
+                                    ):
+                                        ui.icon('play_arrow', size='48px')
+                                    ui.label('Nhấn để xem trên YouTube').classes(
+                                        'text-white/80 text-sm font-medium tracking-wide'
+                                    )
+                        else:
+                            with ui.element('div').classes('w-full aspect-video bg-black/30 flex items-center justify-center'):
+                                ui.icon('music_note', size='64px').classes('text-white opacity-60')
 
                     with ui.column().classes('p-6 md:p-8 w-full'):
                         with ui.row().classes('items-start justify-between gap-4 w-full'):

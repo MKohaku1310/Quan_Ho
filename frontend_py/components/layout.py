@@ -199,21 +199,21 @@ def timeline_item(year: str, text: str, index: int = 0, total: int = 4):
     """
     is_even = index % 2 == 0
 
-    with ui.row().classes('relative flex flex-row items-center w-full my-8'):
+    with ui.element('div').classes('relative flex flex-row flex-nowrap items-center w-full my-8'):
 
         # ── Cột TRÁI (45%) ──────────────────────────────────────────────────
-        with ui.element('div').classes('w-[45%] flex flex-col items-end pr-8 md:pr-12'):
+        with ui.element('div').classes('w-[45%] flex flex-col items-end pr-4 md:pr-12'):
             if is_even:
                 _timeline_card(year, text)
             else:
                 _timeline_ornament(flip=False)
 
         # ── Cột GIỮA (10%) — nút đỏ ─────────────────────────────────────────
-        with ui.element('div').classes('w-[10%] flex justify-center items-center'):
+        with ui.element('div').classes('w-[10%] flex justify-center items-center shrink-0'):
             _timeline_dot()
 
         # ── Cột PHẢI (45%) ──────────────────────────────────────────────────
-        with ui.element('div').classes('w-[45%] flex flex-col items-start pl-8 md:pl-12'):
+        with ui.element('div').classes('w-[45%] flex flex-col items-start pl-4 md:pl-12'):
             if not is_even:
                 _timeline_card(year, text)
             else:

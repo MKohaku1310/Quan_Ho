@@ -8,10 +8,10 @@ def introduction_page():
 
         # ── Hero Section ────────────────────────────────────────────────────
         with ui.element('section').classes(
-            'relative min-h-[50vh] flex items-center justify-center overflow-hidden w-full'
+            'relative min-h-[70vh] md:min-h-[85vh] flex items-center justify-center overflow-hidden w-full'
         ).style('padding-top: 56px;'):
-            ui.image('/static/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover')
-            ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-80')
+            ui.image('/static/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-center')
+            ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-70')
             with ui.column().classes('relative z-10 text-center items-center px-4 gap-4'):
                 ui.label('LỊCH SỬ VÀ GIÁ TRỊ VĂN HÓA').classes(
                     'text-[10px] font-bold tracking-[0.4em] text-gold-light uppercase animate-fade-in'

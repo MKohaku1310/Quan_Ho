@@ -12,7 +12,7 @@ def get_embed_url(video_url: str) -> Optional[str]:
     
     if match:
         video_id = match.group(1)
-        return f"https://www.youtube.com/embed/{video_id}?rel=0"
+        return f"https://www.youtube-nocookie.com/embed/{video_id}?rel=0"
     
     # Return as-is if it doesn't match YouTube patterns
     return video_url
