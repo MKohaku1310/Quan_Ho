@@ -4,11 +4,29 @@ from typing import List, Optional
 from app import crud, schemas
 from app.db import get_db
 
+from app.router.auth import get_current_active_admin
+
 router = APIRouter(prefix="/melodies", tags=["melodies"])
 
 @router.post("/", response_model=schemas.Melody)
-def create_melody(melody: schemas.MelodyCreate, db: Session = Depends(get_db)):
+def create_melody(
+    melody: schemas.MelodyCreate, 
+    db: Session = Depends(get_db),
+    admin: schemas.User = Depends(get_current_active_admin)
+):
     return crud.create_melody(db=db, melody=melody)
+
+@router.put("/{melody_id}", response_model=schemas.Melody)
+def update_melody(
+    melody_id: int, 
+    melody_update: dict, 
+    db: Session = Depends(get_db),
+    admin: schemas.User = Depends(get_current_active_admin)
+):
+    db_melody = crud.update_melody(db, melody_id=melody_id, melody_update=melody_update)
+    if not db_melody:
+        raise HTTPException(status_code=404, detail="Melody not found")
+    return db_melody
 
 @router.get("/", response_model=List[schemas.Melody])
 def read_melodies(

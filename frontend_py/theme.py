@@ -59,17 +59,35 @@ def apply_theme():
                         },
                         keyframes: {
                             "fade-in-up": {
-                                from: { opacity: "0", transform: "translateY(20px)" },
+                                from: { opacity: "0", transform: "translateY(30px)" },
                                 to:   { opacity: "1", transform: "translateY(0)" },
+                            },
+                            "fade-in-left": {
+                                from: { opacity: "0", transform: "translateX(-40px)" },
+                                to:   { opacity: "1", transform: "translateX(0)" },
+                            },
+                            "fade-in-right": {
+                                from: { opacity: "0", transform: "translateX(40px)" },
+                                to:   { opacity: "1", transform: "translateX(0)" },
                             },
                             float: {
                                 "0%, 100%": { transform: "translateY(0)" },
-                                "50%":      { transform: "translateY(-8px)" },
+                                "50%":      { transform: "translateY(-12px)" },
                             },
+                            shimmer: {
+                                "100%": { transform: "translateX(100%)" },
+                            },
+                            reveal: {
+                                "0%": { "clip-path": "inset(0 100% 0 0)" },
+                                "100%": { "clip-path": "inset(0 0 0 0)" },
+                            }
                         },
                         animation: {
-                            "fade-in-up": "fade-in-up 0.6s ease-out forwards",
-                            float: "float 3s ease-in-out infinite",
+                            "fade-in-up": "fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+                            "fade-in-left": "fade-in-left 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+                            "fade-in-right": "fade-in-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+                            float: "float 4s ease-in-out infinite",
+                            reveal: "reveal 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards",
                         },
                     },
                 },
@@ -173,10 +191,8 @@ def apply_theme():
             .q-page-container,
             .q-page {
                 display: block !important;
-                min-height: 100vh !important;
-                height: auto !important;
+                min-height: auto !important;
                 overflow: visible !important;
-                position: static !important;
             }
 
             /* Xóa toàn bộ padding Quasar inject cho sidebar/header */
@@ -246,6 +262,35 @@ def apply_theme():
             .bg-warm-gradient  { background: var(--gradient-warm); }
             .shadow-card       { box-shadow: var(--shadow-card); }
             .shadow-elevated   { box-shadow: var(--shadow-elevated); }
+
+            /* Advanced Skeleton Shimmer */
+            .skeleton-shimmer {
+                position: relative;
+                overflow: hidden;
+                background-color: hsl(var(--muted));
+            }
+            .skeleton-shimmer::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                transform: translateX(-100%);
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                animation: shimmer 1.5s infinite;
+            }
+
+            /* Cultural Background Pattern */
+            .bg-pattern-lotus {
+                background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-5 0-9 4-9 9 0 4 3 8 7 9-4 1-7 5-7 9 0 5 4 9 9 9s9-4 9-9c0-4-3-8-7-9 4-1 7-5 7-9 0-5-4-9-9-9zm0 2c3.9 0 7 3.1 7 7 0 3.3-2.3 6.1-5.4 6.8-.4-1.1-.9-2.1-1.6-3.1 2.2-.6 4-2.4 4-4.7 0-2.8-2.2-5-5-5s-5 2.2-5 5c0 2.3 1.8 4.1 4 4.7-.7 1-1.2 2-1.6 3.1-3.1-.7-5.4-3.5-5.4-6.8 0-3.9 3.1-7 7-7zm0 18c3.9 0 7 3.1 7 7 0 3.3-2.3 6.1-5.4 6.8-.4-1.1-.9-2.1-1.6-3.1 2.2-.6 4-2.4 4-4.7 0-2.8-2.2-5-5-5s-5 2.2-5 5c0 2.3 1.8 4.1 4 4.7-.7 1-1.2 2-1.6 3.1-3.1-.7-5.4-3.5-5.4-6.8 0-3.9 3.1-7 7-7z' fill='%23b21e1e' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+            }
+            
+            .silk-thread {
+                stroke-dasharray: 1000;
+                stroke-dashoffset: 1000;
+                animation: draw-silk 3s ease-out forwards;
+            }
+            @keyframes draw-silk {
+                to { stroke-dashoffset: 0; }
+            }
 
             ::-webkit-scrollbar       { width: 8px; }
             ::-webkit-scrollbar-track { background: hsl(var(--background)); }

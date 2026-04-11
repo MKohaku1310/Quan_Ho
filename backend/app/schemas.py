@@ -179,3 +179,19 @@ class Event(EventBase):
     id: int
     image_url: Optional[str] = None
     created_at: datetime
+
+class CommentBase(BaseModel):
+    content: str
+    melody_id: Optional[int] = None
+    article_id: Optional[int] = None
+    parent_id: Optional[int] = None
+
+class CommentCreate(CommentBase):
+    pass
+
+class Comment(CommentBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    user_id: int
+    user: User
+    created_at: datetime

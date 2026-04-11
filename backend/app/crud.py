@@ -100,3 +100,46 @@ def create_event(db: Session, event: schemas.EventCreate) -> models.Event:
 
 def get_events(db: Session, skip: int = 0, limit: int = 100) -> List[models.Event]:
     return db.query(models.Event).offset(skip).limit(limit).all()
+
+def create_comment(db: Session, comment: schemas.CommentCreate, user_id: int) -> models.Comment:
+    db_comment = models.Comment(**comment.model_dump(), user_id=user_id)
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+    return db_comment
+
+def get_comments(
+    db: Session, 
+    melody_id: Optional[int] = None, 
+    article_id: Optional[int] = None,
+    skip: int = 0, 
+    limit: int = 50
+) -> List[models.Comment]:
+    query = db.query(models.Comment)
+    if melody_id:
+        query = query.filter(models.Comment.melody_id == melody_id)
+    if article_id:
+        query = query.filter(models.Comment.article_id == article_id)
+    return query.order_by(models.Comment.created_at.desc()).offset(skip).limit(limit).all()
+
+def update_melody(db: Session, melody_id: int, melody_update: dict) -> Optional[models.Melody]:
+    db_melody = get_melody(db, melody_id)
+    if not db_melody:
+        return None
+    for key, value in melody_update.items():
+        if hasattr(db_melody, key):
+            setattr(db_melody, key, value)
+    db.commit()
+    db.refresh(db_melody)
+    return db_melody
+
+def update_artist(db: Session, artist_id: int, artist_update: dict) -> Optional[models.Artist]:
+    db_artist = get_artist(db, artist_id)
+    if not db_artist:
+        return None
+    for key, value in artist_update.items():
+        if hasattr(db_artist, key):
+            setattr(db_artist, key, value)
+    db.commit()
+    db.refresh(db_artist)
+    return db_artist

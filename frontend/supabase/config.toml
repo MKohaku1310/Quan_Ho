@@ -1,4 +1,0 @@
-project_id = "hmjlxtxpmivmqlkvabuf"
-
-[functions.quan-ho-chat]
-verify_jwt = false

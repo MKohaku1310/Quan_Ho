@@ -1,28 +1,19 @@
-# Quan Họ Bắc Ninh - Digital Heritage Platform
+# Quan Ho Bac Ninh
 
-Nền tảng kỹ thuật số giúp bảo tồn và phát huy giá trị văn hóa Dân ca Quan họ Bắc Ninh.
+He thong quan ly va gioi thieu dan ca Quan ho Bac Ninh.
 
-## Tính năng chính
-- Khám phá 49 làng Quan họ gốc.
-- Thư viện bài hát với lời ca và thông tin nghệ nhân.
-- Tin tức và sự kiện mới nhất về văn hóa Quan họ.
-- Hệ thống quản lý người dùng và cộng đồng.
+## Cong nghe su dung
+- Backend: FastAPI
+- Frontend: NiceGUI (Python)
+- Database: SQLite
 
-## Công nghệ sử dụng
-- **Backend**: FastAPI, SQLAlchemy, MySQL, Pydantic v2.
-- **Frontend**: React (Vite), Tailwind CSS, Shadcn UI, TanStack Query.
+## Huong dan chay
+1. Cai dat thu vien:
+   pip install -r requirements.txt
 
-## Hướng dẫn cài đặt
+2. Chay ung dung bang file:
+   run.bat
 
-### Backend
-1. Cài đặt Python 3.10+.
-2. Tạo môi trường ảo: `python -m venv venv`.
-3. Cài đặt thư viện: `pip install -r requirements.txt`.
-4. Cấu hình `.env` với `DATABASE_URL`.
-5. Chạy seed dữ liệu: `python seed.py`.
-6. Khởi chạy: `uvicorn app.main:app --reload`.
-
-### Frontend
-1. Cài đặt Node.js.
-2. Cài đặt dependencies: `npm install`.
-3. Khởi chạy: `npm run dev`.
+## Thong tin truy cap
+- UI: http://localhost:8080
+- API: http://localhost:8000/docs
