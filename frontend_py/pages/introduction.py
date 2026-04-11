@@ -38,7 +38,7 @@ def introduction_page():
             
             with theme.container():
                 components.section_title('Trang Phục Truyền Thống', 'Nét đặc trưng làm nên linh hồn của dân ca Quan họ.')
-                with ui.column().classes('mt-12 gap-16 w-full'):
+                with ui.column().classes('mt-12 gap-12 w-full'):
                     components.costume_block(
                         'Trang phục Liền chị',
                         'Nổi bật với áo mớ ba mớ bảy, nón quai thao thắt dải lụa thướt tha mang vẻ đẹp dịu dàng kiêu sa đặc trưng của người con gái Kinh Bắc.',

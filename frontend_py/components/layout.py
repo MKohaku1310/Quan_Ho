@@ -88,62 +88,56 @@ def chatbot_persona():
                 )
 
 def costume_block(title, desc, image_url, items=None, reverse=False):
-    classes = 'flex flex-col items-center gap-10 md:flex-row' + ('-reverse' if reverse else '')
-    with ui.element('div').classes(classes + ' w-full py-12 relative overflow-hidden'):
-        # 1. Background Decoration (Ornament)
-        ornament_pos = 'right-[-10%] top-1/2 -translate-y-1/2' if not reverse else 'left-[-10%] top-1/2 -translate-y-1/2'
+    # Determine alignment for staggering effect
+    alignment = 'self-start' if not reverse else 'self-end'
+    
+    with ui.card().classes(
+        f'relative w-full max-w-[1000px] {alignment} overflow-hidden rounded-[2rem] border border-border/50 '
+        f'bg-card/40 shadow-elevated hover:shadow-2xl transition-all duration-500 p-0 group z-10'
+    ):
+        # Background Decoration (Subtle Ornament)
         ui.image('/static/lotus-ornament.png').classes(
-            f'absolute {ornament_pos} h-[400px] w-[400px] opacity-[0.04] pointer-events-none rotate-12 z-0'
+            'absolute right-[-5%] top-[-10%] h-[300px] w-[300px] opacity-[0.03] pointer-events-none rotate-12 z-0'
         )
-
-        # 2. Vertical Stamp Decoration
-        stamp_pos = 'left-0' if not reverse else 'right-0'
-        with ui.element('div').classes(f'absolute {stamp_pos} top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center gap-4 opacity-20 pointer-events-none z-0'):
-            ui.element('div').classes('w-px h-24 bg-primary')
-            ui.label('DI SẢN KINH BẮC').classes('text-[10px] font-bold tracking-[0.8em] text-primary uppercase [writing-mode:vertical-lr] rotate-180')
-            ui.element('div').classes('w-px h-24 bg-primary')
-
-        # 3. Image column
-        with ui.element('div').classes('md:w-5/12 relative w-full group z-10'):
-            # Ambient glow
-            ui.element('div').classes(
-                f'absolute -inset-6 rounded-3xl bg-primary/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000'
-            )
-            
-            with ui.card().classes('relative rounded-3xl shadow-elevated overflow-hidden aspect-[4/5] w-full p-0 border-none group'):
-                # Main Image
-                img = ui.image(image_url).classes('h-full w-full object-cover relative z-10 transition-transform duration-1000 group-hover:scale-110')
+        
+        with ui.element('div').classes(f'flex flex-col md:flex-row' + ('-reverse' if reverse else '') + ' w-full h-full'):
+            # 1. Image portion (Fixed aspect ratio on desktop, full width on mobile)
+            with ui.element('div').classes('md:w-5/12 relative aspect-[4/5] md:aspect-auto overflow-hidden'):
+                img = ui.image(image_url).classes(
+                    'h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105'
+                )
                 img.on('error', lambda: img.set_source('https://images.unsplash.com/photo-1599908608021-b5d929aa054e?auto=format&fit=crop&q=80&w=800'))
                 
-                # Overlay Gradient
-                ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 z-20 group-hover:opacity-20 transition-opacity')
-
-        # 4. Text column
-        with ui.column().classes('md:w-7/12 space-y-8 px-6 w-full z-10'):
-            with ui.column().classes('gap-3'):
-                with ui.row().classes('items-center gap-3 animate-fade-in'):
-                    ui.element('div').classes('h-px w-8 bg-primary/40')
-                    ui.label('TRANG PHỤC TRUYỀN THỐNG').classes('text-xs font-bold tracking-[0.4em] text-primary/80 uppercase')
+                # Overlay Gradient inside image
+                ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-60')
                 
-                ui.label(title).classes(f'font-display text-5xl font-black text-foreground leading-tight drop-shadow-sm')
-            
-            ui.label(desc).classes('text-lg text-muted-foreground leading-relaxed font-light max-w-2xl')
-            
-            if items:
-                with ui.column().classes('w-full mt-4'):
-                    with ui.row().classes('items-center gap-2 mb-6'):
-                        ui.icon('auto_awesome', size='16px').classes('text-primary')
-                        ui.label('Chi tiết đặc trưng:').classes('font-display text-sm font-bold text-primary uppercase tracking-widest')
+                # Decorative Label on Image
+                with ui.element('div').classes('absolute bottom-4 left-4 bg-primary/90 text-white px-3 py-1 rounded-full backdrop-blur-sm z-20'):
+                    ui.label('TRUYỀN THỐNG').classes('text-[10px] font-black tracking-widest')
+
+            # 2. Content portion
+            with ui.column().classes('md:w-7/12 p-8 md:p-12 justify-center gap-6 z-10'):
+                with ui.column().classes('gap-2'):
+                    with ui.row().classes('items-center gap-2 mb-2'):
+                        ui.element('div').classes('h-px w-6 bg-primary/40')
+                        ui.label('DI SẢN KINH BẮC').classes('text-[10px] font-bold tracking-[0.3em] text-primary/70 uppercase')
                     
-                    with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 gap-6 w-full'):
-                        for item in items:
-                            with ui.card().classes('p-4 bg-card/60 border border-border/80 rounded-2xl shadow-sm hover:shadow-md hover:border-primary/40 transition-all group/item'):
-                                with ui.row().classes('items-center gap-3'):
-                                    with ui.element('div').classes('h-8 w-8 flex items-center justify-center rounded-lg bg-primary/10 text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors'):
-                                        ui.icon('verified', size='16px')
-                                    with ui.column().classes('gap-0'):
-                                        ui.label(item).classes('text-xs font-bold text-foreground')
-                                        ui.label('Tinh hoa nghệ thuật').classes('text-[8px] text-muted-foreground uppercase tracking-widest')
+                    ui.label(title).classes('font-display text-4xl font-black text-foreground leading-tight')
+                
+                ui.label(desc).classes('text-base text-muted-foreground leading-relaxed font-light')
+                
+                if items:
+                    with ui.column().classes('w-full mt-2'):
+                        with ui.row().classes('items-center gap-2 mb-4'):
+                            ui.icon('auto_awesome', size='14px').classes('text-primary/60')
+                            ui.label('Đặc trưng nghệ thuật:').classes('text-[10px] font-bold text-primary/70 uppercase tracking-widest')
+                        
+                        with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 gap-3 w-full'):
+                            for item in items:
+                                with ui.card().classes('p-3 bg-white/50 border border-border/40 rounded-xl shadow-sm hover:border-primary/30 transition-all'):
+                                    with ui.row().classes('items-center gap-2'):
+                                        ui.icon('verified', size='14px').classes('text-primary')
+                                        ui.label(item).classes('text-xs font-bold text-foreground truncate')
 
 def timeline_item(year, text, index=0, total=4):
     is_even = index % 2 == 0
