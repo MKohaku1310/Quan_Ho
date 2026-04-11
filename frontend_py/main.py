@@ -32,6 +32,5 @@ if __name__ in {'__main__', '__mp_main__'}:
         favicon='static/favicon.png',
         reload=True,
         uvicorn_reload_dirs=current_dir, # Watch frontend_py recursively
-        uvicorn_logging_level='info',
-        show_error_details=False # Hide raw python traces from users
+        uvicorn_logging_level='info'
     )
