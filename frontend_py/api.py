@@ -1,21 +1,32 @@
 import httpx
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from nicegui import app
+import os
 
-API_BASE_URL = "http://127.0.0.1:8000/api"
+# Use environment variable for API URL, default to localhost
+API_BASE_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api")
+if API_BASE_URL.endswith('/'):
+    API_BASE_URL = API_BASE_URL[:-1]
 
 class APIClient:
+    def __init__(self, timeout: float = 10.0):
+        self.timeout = timeout
+
     async def _get(self, endpoint: str) -> List[Dict[str, Any]]:
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 # Ensure endpoint has trailing slash for FastAPI
                 path = endpoint if endpoint.endswith('/') else f"{endpoint}/"
-                response = await client.get(f"{API_BASE_URL}/{path}")
+                url = f"{API_BASE_URL}/{path}"
+                response = await client.get(url)
                 if response.status_code == 200:
                     return response.json()
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}. Ensure backend is running.")
         except Exception as e:
             print(f"Error fetching from {API_BASE_URL}/{endpoint}: {e}")
         return []
+
 
     async def _post(self, endpoint: str, data: Dict[str, Any], use_token: bool = False) -> Optional[Dict[str, Any]]:
         try:
@@ -25,15 +36,18 @@ class APIClient:
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
 
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(f"{API_BASE_URL}/{endpoint}/", json=data, headers=headers)
                 if response.status_code in [200, 201]:
                     return response.json()
                 else:
                     print(f"Post error {response.status_code}: {response.text}")
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Error posting to {API_BASE_URL}/{endpoint}: {e}")
         return None
+
 
     async def _put(self, endpoint: str, data: Dict[str, Any], use_token: bool = True) -> Optional[Dict[str, Any]]:
         try:
@@ -43,19 +57,22 @@ class APIClient:
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
 
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.put(f"{API_BASE_URL}/{endpoint}/", json=data, headers=headers)
                 if response.status_code in [200, 204]:
                     return response.json()
                 else:
                     print(f"Put error {response.status_code}: {response.text}")
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Error putting to {API_BASE_URL}/{endpoint}: {e}")
         return None
 
+
     async def login(self, username: str, password: str) -> bool:
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(
                     f"{API_BASE_URL}/auth/login", 
                     data={"username": username, "password": password}
@@ -67,9 +84,12 @@ class APIClient:
                     app.storage.user['role'] = data.get('role', 'user')
                     app.storage.user['user_name'] = data.get('name', 'User')
                     return True
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Login error: {e}")
         return False
+
 
     async def register(self, name: str, email: str, password: str) -> Optional[Dict[str, Any]]:
         return await self._post("auth/register", {"name": name, "email": email, "password": password})
@@ -96,13 +116,16 @@ class APIClient:
         if not query:
             return await self.get_melodies()
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(f"{API_BASE_URL}/melodies/search/", params={"search": query})
                 if response.status_code == 200:
                     return response.json()
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Error searching melodies: {e}")
         return []
+
 
     async def create_melody(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         return await self._post("melodies", data, use_token=True)
@@ -118,13 +141,16 @@ class APIClient:
 
     async def get_melody(self, melody_id: int) -> Optional[Dict[str, Any]]:
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(f"{API_BASE_URL}/melodies/{melody_id}")
                 if response.status_code == 200:
                     return response.json()
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Error fetching melody {melody_id}: {e}")
         return None
+
 
     async def get_artist(self, artist_id: int) -> Optional[Dict[str, Any]]:
         try:
@@ -148,25 +174,32 @@ class APIClient:
 
     async def get_event(self, event_id: int) -> Optional[Dict[str, Any]]:
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(f"{API_BASE_URL}/events/{event_id}")
                 if response.status_code == 200:
                     return response.json()
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Error fetching event {event_id}: {e}")
+        return None
+
     async def get_comments(self, melody_id: Optional[int] = None, article_id: Optional[int] = None) -> List[Dict[str, Any]]:
         params = {}
         if melody_id: params['melody_id'] = melody_id
         if article_id: params['article_id'] = article_id
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(f"{API_BASE_URL}/comments/", params=params)
                 if response.status_code == 200:
                     return response.json()
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Error fetching comments: {e}")
         return []
+
 
     async def create_comment(self, content: str, melody_id: Optional[int] = None, article_id: Optional[int] = None) -> Optional[Dict[str, Any]]:
         data = {"content": content}

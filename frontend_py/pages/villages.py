@@ -3,7 +3,8 @@ import theme
 import components
 from api import api_client
 
-@ui.page('/lang-quan-ho')
+@ui.page('/lang-quan-ho', response_timeout=60.0)
+
 async def villages_page():
     with theme.frame():
         components.page_header('Làng Quan họ', 'Khai phá không gian văn hóa tại 49 làng Quan họ gốc')

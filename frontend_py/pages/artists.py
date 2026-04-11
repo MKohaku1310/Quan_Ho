@@ -3,7 +3,8 @@ import theme
 import components
 from api import api_client
 
-@ui.page('/nghe-nhan')
+@ui.page('/nghe-nhan', response_timeout=60.0)
+
 async def artists_page():
     with theme.frame():
         components.page_header('Nghệ nhân tiêu biểu', 'Những người nắm giữ hồn cốt và trao truyền di sản cho thế hệ mai sau')
@@ -29,7 +30,8 @@ async def artists_page():
                                 index=i
                             )
 
-@ui.page('/nghe-nhan/{id}')
+@ui.page('/nghe-nhan/{id}', response_timeout=60.0)
+
 async def artist_detail_page(id: int):
     with theme.frame():
         artist_data = await api_client.get_artist(id)
@@ -57,8 +59,9 @@ async def artist_detail_page(id: int):
                             if bio:
                                 ui.label(bio).classes('mt-4 text-foreground leading-relaxed whitespace-pre-line')
 
-@ui.page('/them-nghe-nhan')
-@ui.page('/sua-nghe-nhan/{id}')
+@ui.page('/them-nghe-nhan', response_timeout=60.0)
+@ui.page('/sua-nghe-nhan/{id}', response_timeout=60.0)
+
 async def artist_form_page(id: int = None):
     if app.storage.user.get('role') != 'admin':
         ui.navigate.to('/')

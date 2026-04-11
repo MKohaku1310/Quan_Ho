@@ -2,15 +2,11 @@ from nicegui import ui
 import theme
 
 def hero_banner():
-    # Extra top padding to compensate for fixed navbar
-    with ui.element('section').classes('relative flex min-h-[85vh] items-center overflow-hidden w-full').style('padding-top: 56px;'):
-        # Background Image
-        ui.image('/static/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover')
-        # Overlay
+    with ui.element('section').classes('relative flex min-h-[92vh] items-center overflow-hidden w-full').style('padding-top: 56px;'):
+        ui.image('/static/hero-banner-v2.png').classes('absolute inset-0 h-full w-full object-cover object-center')
         ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-70')
         
-        # Content
-        with ui.element('div').classes('relative z-10 container mx-auto px-4 py-20 text-center flex flex-col items-center'):
+        with ui.element('div').classes('relative z-10 container mx-auto px-4 pt-20 pb-52 text-center flex flex-col items-center'):
             ui.label('DI SẢN VĂN HÓA PHI VẬT THỂ UNESCO').classes(
                 'mb-4 text-sm font-medium uppercase tracking-[0.3em] text-gold-light'
             ).style('animation: fade-in-up 0.8s ease-out')
@@ -32,17 +28,18 @@ def hero_banner():
                     'border-white/30 text-white font-bold px-8 py-4 hover:bg-white/10'
                 )
         
-        # Animated scroll-down indicator
-        with ui.element('div').classes('absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 cursor-pointer').style(
-            'animation: float 2s ease-in-out infinite;'
-        ):
-            ui.label('Cuộn xuống').classes('text-white/60 text-xs uppercase tracking-widest font-medium')
-            ui.icon('keyboard_arrow_down', size='28px').classes('text-white/70')
+        with ui.element('div').classes('absolute z-10 flex flex-col items-center gap-2 cursor-pointer group opacity-80').style(
+            'bottom: 2rem; left: 50%; transform: translateX(-50%); animation: float 2s ease-in-out infinite;'
+        ).on('click', lambda: ui.run_javascript(
+            'document.getElementById("home-content").scrollIntoView({behavior: "smooth"})'
+        )):
+            ui.label('Cuộn xuống').classes('text-white text-xs uppercase tracking-widest font-medium group-hover:opacity-100')
+            ui.icon('keyboard_arrow_down', size='28px').classes('text-white group-hover:opacity-100')
 
+            
 def hero_stats_section():
     with ui.element('section').classes('bg-card py-20 border-y border-border w-full'):
         with theme.container().classes('grid items-center gap-16 md:grid-cols-2'):
-            # Left side
             with ui.column().classes('gap-4'):
                 with ui.element('h2').classes('font-display text-3xl font-bold text-foreground md:text-4xl lg:text-5xl'):
                     ui.label('Sức sống mãnh liệt của ')
@@ -59,7 +56,6 @@ def hero_stats_section():
                     ):
                         pass
             
-            # Right side: Stats grid
             with ui.element('div').classes('grid grid-cols-2 gap-4'):
                 stats = [
                     ('49', 'Làng Quan họ gốc', 'text-primary', 'groups'),
@@ -72,6 +68,7 @@ def hero_stats_section():
                         ui.icon(icon, size='32px').classes(f'{color_class} mb-2 opacity-80')
                         ui.label(val).classes(f'font-display text-3xl font-bold {color_class} mb-1')
                         ui.label(label).classes('text-[10px] font-bold text-muted-foreground uppercase tracking-widest')
+
 
 def chatbot_persona():
     with ui.element('div').classes('fixed bottom-8 right-8 z-[100] chat-persona'):
@@ -87,41 +84,33 @@ def chatbot_persona():
                     'transition-opacity whitespace-nowrap pointer-events-none'
                 )
 
+
 def costume_block(title, desc, image_url, items=None, reverse=False):
-    # Determine alignment for staggering effect
     alignment = 'self-start' if not reverse else 'self-end'
     
     with ui.card().classes(
         f'relative w-full max-w-[1000px] {alignment} overflow-hidden rounded-[2rem] border border-border/50 '
         f'bg-card/40 shadow-elevated hover:shadow-2xl transition-all duration-500 p-0 group z-10'
     ):
-        # Background Decoration (Subtle Ornament)
         ui.image('/static/lotus-ornament.png').classes(
             'absolute right-[-5%] top-[-10%] h-[300px] w-[300px] opacity-[0.03] pointer-events-none rotate-12 z-0'
         )
         
         with ui.element('div').classes(f'flex flex-col md:flex-row' + ('-reverse' if reverse else '') + ' w-full h-full'):
-            # 1. Image portion (Fixed aspect ratio on desktop, full width on mobile)
             with ui.element('div').classes('md:w-5/12 relative aspect-[4/5] md:aspect-auto overflow-hidden'):
                 img = ui.image(image_url).classes(
                     'h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105'
                 )
                 img.on('error', lambda: img.set_source('https://images.unsplash.com/photo-1599908608021-b5d929aa054e?auto=format&fit=crop&q=80&w=800'))
-                
-                # Overlay Gradient inside image
                 ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-60')
-                
-                # Decorative Label on Image
                 with ui.element('div').classes('absolute bottom-4 left-4 bg-primary/90 text-white px-3 py-1 rounded-full backdrop-blur-sm z-20'):
                     ui.label('TRUYỀN THỐNG').classes('text-[10px] font-black tracking-widest')
 
-            # 2. Content portion
             with ui.column().classes('md:w-7/12 p-8 md:p-12 justify-center gap-6 z-10'):
                 with ui.column().classes('gap-2'):
                     with ui.row().classes('items-center gap-2 mb-2'):
                         ui.element('div').classes('h-px w-6 bg-primary/40')
                         ui.label('DI SẢN KINH BẮC').classes('text-[10px] font-bold tracking-[0.3em] text-primary/70 uppercase')
-                    
                     ui.label(title).classes('font-display text-4xl font-black text-foreground leading-tight')
                 
                 ui.label(desc).classes('text-base text-muted-foreground leading-relaxed font-light')
@@ -131,7 +120,6 @@ def costume_block(title, desc, image_url, items=None, reverse=False):
                         with ui.row().classes('items-center gap-2 mb-4'):
                             ui.icon('auto_awesome', size='14px').classes('text-primary/60')
                             ui.label('Đặc trưng nghệ thuật:').classes('text-[10px] font-bold text-primary/70 uppercase tracking-widest')
-                        
                         with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 gap-3 w-full'):
                             for item in items:
                                 with ui.card().classes('p-3 bg-white/50 border border-border/40 rounded-xl shadow-sm hover:border-primary/30 transition-all'):
@@ -139,56 +127,127 @@ def costume_block(title, desc, image_url, items=None, reverse=False):
                                         ui.icon('verified', size='14px').classes('text-primary')
                                         ui.label(item).classes('text-xs font-bold text-foreground truncate')
 
-def timeline_item(year, text, index=0, total=4):
+
+# ─── Timeline helpers ────────────────────────────────────────────────────────
+
+def _timeline_card(year: str, text: str):
+    """Thẻ cuộn giấy dùng chung cho cả trái lẫn phải."""
+    parts = year.rsplit(' ', 1)
+    top_text, bottom_text = (parts[0], parts[1]) if len(parts) > 1 else (year[:2], year[2:])
+    bottom_size = 'text-xl' if len(bottom_text) <= 5 else 'text-base'
+    if len(bottom_text) > 9:
+        bottom_size = 'text-[12px]'
+
+    with ui.card().classes(
+        'relative w-full max-w-sm p-0 overflow-hidden border-none shadow-elevated '
+        'group/card bg-paper-texture transition-all duration-500 hover:-translate-y-2 z-20'
+    ).style('box-shadow: 0 20px 40px -20px rgba(139, 0, 0, 0.3);'):
+        ui.element('div').classes('absolute inset-3 border-2 border-[#d4af37]/40 pointer-events-none rounded-lg')
+        ui.element('div').classes('absolute inset-[15px] border border-[#d4af37]/20 pointer-events-none rounded-sm')
+        ui.image('/static/lotus-ornament.png').classes(
+            'absolute -right-4 -bottom-4 h-32 w-32 opacity-[0.05] pointer-events-none '
+            '-rotate-12 group-hover/card:scale-110 transition-transform'
+        )
+        with ui.column().classes('p-8 gap-4 relative z-10'):
+            with ui.element('div').classes('flex items-center gap-4 mb-2'):
+                with ui.element('div').classes(
+                    'seal-stamped relative h-16 w-16 flex flex-col items-center '
+                    'justify-center rounded-sm rotate-3 shadow-lg'
+                ):
+                    ui.label(top_text).classes('text-[10px] font-black text-white/90 leading-none tracking-widest uppercase')
+                    ui.label(bottom_text).classes(f'{bottom_size} font-black text-white leading-none tracking-tighter mt-1 whitespace-nowrap overflow-hidden')
+                    ui.element('div').classes('absolute inset-1.5 border border-white/20')
+                with ui.column().classes('gap-0'):
+                    ui.label('KỶ NGUYÊN').classes('text-[8px] font-black tracking-[0.4em] text-primary/50 uppercase')
+                    ui.label('KINH BẮC').classes('text-[10px] font-bold text-primary/70 tracking-widest')
+            ui.label(year).classes(
+                'font-display text-3xl font-bold text-foreground mb-1 '
+                'group-hover/card:text-primary transition-colors italic'
+            )
+            ui.label(text).classes('text-[15px] text-muted-foreground leading-relaxed italic font-light font-body')
+            ui.element('div').classes('h-px w-1/2 bg-gradient-to-r from-transparent via-primary/20 to-transparent mt-2 mx-auto')
+
+
+def _timeline_dot():
+    """Nút dấu đỏ ở giữa, căn chỉnh với thẻ."""
+    with ui.element('div').classes(
+        'relative h-12 w-12 flex-shrink-0 flex items-center justify-center '
+        'bg-primary border-2 border-[#d4af37]/60 shadow-elevated '
+        'transition-all duration-300 hover:scale-125 cursor-pointer z-30 rotate-3'
+    ):
+        ui.element('div').classes('absolute inset-1.5 border border-white/20')
+        ui.icon('adjust', size='24px').classes('text-white/40')
+        ui.element('div').classes('absolute -inset-4 border border-primary/5 rounded-full animate-ping opacity-20')
+
+
+def _timeline_ornament(flip: bool = False):
+    """Hình trang trí ở phía trống."""
+    rotate = '-rotate-12' if not flip else 'rotate-45'
+    padding = 'pr-10' if not flip else 'pl-10'
+    with ui.element('div').classes(
+        f'opacity-[0.07] grayscale hover:grayscale-0 hover:opacity-100 '
+        f'transition-all duration-1000 transform hover:scale-125 {padding}'
+    ):
+        ui.image('/static/lotus-ornament.png').classes(f'h-24 w-24 {rotate}')
+
+
+def timeline_item(year: str, text: str, index: int = 0, total: int = 4):
+    """
+    Layout 3 cột: [45% nội dung/trống] [10% nút đỏ] [45% trống/nội dung]
+    Chẵn → thẻ bên TRÁI, lẻ → thẻ bên PHẢI.
+    Nút đỏ luôn ở giữa, thẳng hàng với thẻ nhờ items-center trên row.
+    """
     is_even = index % 2 == 0
-    is_last = index == total - 1
-    
-    with ui.row().classes(f'relative flex flex-col md:flex-row w-full {"md:flex-row-reverse" if not is_even else ""} items-center gap-6 mb-6'):
-        # 1. Spacer/Content on one side
-        with ui.element('div').classes('md:w-1/2 flex flex-col items-center ' + ('md:items-end md:pr-12' if is_even else 'md:items-start md:pl-12')):
-            with ui.card().classes(
-                'relative w-full max-w-md rounded-2xl p-6 border border-border bg-card shadow-sm '
-                'hover:shadow-xl hover:border-primary/30 transition-all duration-300'
-            ):
-                # Adaptive arrow tip
-                ui.element('div').classes(
-                    'absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-card border-l border-t border-border rotate-45 hidden md:block ' +
-                    ('-right-2 rotate-[135deg]' if is_even else '-left-2 -rotate-45')
-                )
-                
-                ui.label(year).classes('font-display text-2xl font-bold text-primary mb-2')
-                ui.label(text).classes('text-muted-foreground leading-relaxed')
 
-        # 2. Central Line and Dot (The Silk Thread)
-        with ui.element('div').classes('absolute left-1/2 -translate-x-1/2 h-full flex flex-col items-center z-10 hidden md:flex'):
-            # The Silk Thread Line
-            ui.element('div').classes('w-px flex-1 bg-gradient-to-b from-primary/30 via-primary to-primary/30 shadow-[0_0_10px_rgba(180,120,60,0.3)]')
-            
-            # Dot with glow
-            with ui.element('div').classes('relative h-5 w-5 rounded-full bg-primary border-4 border-background shadow-lg my-1 scale-110'):
-                ui.element('div').classes('absolute -inset-2 bg-primary/20 rounded-full animate-ping')
-            
-            if not is_last:
-                ui.element('div').classes('w-px flex-1 bg-gradient-to-t from-primary/30 via-primary to-primary/30')
+    with ui.row().classes('relative flex flex-row items-center w-full my-8'):
 
-        # 3. Spacer on the other side
-        with ui.element('div').classes('md:w-1/2 flex justify-center items-center px-12 md:px-0') : 
+        # ── Cột TRÁI (45%) ──────────────────────────────────────────────────
+        with ui.element('div').classes('w-[45%] flex flex-col items-end pr-8 md:pr-12'):
             if is_even:
-                 ui.icon('history_edu', size='64px').classes('text-primary/5 opacity-50 rotate-12')
+                _timeline_card(year, text)
             else:
-                 ui.icon('flare', size='64px').classes('text-primary/5 opacity-50 -rotate-12')
+                _timeline_ornament(flip=False)
 
-def unesco_quote(text, subtitle=None):
+        # ── Cột GIỮA (10%) — nút đỏ ─────────────────────────────────────────
+        with ui.element('div').classes('w-[10%] flex justify-center items-center'):
+            _timeline_dot()
+
+        # ── Cột PHẢI (45%) ──────────────────────────────────────────────────
+        with ui.element('div').classes('w-[45%] flex flex-col items-start pl-8 md:pl-12'):
+            if not is_even:
+                _timeline_card(year, text)
+            else:
+                _timeline_ornament(flip=True)
+
+
+def section_title(title: str, subtitle: str = None):
+    with ui.column().classes('items-center text-center gap-2 mb-10 w-full'):
+        ui.label(title).classes('font-display text-3xl md:text-4xl font-black text-foreground')
+        if subtitle:
+            ui.label(subtitle).classes('text-muted-foreground text-base md:text-lg font-light max-w-2xl')
+        ui.element('div').classes('h-1 w-16 bg-primary rounded-full mt-2')
+
+
+def intro_feature_card(icon: str, title: str, desc: str):
+    with ui.card().classes(
+        'flex flex-col items-center text-center gap-4 p-8 rounded-2xl '
+        'border border-border/50 bg-card/60 shadow-sm hover:shadow-md '
+        'transition-all duration-300 hover:-translate-y-1'
+    ):
+        with ui.element('div').classes('h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center'):
+            ui.icon(icon, size='28px').classes('text-primary')
+        ui.label(title).classes('font-display text-lg font-bold text-foreground')
+        ui.label(desc).classes('text-sm text-muted-foreground leading-relaxed font-light')
+
+
+def unesco_quote(text: str, subtitle: str = None):
     with ui.column().classes('items-center w-full py-2'):
         if subtitle:
             ui.label(subtitle).classes('text-primary font-bold tracking-[0.3em] text-[10px] mb-4 opacity-80')
         with ui.element('blockquote').classes('relative text-2xl font-light italic leading-loose text-muted-foreground px-12 py-4'):
-            # Large quote marks
-            ui.label('“').classes('absolute top-0 left-0 text-7xl text-primary/10 font-serif leading-none')
+            ui.label('"').classes('absolute top-0 left-0 text-7xl text-primary/10 font-serif leading-none')
             ui.label(text).classes('relative z-10')
-            ui.label('”').classes('absolute bottom-0 right-0 text-7xl text-primary/10 font-serif leading-none')
-            
-        # Attribution line
+            ui.label('"').classes('absolute bottom-0 right-0 text-7xl text-primary/10 font-serif leading-none')
         with ui.row().classes('mt-4 items-center gap-3 opacity-70'):
             ui.element('div').classes('h-px w-10 bg-primary/30')
             ui.label('Nguồn: UNESCO, 2009').classes('text-xs font-semibold tracking-wider text-primary')

@@ -283,6 +283,31 @@ def apply_theme():
                 background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-5 0-9 4-9 9 0 4 3 8 7 9-4 1-7 5-7 9 0 5 4 9 9 9s9-4 9-9c0-4-3-8-7-9 4-1 7-5 7-9 0-5-4-9-9-9zm0 2c3.9 0 7 3.1 7 7 0 3.3-2.3 6.1-5.4 6.8-.4-1.1-.9-2.1-1.6-3.1 2.2-.6 4-2.4 4-4.7 0-2.8-2.2-5-5-5s-5 2.2-5 5c0 2.3 1.8 4.1 4 4.7-.7 1-1.2 2-1.6 3.1-3.1-.7-5.4-3.5-5.4-6.8 0-3.9 3.1-7 7-7zm0 18c3.9 0 7 3.1 7 7 0 3.3-2.3 6.1-5.4 6.8-.4-1.1-.9-2.1-1.6-3.1 2.2-.6 4-2.4 4-4.7 0-2.8-2.2-5-5-5s-5 2.2-5 5c0 2.3 1.8 4.1 4 4.7-.7 1-1.2 2-1.6 3.1-3.1-.7-5.4-3.5-5.4-6.8 0-3.9 3.1-7 7-7z' fill='%23b21e1e' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
             }
             
+            /* Ancient "Dó" Paper Texture */
+            .bg-paper-texture {
+                background-color: #fdfcf0;
+                background-image: 
+                    radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.5) 0, transparent 50%),
+                    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+                background-blend-mode: overlay;
+                opacity: 0.98;
+            }
+
+            /* Traditional "Triện Đỏ" Seal */
+            .seal-stamped {
+                background: linear-gradient(135deg, #b21e1e 0%, #8b0000 100%);
+                box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 2px 2px 5px rgba(0,0,0,0.3);
+                position: relative;
+                overflow: hidden;
+            }
+            .seal-stamped::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.2'/%3E%3C/svg%3E");
+                pointer-events: none;
+            }
+
             .silk-thread {
                 stroke-dasharray: 1000;
                 stroke-dashoffset: 1000;

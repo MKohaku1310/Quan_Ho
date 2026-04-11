@@ -2,8 +2,9 @@ from nicegui import app, ui
 import theme
 import components
 from api import api_client
+import asyncio
 
-@ui.page('/tin-tuc')
+@ui.page('/tin-tuc', response_timeout=60.0)
 async def news_page():
     with theme.frame():
         components.page_header('Tin tức & Sự kiện', 'Cập nhật dòng chảy văn hóa Quan họ đương đại')
@@ -12,10 +13,16 @@ async def news_page():
 
         @ui.refreshable
         async def news_content():
-            articles = await api_client.get_articles()
-            events = await api_client.get_events()
+            # Parallel data fetching
+            tasks = [api_client.get_articles(), api_client.get_events()]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            articles = results[0] if isinstance(results[0], list) else []
+            events = results[1] if isinstance(results[1], list) else []
+            
             all_news = [{**a, 'ui_type': 'Tin tức'} for a in (articles or [])] + [{**e, 'ui_type': 'Sự kiện'} for e in (events or [])]
             filtered = [n for n in all_news if state.filter == 'Tất cả' or n['ui_type'] == state.filter]
+
 
             with ui.element('section').classes('py-20 w-full'):
                 with theme.container():

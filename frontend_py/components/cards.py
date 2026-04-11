@@ -78,22 +78,33 @@ def news_card(id, title, image_url, type='Tin tức', date='--/--/----'):
 
 def intro_feature_card(icon_name, title, desc):
     with ui.card().classes(
-        'group relative overflow-hidden rounded-2xl border border-border bg-background p-8 '
-        'shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-primary/40 '
-        'h-full flex flex-col'
-    ):
-        # Decorative background pulse on hover
-        ui.element('div').classes(
-            'absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/5 transition-transform '
-            'duration-500 group-hover:scale-150'
+        'group relative overflow-hidden rounded-2xl border-none p-8 '
+        'shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl '
+        'h-full flex flex-col bg-paper-texture'
+    ).style('box-shadow: 0 10px 30px -10px rgba(139, 0, 0, 0.1);'):
+        
+        # Decorative dual-line border (Ancient style)
+        ui.element('div').classes('absolute inset-2 border border-[#d4af37]/20 pointer-events-none rounded-xl')
+        
+        # Decorative background ornament (Lotus chìm)
+        ui.image('/static/lotus-ornament.png').classes(
+            'absolute -right-8 -top-8 h-32 w-32 opacity-[0.03] transition-transform '
+            'duration-700 group-hover:scale-150 group-hover:opacity-[0.06] pointer-events-none'
         )
         
         with ui.element('div').classes(
             'mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl '
-            'bg-primary/10 text-primary transition-all duration-300 '
-            'group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/30'
+            'bg-primary/5 text-primary border border-primary/10 transition-all duration-300 '
+            'group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/30'
         ):
-            ui.icon(icon_name, size='24px')
+            ui.icon(icon_name, size='28px').classes('transition-colors group-hover:text-white')
             
-        ui.label(title).classes('mb-4 font-display text-2xl font-bold text-foreground transition-colors group-hover:text-primary')
-        ui.label(desc).classes('text-muted-foreground leading-relaxed flex-1')
+        ui.label(title).classes(
+            'mb-4 font-display text-2xl font-bold text-foreground transition-colors group-hover:text-primary'
+        )
+        ui.label(desc).classes('text-muted-foreground leading-relaxed flex-1 text-sm font-light')
+        
+        # Bottom accent
+        ui.element('div').classes(
+            'w-0 group-hover:w-12 h-0.5 bg-primary transition-all duration-500 mt-4'
+        )

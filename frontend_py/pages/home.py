@@ -3,18 +3,35 @@ import theme
 import components
 from api import api_client
 
-@ui.page('/')
+import asyncio
+
+@ui.page('/', response_timeout=60.0)
 async def home_page():
     with theme.frame():
         components.hero_banner()
 
         # Featured Melodies
-        with ui.element('section').classes('py-24 bg-background w-full'):
+        with ui.element('section').classes('py-24 bg-background w-full').props('id="home-content"'):
             with theme.container():
                 components.section_title('Bài hát nổi bật', 'Những làn điệu Quan họ kinh điển được yêu thích nhất')
 
-                melodies = await api_client.get_melodies()
+                # Parallel data fetching using asyncio.gather
+                tasks = [
+                    api_client.get_melodies(),
+                    api_client.get_artists(),
+                    api_client.get_articles(),
+                    api_client.get_events()
+                ]
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+                
+                # Unpack safely
+                melodies = results[0] if isinstance(results[0], list) else []
+                artists_data = results[1] if isinstance(results[1], list) else []
+                articles_data = results[2] if isinstance(results[2], list) else []
+                events_data = results[3] if isinstance(results[3], list) else []
+
                 featured_melodies = melodies[:3] if melodies else []
+
 
                 if not featured_melodies:
                     with ui.row().classes('w-full justify-center py-20'):
@@ -44,8 +61,8 @@ async def home_page():
             with theme.container():
                 components.section_title('Nghệ nhân tiêu biểu', 'Những người giữ lửa cho di sản Quan họ muôn đời')
 
-                artists_data = await api_client.get_artists()
                 featured_artists = artists_data[:4] if artists_data else []
+
 
                 if not featured_artists:
                     ui.label('Đang tìm kiếm nghệ nhân...').classes('w-full text-center py-10 italic text-muted-foreground')
@@ -65,9 +82,8 @@ async def home_page():
             with theme.container():
                 components.section_title('Tin tức & Sự kiện', 'Cập nhật hoạt động văn hóa tiêu biểu')
 
-                articles = await api_client.get_articles()
-                events   = await api_client.get_events()
-                news_items = (articles[:2] if articles else []) + (events[:2] if events else [])
+                news_items = (articles_data[:2] if articles_data else []) + (events_data[:2] if events_data else [])
+
 
                 if not news_items:
                     ui.label('Không có tin tức mới.').classes('w-full text-center py-10 opacity-50')

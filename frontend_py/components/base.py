@@ -19,7 +19,9 @@ def navbar():
             with ui.element('div').classes('flex-1 flex justify-start items-center'):
                 with ui.link(target='/').classes('flex items-center gap-2 no-underline transition-opacity hover:opacity-80 shrink-0'):
                     ui.image('/static/lotus-ornament.png').classes('h-7 w-7')
-                    ui.label('Quan Họ Bắc Ninh').classes('font-display text-lg font-bold text-primary whitespace-nowrap')
+                    with ui.row().classes('gap-1 items-baseline'):
+                        ui.label('Quan Họ').classes('font-display text-lg font-bold text-primary whitespace-nowrap')
+                        ui.label('Bắc Ninh').classes('font-display text-lg font-bold text-[#d4af37] whitespace-nowrap')
 
             # 2. Center: Nav Items
             with ui.element('div').classes('max-lg:hidden flex items-center justify-center gap-1 whitespace-nowrap px-4'):

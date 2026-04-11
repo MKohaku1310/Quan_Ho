@@ -5,7 +5,8 @@ from api import api_client
 from utils import get_embed_url
 import re
 
-@ui.page('/bai-hat')
+@ui.page('/bai-hat', response_timeout=60.0)
+
 async def songs_page():
     with theme.frame():
         components.page_header('Thư viện bài hát', 'Kho tàng các làn điệu Quan họ Kinh Bắc được sưu tầm và gìn giữ')
@@ -56,7 +57,8 @@ async def songs_page():
         
         await songs_content()
 
-@ui.page('/bai-hat/{id}')
+@ui.page('/bai-hat/{id}', response_timeout=60.0)
+
 async def song_detail_page(id: int):
     with theme.frame():
         song_data = await api_client.get_melody(id)
@@ -152,8 +154,9 @@ async def song_detail_page(id: int):
                                             ui.notify('Đã gửi bình luận!', type='positive')
                                     ui.button(icon='send', on_click=post_comment).props('round unelevated').classes('bg-primary text-white mb-1')
 
-@ui.page('/them-bai-hat')
-@ui.page('/sua-bai-hat/{id}')
+@ui.page('/them-bai-hat', response_timeout=60.0)
+@ui.page('/sua-bai-hat/{id}', response_timeout=60.0)
+
 async def song_form_page(id: int = None):
     if app.storage.user.get('role') != 'admin':
         ui.navigate.to('/')

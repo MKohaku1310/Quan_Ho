@@ -10,15 +10,16 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Quan Họ Bắc Ninh API", version="1.0.0")
 
-frontend_origin = os.getenv("CORS_ORIGIN")
-if frontend_origin:
-    allow_origins = [frontend_origin]
+# Setup CORS
+cors_origins_raw = os.getenv("CORS_ORIGINS", "")
+if cors_origins_raw:
+    allow_origins = [o.strip() for o in cors_origins_raw.split(",")]
 else:
+    # Safe defaults including localhost and potential LAN access
     allow_origins = [
-        "http://localhost:5173", 
-        "http://127.0.0.1:5173",
-        "http://localhost:8080",
-        "http://127.0.0.1:8080"
+        "http://localhost:5173", "http://127.0.0.1:5173",
+        "http://localhost:8080", "http://127.0.0.1:8080",
+        "*" # Broad for local debugging, recommended to restrict in production
     ]
 
 app.add_middleware(
@@ -28,6 +29,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(melodies.router, prefix="/api")

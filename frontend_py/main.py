@@ -12,6 +12,16 @@ app.add_static_files('/static', os.path.join(current_dir, 'static'))
 
 
 # ---------------------------------------------------------------------------
+# Error Handling
+# ---------------------------------------------------------------------------
+@app.on_exception
+def handle_exception(e):
+    # Log error but prevent the server from crashing or showing a raw 500 error
+    print(f"FRONTEND ERROR: {e}")
+    # You could also use ui.notify here if the context allows
+    # ui.notify('Đã xảy ra lỗi, vui lòng kiểm tra kết nối server.', type='negative')
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 if __name__ in {'__main__', '__mp_main__'}:
@@ -19,5 +29,9 @@ if __name__ in {'__main__', '__mp_main__'}:
         title='Quan Họ Bắc Ninh - Di sản văn hóa',
         storage_secret='quanho_secret',
         port=8080,
-        favicon='static/favicon.png'
+        favicon='static/favicon.png',
+        reload=True,
+        uvicorn_reload_dirs=current_dir, # Watch frontend_py recursively
+        uvicorn_logging_level='info',
+        show_error_details=False # Hide raw python traces from users
     )
