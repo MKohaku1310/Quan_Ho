@@ -4,7 +4,7 @@ import theme
 def hero_banner():
     # Adjusted height and object-position to prevent excessive zoom on desktop
     with ui.element('section').classes('relative flex min-h-[500px] md:min-h-[600px] lg:min-h-[85vh] xl:min-h-[90vh] items-center overflow-visible w-full shadow-2xl').style('padding-top: 56px;'):
-        ui.image('/static/hero-banner-v2.png').classes('absolute inset-0 h-full w-full object-cover object-[center_30%] scale-100')
+        ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-center scale-100')
         ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-75 md:opacity-70')
         
         with ui.element('div').classes('relative z-10 container mx-auto px-4 pt-4 pb-24 text-center flex flex-col items-center min-h-[400px] justify-center overflow-visible'):
@@ -76,7 +76,7 @@ def chatbot_persona():
         with ui.link(target='/chatbot').classes('block no-underline'):
             with ui.element('div').classes('relative group'):
                 with ui.element('div').classes('h-16 w-16 rounded-full border-4 border-white shadow-elevated overflow-hidden bg-white'):
-                    ui.image('/static/chatbot-avatar.png').classes('h-full w-full object-cover')
+                    ui.image('/static/common/chatbot-avatar.png').classes('h-full w-full object-cover')
                 with ui.element('div').classes('absolute -top-1 -right-1 bg-green-500 h-4 w-4 rounded-full border-2 border-white shadow-sm'):
                     pass
                 ui.label('Bạn cần giúp đỡ?').classes(
@@ -93,7 +93,7 @@ def costume_block(title, desc, image_url, items=None, reverse=False):
         f'relative w-full max-w-[1000px] {alignment} overflow-visible rounded-[2rem] border border-border/50 '
         f'bg-card/40 shadow-elevated hover:shadow-2xl transition-all duration-500 p-0 group z-10'
     ):
-        ui.image('/static/lotus-ornament.png').classes(
+        ui.image('/static/common/lotus-ornament.png').classes(
             'absolute right-[-5%] top-[-10%] h-[300px] w-[300px] opacity-[0.03] pointer-events-none rotate-12 z-0'
         )
         
@@ -145,7 +145,7 @@ def _timeline_card(year: str, text: str):
     ).style('box-shadow: 0 20px 40px -20px rgba(139, 0, 0, 0.3);'):
         ui.element('div').classes('absolute inset-3 border-2 border-[#d4af37]/40 pointer-events-none rounded-lg')
         ui.element('div').classes('absolute inset-[15px] border border-[#d4af37]/20 pointer-events-none rounded-sm')
-        ui.image('/static/lotus-ornament.png').classes(
+        ui.image('/static/common/lotus-ornament.png').classes(
             'absolute -right-4 -bottom-4 h-32 w-32 opacity-[0.05] pointer-events-none '
             '-rotate-12 group-hover/card:scale-110 transition-transform'
         )
@@ -189,7 +189,7 @@ def _timeline_ornament(flip: bool = False):
         f'opacity-[0.07] grayscale hover:grayscale-0 hover:opacity-100 '
         f'transition-all duration-1000 transform hover:scale-125 {padding}'
     ):
-        ui.image('/static/lotus-ornament.png').classes(f'h-24 w-24 {rotate}')
+        ui.image('/static/common/lotus-ornament.png').classes(f'h-24 w-24 {rotate}')
 
 
 def timeline_item(year: str, text: str, index: int = 0, total: int = 4):

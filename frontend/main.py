@@ -2,7 +2,7 @@ from nicegui import app, ui
 import os
 
 # Import pages to register routes
-from pages import home, introduction, songs, artists, villages, news, chatbot, auth
+from pages import home, introduction, songs, artists, villages, news, chatbot, auth, admin, admin_editor
 
 # ---------------------------------------------------------------------------
 # Serve static files
@@ -37,7 +37,7 @@ if __name__ in {'__main__', '__mp_main__'}:
         title='Quan Họ Bắc Ninh - Di sản văn hóa',
         storage_secret='quanho_secret',
         port=8080,
-        favicon='static/favicon.png',
+        favicon=os.path.join(current_dir, 'static', 'common', 'favicon.png'),
         reload=True,
         uvicorn_reload_dirs=current_dir, # Watch frontend_py recursively
         uvicorn_logging_level='info'

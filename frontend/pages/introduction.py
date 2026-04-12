@@ -12,7 +12,7 @@ def introduction_page():
         with ui.element('section').classes(
             'relative min-h-[70vh] md:min-h-[85vh] flex items-center justify-center overflow-hidden w-full'
         ).style('padding-top: 56px;'):
-            ui.image('/static/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-center scale-100 animate-slow-zoom')
+            ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-center scale-100 animate-slow-zoom')
             ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-60')
             with ui.column().classes('relative z-10 text-center items-center px-4 gap-4'):
                 ui.label(t('intro_hero_desc')).classes(
@@ -25,7 +25,7 @@ def introduction_page():
 
         # ── 2. About + Features Section (KEPT FROM ORIGINAL) ───────────────────
         with ui.element('section').classes('py-20 bg-background w-full relative overflow-hidden'):
-            ui.image('/static/lotus-ornament.png').classes(
+            ui.image('/static/common/lotus-ornament.png').classes(
                 'absolute -left-20 -top-20 w-64 h-64 opacity-[0.03] rotate-12 pointer-events-none'
             )
             with theme.container():
@@ -40,7 +40,7 @@ def introduction_page():
                     components.intro_feature_card('favorite', t('intro_feature_3_title'), t('intro_feature_3_desc'))
 
         # ── 3. Nguồn gốc lịch sử (NEW ENHANCED TIMELINE) ───────────────────────
-        with ui.element('section').classes('py-24 bg-card w-full relative overflow-hidden border-y border-border shadow-inner'):
+        with ui.element('section').classes('py-36 bg-card w-full relative border-y border-border shadow-inner min-h-[650px]'):
             ui.label('HISTORY').classes('absolute -left-20 top-20 text-[15vw] font-black text-primary/[0.03] select-none pointer-events-none uppercase')
             with theme.container():
                 components.section_title(t('intro_history'), t('intro_history_subtitle'))
@@ -53,41 +53,34 @@ def introduction_page():
                     (t('intro_timeline_5_year'), t('intro_timeline_5_period'), t('intro_timeline_5_text'))
                 ]
 
-                with ui.element('div').classes('relative mt-12 w-full max-w-5xl mx-auto'):
-                    # 1. The Central Axis Line
-                    ui.element('div').classes('absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1 bg-primary/30 z-0 hidden md:block')
-                    
-                    for i, (year, period, text) in enumerate(timeline_data):
-                        # Side logic: 0, 2 -> Left; 1, 3 -> Right
-                        is_left = (i % 2 == 0)
+                # Horizontal Timeline Layout
+                with ui.element('div').classes('relative mt-16 w-full max-w-7xl mx-auto'):
+                    # Scrollable Container (Increased bottom padding to ensure no clipping)
+                    with ui.element('div').classes('flex flex-row overflow-x-auto gap-0 pb-24 pt-16 px-4 snap-x snap-mandatory hide-scrollbar relative w-full flex-nowrap items-start'):
+                        # 1. The Horizontal Axis Line (Fixed relative to the container)
+                        ui.element('div').classes('absolute left-0 right-0 top-[48px] h-1 bg-gradient-to-r from-primary/5 via-primary/30 to-primary/5 z-0 min-w-[2000px]')
                         
-                        with ui.element('div').classes('grid grid-cols-1 md:grid-cols-[1fr_80px_1fr] items-center mb-0 w-full relative z-10'):
-                            if is_left:
-                                # Row i (Even): Card in Col 1, Dot in Col 2, Spacer in Col 3
-                                with ui.element('div').classes('flex justify-end pr-8 md:pr-4'):
-                                    with ui.card().classes('w-full md:max-w-[380px] p-4 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all text-right items-end'):
-                                        ui.label(year).classes('text-lg font-black text-primary leading-tight')
-                                        ui.label(period).classes('text-[8px] font-bold uppercase tracking-widest text-muted-foreground mb-1 bg-muted px-2 py-0.5 rounded')
-                                        ui.label(text).classes('text-xs leading-relaxed text-muted-foreground/90')
+                        for i, (year, period, text) in enumerate(timeline_data):
+                            with ui.element('div').classes('flex-shrink-0 w-[280px] md:w-[340px] snap-center flex flex-col items-center gap-6 relative z-10'):
+                                # Dot on line
+                                with ui.element('div').classes('w-10 h-10 rounded-full bg-background border-[4px] border-primary/20 flex items-center justify-center shadow-md relative shrink-0'):
+                                    ui.element('div').classes('w-3 h-3 rounded-full bg-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]')
+                                    ui.element('div').classes('absolute inset-0 rounded-full border border-primary animate-ping opacity-20')
                                 
-                                with ui.element('div').classes('hidden md:flex justify-center items-center'):
-                                    with ui.element('div').classes('w-8 h-8 rounded-full bg-background border-[3px] border-primary flex items-center justify-center shadow-sm'):
-                                        ui.element('div').classes('w-1.5 h-1.5 rounded-full bg-primary animate-pulse')
-                                
-                                ui.element('div').classes('hidden md:block')
-                            else:
-                                # Row i (Odd): Spacer in Col 1, Dot in Col 2, Card in Col 3
-                                ui.element('div').classes('hidden md:block')
-                                
-                                with ui.element('div').classes('hidden md:flex justify-center items-center'):
-                                    with ui.element('div').classes('w-8 h-8 rounded-full bg-background border-[3px] border-primary flex items-center justify-center shadow-sm'):
-                                        ui.element('div').classes('w-1.5 h-1.5 rounded-full bg-primary animate-pulse')
-                                
-                                with ui.element('div').classes('flex justify-start pl-8 md:pl-4'):
-                                    with ui.card().classes('w-full md:max-w-[380px] p-4 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-all text-left items-start'):
-                                        ui.label(year).classes('text-lg font-black text-primary leading-tight')
-                                        ui.label(period).classes('text-[8px] font-bold uppercase tracking-widest text-muted-foreground mb-1 bg-muted px-2 py-0.5 rounded')
-                                        ui.label(text).classes('text-xs leading-relaxed text-muted-foreground/90')
+                                # Compact Content Card
+                                with ui.card().classes('w-[90%] p-6 bg-card border border-border rounded-3xl shadow-sm hover:shadow-elevated transition-all text-center flex flex-col items-center group relative h-auto min-h-[180px]'):
+                                    # Badge for period
+                                    ui.label(period).classes('text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 bg-muted px-3 py-1 rounded-full border border-border/50')
+                                    
+                                    # Year
+                                    ui.label(year).classes('text-2xl font-black text-primary leading-tight mb-2 group-hover:scale-105 transition-transform')
+                                    
+                                    # Description
+                                    ui.label(text).classes('text-xs leading-relaxed text-muted-foreground/80 font-medium whitespace-normal text-justify')
+                    
+                    # Gradient fades for scroll indication
+                    ui.element('div').classes('absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-card via-card/50 to-transparent pointer-events-none z-20')
+                    ui.element('div').classes('absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-card via-card/50 to-transparent pointer-events-none z-20')
 
         # ── 4. Đặc trưng nghệ thuật (NEW ACCORDION) ───────────────────────────
         with ui.element('section').classes('py-24 bg-background w-full'):
@@ -122,13 +115,13 @@ def introduction_page():
                     components.costume_block(
                         t('Trang phục Liền chị'),
                         t('Nổi bật với áo mớ ba mớ bảy, nón quai thao thắt dải lụa thướt tha mang vẻ đẹp dịu dàng kiêu sa đặc trưng của người con gái Kinh Bắc.'),
-                        '/static/costume_lien_chi.png',
+                        '/static/intro/costume_lien_chi.png',
                         items=[t('Áo mớ ba mớ bảy (Silk layers)'), t('Nón quai thao (Palm hat)'), t('Khăn mỏ quạ (Headscarf)')],
                     )
                     components.costume_block(
                         t('Trang phục Liền anh'),
                         t('Đậm chất nam nhi Kinh Bắc với áo the đen, quần lụa trắng, khăn xếp và chiếc ô đen che nghiêng thể hiện phong thái thanh lịch.'),
-                        '/static/costume_lien_anh.png',
+                        '/static/intro/costume_lien_anh.png',
                         items=[t('Áo the thâm (Black robe)'), t('Khăn xếp (Layered wrap)'), t('Ô đen (Traditional umbrella)')],
                         reverse=True,
                     )
@@ -142,7 +135,7 @@ def introduction_page():
                     # Hoi Lim Card
                     with ui.card().classes('group overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-elevated transition-all p-0'):
                         with ui.element('div').classes('relative aspect-video w-full overflow-hidden'):
-                            ui.image('/static/hoi_lim.png').classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-105')
+                            ui.image('/static/news/hoi_lim.png').classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-105')
                         with ui.column().classes('p-6 gap-3'):
                             ui.label(t('intro_hoi_lim_title')).classes('font-display text-2xl font-bold text-foreground group-hover:text-primary transition-colors')
                             ui.label(t('intro_hoi_lim_desc')).classes('text-sm text-muted-foreground leading-relaxed line-clamp-3')
@@ -150,7 +143,7 @@ def introduction_page():
                     # Boating Card
                     with ui.card().classes('group overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-elevated transition-all p-0'):
                         with ui.element('div').classes('relative aspect-video w-full overflow-hidden'):
-                            ui.image('/static/hat_tren_thuyen.png').classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-105')
+                            ui.image('/static/news/hat_tren_thuyen.png').classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-105')
                         with ui.column().classes('p-6 gap-3'):
                             ui.label(t('intro_boating_title')).classes('font-display text-2xl font-bold text-foreground group-hover:text-primary transition-colors')
                             ui.label(t('intro_boating_desc')).classes('text-sm text-muted-foreground leading-relaxed line-clamp-3')
@@ -161,22 +154,38 @@ def introduction_page():
                 components.section_title(t('intro_gallery'), t('intro_gallery_subtitle'))
                 
                 gallery_images = [
-                    '/static/gallery_1.png',
-                    '/static/gallery_2.png',
-                    '/static/gallery_3.png',
-                    '/static/gallery_4.png',
-                    '/static/gallery_5.png',
-                    '/static/gallery_6.png',
-                    '/static/gallery_7.png',
-                    '/static/gallery_8.png'
+                    '/static/gallery/gallery_1.png',
+                    '/static/gallery/gallery_2.png',
+                    '/static/gallery/gallery_3.png',
+                    '/static/gallery/gallery_4.png',
+                    '/static/gallery/gallery_5.png',
+                    '/static/gallery/gallery_6.png',
+                    '/static/gallery/gallery_7.png',
+                    '/static/gallery/gallery_8.png'
                 ]
 
-                with ui.element('div').classes('mt-12 w-full columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4'):
+                # Bento Grid Layout
+                with ui.element('div').classes('mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full auto-rows-[150px] md:auto-rows-[200px]'):
+                    # Custom spans for a mosaic effect
+                    spans = [
+                        'col-span-2 row-span-2', # 1
+                        'col-span-1 row-span-1', # 2
+                        'col-span-1 row-span-2', # 3
+                        'col-span-1 row-span-1', # 4
+                        'col-span-2 row-span-1', # 5
+                        'col-span-1 row-span-1', # 6
+                        'col-span-1 row-span-1', # 7
+                        'col-span-1 row-span-1', # 8
+                    ]
+                    
                     for idx, img_url in enumerate(gallery_images):
-                        with ui.element('div').classes('break-inside-avoid relative overflow-hidden rounded-2xl cursor-pointer group shadow-sm').on('click', lambda _, i=idx: open_lightbox(i)):
-                            ui.image(img_url).classes('w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110')
-                            with ui.element('div').classes('absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center'):
-                                ui.icon('zoom_in', size='3rem').classes('text-white')
+                        span_class = spans[idx] if idx < len(spans) else 'col-span-1'
+                        with ui.element('div').classes(f'{span_class} relative overflow-hidden rounded-2xl cursor-pointer group shadow-sm transition-all hover:shadow-xl').on('click', lambda _, i=idx: open_lightbox(i)):
+                            ui.image(img_url).classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-110')
+                            # Glass Overlay
+                            with ui.element('div').classes('absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center'):
+                                with ui.element('div').classes('p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 scale-50 group-hover:scale-100 transition-transform duration-300'):
+                                    ui.icon('zoom_in', size='2rem').classes('text-white')
 
         # Lightbox State (Simplified to avoid next_index error in some NiceGUI versions)
         state = {'index': 0}

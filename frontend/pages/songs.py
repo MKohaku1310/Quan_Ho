@@ -10,44 +10,52 @@ async def songs_page():
     with theme.frame():
         components.page_header('Thư viện bài hát', 'Kho tàng các làn điệu Quan họ Kinh Bắc được sưu tầm và gìn giữ')
 
-        state = type('state', (), {'search': '', 'category': 'Tất cả'})()
+        class SongState:
+            def __init__(self):
+                self.search = ''
+                self.category = 'Tất cả'
+                self.page = 1
+                self.items_per_page = 12
+        
+        state = SongState()
+        
+        with ui.element('section').classes('pt-6 pb-12 bg-background w-full'):
+            with theme.container():
+                @ui.refreshable
+                async def songs_content():
+                    if state.search:
+                        melodies = await api_client.search_melodies(state.search)
+                    else:
+                        melodies = await api_client.get_melodies()
+                    
+                    if state.category != 'Tất cả':
+                        cat_map = {'Làn điệu cổ': 'co', 'Làn điệu mới': 'moi', 'Làn điệu cải biên': 'cai-bien'}
+                        target_cat = cat_map.get(state.category)
+                        melodies = [m for m in melodies if m.get('category') == target_cat]
 
-        @ui.refreshable
-        async def songs_content():
-            if state.search:
-                melodies = await api_client.search_melodies(state.search)
-            else:
-                melodies = await api_client.get_melodies()
-            
-            if state.category != 'Tất cả':
-                cat_map = {'Làn điệu cổ': 'co', 'Làn điệu mới': 'moi', 'Làn điệu cải biên': 'cai-bien'}
-                target_cat = cat_map.get(state.category)
-                melodies = [m for m in melodies if m.get('category') == target_cat]
-
-            with ui.element('section').classes('py-20 bg-background w-full'):
-                with theme.container():
-                    # Container: flex-col for mobile, flex-row for sm+
-                    with ui.element('div').classes('mb-12 w-full bg-card p-4 sm:p-6 rounded-2xl border border-border shadow-sm flex flex-col sm:flex-row gap-4 items-center'):
+                    # Compact Modern Search & Filter Bar (Single Row)
+                    with ui.element('div').classes('modern-search-card mb-6 w-full p-2 sm:p-3 rounded-xl flex items-center gap-2 sm:gap-4'):
                         # Search Part
-                        with ui.element('div').classes('flex-1 w-full flex items-center gap-2'):
-                            search_input = ui.input(placeholder='Tìm kiếm bài hát...', value=state.search).props('outlined dense').classes('flex-1 bg-background rounded-lg')
-                            search_input.on('keydown.enter', lambda e: (setattr(state, 'search', e.sender.value), songs_content.refresh()))
-                            ui.button(icon='search', on_click=lambda: (setattr(state, 'search', search_input.value), songs_content.refresh())).props('flat round size=lg').classes('text-primary bg-primary/5')
+                        search_input = ui.input(placeholder='Tìm kiếm bài hát...').props('outlined dense clearable debounce=500 icon=search').classes('modern-input flex-1 bg-background rounded-lg')
+                        search_input.on('update:model-value', lambda e: (setattr(state, 'search', e or ''), setattr(state, 'page', 1), songs_content.refresh()))
                         
-                        # Filter Part
-                        with ui.element('div').classes('w-full sm:w-auto flex items-center gap-2'):
-                            cat_select = ui.select(['Tất cả', 'Làn điệu cổ', 'Làn điệu mới', 'Làn điệu cải biên'], value=state.category).props('dense outlined').classes('flex-1 sm:w-48 bg-background')
-                            cat_select.on('change', lambda e: (setattr(state, 'category', e.value), songs_content.refresh()))
+                        # Filter Part (Compact)
+                        cat_select = ui.select(['Tất cả', 'Làn điệu cổ', 'Làn điệu mới', 'Làn điệu cải biên'], value=state.category).props('dense outlined rounded-lg options-dense').classes('modern-select w-32 sm:w-48 bg-background')
+                        cat_select.on('update:model-value', lambda e: (setattr(state, 'category', e or 'Tất cả'), setattr(state, 'page', 1), songs_content.refresh()))
                         
                         if app.storage.user.get('role') == 'admin':
-                            ui.button('Thêm bài hát', icon='add', on_click=lambda: ui.navigate.to('/them-bai-hat')).props('unelevated rounded-lg size=md').classes('bg-primary text-white font-bold w-full sm:w-auto h-11')
+                            ui.button(icon='add', on_click=lambda: ui.navigate.to('/admin/edit/song/0')).props('unelevated round size=md').classes('bg-primary text-white shadow-md hover:scale-110 transition-transform shrink-0')
 
                     if not melodies:
                         components.empty_state('Không tìm thấy bài hát nào.')
                     else:
+                        start = (state.page - 1) * state.items_per_page
+                        end = start + state.items_per_page
+                        page_items = melodies[start:end]
+                        
                         with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 w-full px-2'):
                             cat_map_label = {'co': 'Làn điệu cổ', 'moi': 'Làn điệu mới', 'cai-bien': 'Làn điệu cải biên'}
-                            for song in melodies:
+                            for song in page_items:
                                 components.song_card(
                                     song.get('id'),
                                     song.get('name', 'Không tiêu đề'),
@@ -56,8 +64,17 @@ async def songs_page():
                                     melody=cat_map_label.get(song.get('category'), 'Làn điệu cổ'),
                                     duration=song.get('duration'),
                                 )
-        
-        await songs_content()
+                        
+                        # Pagination UI
+                        total_pages = (len(melodies) + state.items_per_page - 1) // state.items_per_page
+                        if total_pages > 1:
+                            with ui.row().classes('w-full justify-center mt-12 gap-2'):
+                                ui.button(icon='chevron_left', on_click=lambda: (setattr(state, 'page', max(1, state.page-1)), songs_content.refresh())).props('flat round dense').classes('text-primary')
+                                for p in range(1, total_pages + 1):
+                                    ui.button(str(p), on_click=lambda p=p: (setattr(state, 'page', p), songs_content.refresh())).props(f'flat round dense {"color=primary shadow-md bg-primary/10" if p == state.page else "color=grey"}').classes('font-bold text-sm')
+                                ui.button(icon='chevron_right', on_click=lambda: (setattr(state, 'page', min(total_pages, state.page+1)), songs_content.refresh())).props('flat round dense').classes('text-primary')
+                
+                await songs_content()
 
 @ui.page('/bai-hat/{id}', response_timeout=60.0)
 

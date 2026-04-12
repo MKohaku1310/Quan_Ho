@@ -341,6 +341,34 @@ def apply_theme():
                 to { stroke-dashoffset: 0; }
             }
 
+            /* Modern UI Search Components */
+            .modern-search-card {
+                background: rgba(255, 255, 255, 0.6) !important;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(180, 120, 60, 0.15) !important;
+                box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .modern-search-card:hover {
+                background: rgba(255, 255, 255, 0.9) !important;
+                box-shadow: 0 10px 30px -10px rgba(180, 120, 60, 0.15);
+            }
+            
+            .modern-input .q-field__control {
+                background: white !important;
+                border-radius: 12px !important;
+                transition: all 0.3s ease;
+            }
+            .modern-input .q-field--focused .q-field__control {
+                box-shadow: 0 0 0 3px rgba(178, 30, 30, 0.15);
+                border-color: #b21e1e !important;
+            }
+            
+            .modern-select .q-field__control {
+                background: white !important;
+                border-radius: 12px !important;
+            }
+
             ::-webkit-scrollbar       { width: 8px; }
             ::-webkit-scrollbar-track { background: hsl(var(--background)); }
             ::-webkit-scrollbar-thumb {

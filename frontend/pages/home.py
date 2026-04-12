@@ -73,7 +73,7 @@ async def home_page():
                             components.artist_card(
                                 artist.get('id'),
                                 artist.get('name', 'Nghệ nhân'),
-                                artist.get('image_url', '/static/chatbot-avatar.png'),
+                                artist.get('image_url', '/static/common/chatbot-avatar.png'),
                                 artist.get('village', 'Kinh Bắc'),
                                 index=i
                             )

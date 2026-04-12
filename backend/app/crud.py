@@ -39,6 +39,26 @@ def update_user_password(db: Session, user_id: int, new_password: str):
     db.commit()
     return True
 
+def get_users(db: Session, skip: int = 0, limit: int = 100) -> List[models.User]:
+    return db.query(models.User).offset(skip).limit(limit).all()
+
+def delete_user(db: Session, user_id: int) -> bool:
+    db_user = get_user(db, user_id)
+    if not db_user:
+        return False
+    db.delete(db_user)
+    db.commit()
+    return True
+
+def update_user_role(db: Session, user_id: int, role: str) -> Optional[models.User]:
+    db_user = get_user(db, user_id)
+    if not db_user:
+        return None
+    db_user.role = role
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 def get_user_activities(db: Session, user_id: int) -> List[schemas.UserActivity]:
     activities = []
     
@@ -193,6 +213,13 @@ def update_melody(db: Session, melody_id: int, melody_update: dict) -> Optional[
     db.refresh(db_melody)
     return db_melody
 
+def delete_melody(db: Session, melody_id: int) -> bool:
+    db_melody = get_melody(db, melody_id)
+    if not db_melody: return False
+    db.delete(db_melody)
+    db.commit()
+    return True
+
 def update_artist(db: Session, artist_id: int, artist_update: dict) -> Optional[models.Artist]:
     db_artist = get_artist(db, artist_id)
     if not db_artist:
@@ -203,3 +230,44 @@ def update_artist(db: Session, artist_id: int, artist_update: dict) -> Optional[
     db.commit()
     db.refresh(db_artist)
     return db_artist
+
+def delete_artist(db: Session, artist_id: int) -> bool:
+    db_artist = get_artist(db, artist_id)
+    if not db_artist: return False
+    db.delete(db_artist)
+    db.commit()
+    return True
+
+def delete_article(db: Session, article_id: int) -> bool:
+    db_article = get_article(db, article_id)
+    if not db_article: return False
+    db.delete(db_article)
+    db.commit()
+    return True
+
+def update_article(db: Session, article_id: int, article_update: dict) -> Optional[models.Article]:
+    db_article = get_article(db, article_id)
+    if not db_article: return None
+    for key, value in article_update.items():
+        if hasattr(db_article, key):
+            setattr(db_article, key, value)
+    db.commit()
+    db.refresh(db_article)
+    return db_article
+
+def delete_location(db: Session, location_id: int) -> bool:
+    db_location = db.query(models.Location).filter(models.Location.id == location_id).first()
+    if not db_location: return False
+    db.delete(db_location)
+    db.commit()
+    return True
+
+def update_location(db: Session, location_id: int, location_update: dict) -> Optional[models.Location]:
+    db_location = db.query(models.Location).filter(models.Location.id == location_id).first()
+    if not db_location: return None
+    for key, value in location_update.items():
+        if hasattr(db_location, key):
+            setattr(db_location, key, value)
+    db.commit()
+    db.refresh(db_location)
+    return db_location

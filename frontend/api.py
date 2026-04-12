@@ -155,6 +155,30 @@ class APIClient:
         except: return []
         return []
 
+    # Administrative APIs
+    async def get_users(self) -> List[Dict[str, Any]]:
+        token = app.storage.user.get('access_token')
+        if not token: return []
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(f"{API_BASE_URL}/auth/users/", headers={"Authorization": f"Bearer {token}"})
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            print(f"Error fetching users: {e}")
+        return []
+
+    async def delete_user(self, user_id: int) -> bool:
+        token = app.storage.user.get('access_token')
+        if not token: return False
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.delete(f"{API_BASE_URL}/auth/users/{user_id}/", headers={"Authorization": f"Bearer {token}"})
+                return response.status_code == 200
+        except Exception as e:
+            print(f"Error deleting user: {e}")
+        return False
+
     async def ask_chatbot(self, message: str) -> Optional[str]:
         res = await self._post("chatbot", {"message": message})
         return res.get('response') if res else None
@@ -229,13 +253,41 @@ class APIClient:
         return await self._post("melodies", data, use_token=True)
 
     async def update_melody(self, id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        return await self._put(f"melodies/{id}", data)
+        return await self._put(f"melodies/{id}", data, use_token=True)
+
+    async def delete_melody(self, id: int) -> bool:
+        res = await self._delete(f"melodies/{id}", use_token=True)
+        return res is not None
 
     async def create_artist(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         return await self._post("artists", data, use_token=True)
 
     async def update_artist(self, id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        return await self._put(f"artists/{id}", data)
+        return await self._put(f"artists/{id}", data, use_token=True)
+
+    async def delete_artist(self, id: int) -> bool:
+        res = await self._delete(f"artists/{id}", use_token=True)
+        return res is not None
+
+    async def create_location(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        return await self._post("locations", data, use_token=True)
+
+    async def update_location(self, id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        return await self._put(f"locations/{id}", data, use_token=True)
+
+    async def delete_location(self, id: int) -> bool:
+        res = await self._delete(f"locations/{id}", use_token=True)
+        return res is not None
+
+    async def create_article(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        return await self._post("articles", data, use_token=True)
+
+    async def update_article(self, id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        return await self._put(f"articles/{id}", data, use_token=True)
+
+    async def delete_article(self, id: int) -> bool:
+        res = await self._delete(f"articles/{id}", use_token=True)
+        return res is not None
 
     async def get_melody(self, melody_id: int) -> Optional[Dict[str, Any]]:
         try:

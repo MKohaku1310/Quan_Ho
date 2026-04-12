@@ -49,3 +49,14 @@ def read_melody(melody_id: int, db: Session = Depends(get_db)):
 @router.get("/search/")
 def search_melodies(search: str, db: Session = Depends(get_db)):
     return crud.get_melodies_by_search(db, search)
+
+@router.delete("/{melody_id}")
+def delete_melody(
+    melody_id: int, 
+    db: Session = Depends(get_db),
+    admin: schemas.User = Depends(get_current_active_admin)
+):
+    success = crud.delete_melody(db, melody_id=melody_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Melody not found")
+    return {"message": "Melody deleted successfully"}

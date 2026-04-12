@@ -38,3 +38,14 @@ def read_artist(artist_id: int, db: Session = Depends(get_db)):
     if db_artist is None:
         raise HTTPException(status_code=404, detail="Artist not found")
     return db_artist
+
+@router.delete("/{artist_id}")
+def delete_artist(
+    artist_id: int, 
+    db: Session = Depends(get_db),
+    admin: schemas.User = Depends(get_current_active_admin)
+):
+    success = crud.delete_artist(db, artist_id=artist_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    return {"message": "Artist deleted successfully"}

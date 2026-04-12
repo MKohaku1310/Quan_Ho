@@ -23,7 +23,7 @@ def navbar():
             # 1. Left: Logo
             with ui.element('div').classes('flex-1 flex justify-start items-center'):
                 with ui.link(target='/').classes('flex items-center gap-2 no-underline transition-opacity hover:opacity-80 shrink-0'):
-                    ui.image('/static/lotus-ornament.png').classes('h-7 w-7')
+                    ui.image('/static/common/lotus-ornament.png').classes('h-7 w-7')
                     with ui.row().classes('gap-1 items-baseline'):
                         ui.label('Quan Họ').classes('font-display text-lg font-bold text-primary whitespace-nowrap')
                         ui.label('Bắc Ninh').classes('font-display text-lg font-bold text-[#d4af37] whitespace-nowrap')
@@ -48,6 +48,9 @@ def navbar():
                 # Auth buttons (visible on sm and up)
                 with ui.element('div').classes('items-center gap-2').style('display: flex !important;'):
                     if app.storage.user.get('is_authenticated'):
+                        if app.storage.user.get('role') == 'admin':
+                            ui.button('ADMIN', icon='admin_panel_settings', on_click=lambda: ui.navigate.to('/admin')).props('flat rounded size=md').classes('text-secondary font-black px-4 h-11 border border-secondary/20 mr-2')
+                        
                         ui.button(t('profile'), icon='account_circle', on_click=lambda: ui.navigate.to('/ho-so')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-11')
                         ui.button(icon='logout', on_click=lambda: (api_client.logout(), ui.navigate.to('/'))).props('flat round size=md').classes('text-destructive hover:bg-destructive/10')
                     else:
@@ -113,7 +116,7 @@ def footer():
                 # Column 1: Brand
                 with ui.column().classes('gap-4'):
                     with ui.row().classes('items-center gap-2'):
-                        ui.image('/static/lotus-ornament.png').classes('h-8 w-8')
+                        ui.image('/static/common/lotus-ornament.png').classes('h-8 w-8')
                         ui.label('Quan Họ Bắc Ninh').classes('font-display text-lg font-bold text-primary')
                     ui.label(t('footer_brand_desc')).classes('text-sm text-muted-foreground leading-relaxed')
 
@@ -163,7 +166,7 @@ def footer():
 
 def section_title(title, subtitle=None):
     with ui.column().classes('mb-8 text-center w-full items-center gap-2'):
-        ui.image('/static/lotus-ornament.png').classes('mx-auto mb-2 h-10 w-10 opacity-70')
+        ui.image('/static/common/lotus-ornament.png').classes('mx-auto mb-2 h-10 w-10 opacity-70')
         ui.label(title).classes('font-display text-3xl font-bold text-foreground md:text-4xl')
         if subtitle:
             ui.label(subtitle).classes('mx-auto max-w-2xl text-muted-foreground text-sm')
@@ -183,9 +186,9 @@ def empty_state(message, icon='search_off'):
         ui.label(message).classes('text-xl italic font-light tracking-wide')
 
 def page_header(title, subtitle):
-    # Account for fixed navbar height (56px)
-    with ui.element('section').classes('bg-card/30 pt-32 pb-20 border-b border-border w-full flex justify-center').style('padding-top: 120px;'):
+    # Account for fixed navbar height (56px) - Reduced for compact look
+    with ui.element('section').classes('bg-card/30 pt-16 pb-8 border-b border-border w-full flex justify-center').style('padding-top: 80px;'):
         with theme.container().classes('text-center'):
-            ui.image('/static/lotus-ornament.png').classes('mb-6 h-12 w-12 mx-auto')
+            ui.image('/static/common/lotus-ornament.png').classes('mb-6 h-12 w-12 mx-auto')
             ui.label(title).classes('font-display text-5xl font-black text-foreground mb-4 tracking-tight')
             ui.label(subtitle).classes('max-w-2xl mx-auto text-lg text-muted-foreground font-light leading-relaxed')

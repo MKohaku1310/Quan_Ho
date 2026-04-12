@@ -19,7 +19,7 @@ async def chatbot_page():
                 
                 # Chat Header
                 with ui.row().classes('items-center gap-4 mb-4 bg-card p-4 rounded-2xl border border-border shadow-sm shrink-0 mx-2'):
-                    ui.image('/static/chatbot-avatar.png').classes('w-12 h-12 rounded-full border-2 border-primary/20 bg-muted shadow-sm')
+                    ui.image('/static/common/chatbot-avatar.png').classes('w-12 h-12 rounded-full border-2 border-primary/20 bg-muted shadow-sm')
                     with ui.column().classes('gap-0'):
                         ui.label('Trợ lý Quan Họ AI').classes('font-display text-lg font-bold text-primary')
                         with ui.row().classes('items-center gap-1.5'):

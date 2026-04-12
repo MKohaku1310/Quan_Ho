@@ -20,12 +20,24 @@ LEAFLET_INIT_JS = '''
     window.markers = {};
     
     window.initMap = function() {
-        if (window.map) return;
+        if (typeof L === 'undefined') return setTimeout(window.initMap, 500);
         var mapElement = document.getElementById("map");
         if (!mapElement) return;
-        window.map = L.map("map").setView([21.1861, 106.0763], 11);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: '&copy; OpenStreetMap contributors'
+        if (window.map) {
+            window.map.invalidateSize();
+            return;
+        }
+        
+        // Use Google Maps Tiles for a familiar "Google Look"
+        window.map = L.map("map", {
+            zoomControl: true,
+            scrollWheelZoom: true
+        }).setView([21.1861, 106.0763], 11);
+        
+        L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: 'Map data &copy; Google'
         }).addTo(window.map);
     };
     
@@ -84,14 +96,17 @@ async def villages_page():
                 self.filtered_items = items
                 self.search_query = ''
                 self.district_filter = 'Tất cả'
+                self.page = 1
+                self.items_per_page = 12
+                self.view_tab = 'list'
 
         # Fetch data
         villages = await api_client.get_villages()
         if not villages:
             villages = [
-                {'id': 1, 'name': 'Làng Diềm', 'district': 'TP Bắc Ninh', 'latitude': 21.2167, 'longitude': 106.0500, 'description': 'Cái nôi cổ nhất của dân ca Quan họ với kiến trúc cổng làng cổ kính rêu phong và giếng Ngọc thiêng liêng...', 'artist_count': 12, 'featured_songs': 'Ngồi tựa mạn thuyền, La hới la nương', 'badges': 'Cái nôi Quan họ, Di tích quốc gia', 'image_url': '/static/village_diem_ancient_gate_1775935115741.png'},
-                {'id': 2, 'name': 'Làng Lim', 'district': 'Tiên Du', 'latitude': 21.1667, 'longitude': 106.0167, 'description': 'Nơi diễn ra hội Lim truyền thống với các canh hát đối đáp trên thuyền rồng đầy thơ mộng...', 'artist_count': 8, 'featured_songs': 'Khách đến chơi nhà', 'badges': 'Lễ hội lớn nhất', 'image_url': '/static/quan_ho_festival_boat_1775935130553.png'},
-                {'id': 3, 'name': 'Làng Bịu', 'district': 'Tiên Du', 'latitude': 21.1750, 'longitude': 106.0250, 'description': 'Làng Bịu nổi tiếng với truyền thống truyền dạy Quan họ cho thế hệ trẻ ngay tại đình làng...', 'artist_count': 5, 'featured_songs': 'Ba sáu thứ chim', 'badges': 'Kết chạ truyền thống', 'image_url': '/static/quan_ho_teaching_children_1775935150468.png'}
+                {'id': 1, 'name': 'Làng Diềm', 'district': 'TP Bắc Ninh', 'latitude': 21.2167, 'longitude': 106.0500, 'description': 'Cái nôi cổ nhất của dân ca Quan họ với kiến trúc cổng làng cổ kính rêu phong và giếng Ngọc thiêng liêng...', 'artist_count': 12, 'featured_songs': 'Ngồi tựa mạn thuyền, La hới la nương', 'badges': 'Cái nôi Quan họ, Di tích quốc gia', 'image_url': '/static/villages/LangDiem.png'},
+                {'id': 2, 'name': 'Làng Lim', 'district': 'Tiên Du', 'latitude': 21.1667, 'longitude': 106.0167, 'description': 'Nơi diễn ra hội Lim truyền thống với các canh hát đối đáp trên thuyền rồng đầy thơ mộng...', 'artist_count': 8, 'featured_songs': 'Khách đến chơi nhà', 'badges': 'Lễ hội lớn nhất', 'image_url': '/static/villages/LangLim.png'},
+                {'id': 3, 'name': 'Làng Bịu', 'district': 'Tiên Du', 'latitude': 21.1750, 'longitude': 106.0250, 'description': 'Làng Bịu nổi tiếng với truyền thống truyền dạy Quan họ cho thế hệ trẻ ngay tại đình làng...', 'artist_count': 5, 'featured_songs': 'Ba sáu thứ chim', 'badges': 'Kết chạ truyền thống', 'image_url': '/static/villages/LangBiu.png'}
             ]
         
         state = State(villages)
@@ -112,9 +127,22 @@ async def villages_page():
                 components.empty_state('Không tìm thấy làng nào phù hợp.')
                 return
             
-            with ui.element('div').classes('grid grid-cols-1 lg:grid-cols-2 gap-6 w-full p-2'):
-                for item in state.filtered_items:
-                    components.village_grid_card(item, on_map_click=lambda item=item: ui.run_javascript(f'window.focusMarker({item["id"]})'))
+            start = (state.page - 1) * state.items_per_page
+            end = start + state.items_per_page
+            page_items = state.filtered_items[start:end]
+            
+            with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full'):
+                for item in page_items:
+                    components.village_grid_card(item, on_map_click=None)
+            
+            # Pagination UI
+            total_pages = (len(state.filtered_items) + state.items_per_page - 1) // state.items_per_page
+            if total_pages > 1:
+                with ui.row().classes('w-full justify-center mt-12 gap-2 pb-8'):
+                    ui.button(icon='chevron_left', on_click=lambda: (setattr(state, 'page', max(1, state.page-1)), village_list.refresh())).props('flat round dense').classes('text-primary')
+                    for p in range(1, total_pages + 1):
+                        ui.button(str(p), on_click=lambda p=p: (setattr(state, 'page', p), village_list.refresh())).props(f'flat round dense {"color=primary shadow-md bg-primary/10" if p == state.page else "color=grey"}').classes('font-bold text-sm')
+                    ui.button(icon='chevron_right', on_click=lambda: (setattr(state, 'page', min(total_pages, state.page+1)), village_list.refresh())).props('flat round dense').classes('text-primary')
 
         def apply_filters():
             q = state.search_query.lower()
@@ -124,33 +152,53 @@ async def villages_page():
                 if (q in v.get('name', '').lower() or q in v.get('description', '').lower()) 
                 and (d == 'Tất cả' or v.get('district') == d)
             ]
+            state.page = 1
             village_list.refresh()
             update_markers()
 
-        # Main Layout: Responsive Split
-        with ui.element('div').classes('w-full flex flex-col md:flex-row h-screen md:h-[calc(100vh-64px)] overflow-hidden bg-background border-t border-border'):
-            
-            # Map Section
-            with ui.element('div').classes('w-full md:w-[55%] lg:w-[60%] h-[40vh] md:h-full relative order-first md:order-last border-b md:border-b-0 md:border-l border-border'):
-                ui.element('div').props('id="map"').classes('w-full h-full').style('height: 100%; width: 100%;')
-
-            # List Section
-            with ui.element('div').classes('w-full md:w-[45%] lg:w-[40%] h-[60vh] md:h-full flex flex-col bg-background order-last md:order-first'):
-                # Control bar
-                with ui.element('div').classes('p-4 sm:p-6 gap-4 bg-card/30 border-b border-border w-full shadow-sm z-10 flex flex-col'):
-                    with ui.element('div').classes('w-full flex flex-col sm:flex-row items-center gap-3'):
-                        search_input = ui.input(placeholder='Tìm làng...').classes('w-full sm:flex-1 shadow-inner bg-background').props('outlined dense clearable icon="search"').on('update:model-value', lambda e: (setattr(state, 'search_query', e or ''), apply_filters()))
+        with ui.element('section').classes('pt-6 pb-16 bg-background w-full min-h-screen'):
+            with theme.container():
+                # Filter & Tabs Header
+                with ui.column().classes('w-full gap-6 mb-8'):
+                    # Control bar
+                    with ui.element('div').classes('modern-search-card p-3 gap-4 w-full flex flex-col md:flex-row items-center rounded-2xl border border-border bg-card shadow-sm'):
+                        with ui.row().classes('flex-1 w-full items-center gap-4'):
+                            search_input = ui.input(placeholder='Tìm làng...').classes('modern-input flex-1 bg-background rounded-lg').props('outlined dense clearable debounce=500 icon=search')
+                            search_input.on('update:model-value', lambda e: (setattr(state, 'search_query', e or ''), apply_filters()))
+                            
+                            districts = ['Tất cả', 'Tiên Du', 'Từ Sơn', 'Yên Phong', 'TP Bắc Ninh']
+                            district_select = ui.select(districts, value='Tất cả').classes('modern-select w-44 bg-background').props('outlined dense rounded-lg options-dense')
+                            district_select.on('update:model-value', lambda e: (setattr(state, 'district_filter', e or 'Tất cả'), apply_filters()))
                         
-                        districts = ['Tất cả', 'Tiên Du', 'Từ Sơn', 'Yên Phong', 'TP Bắc Ninh']
-                        district_select = ui.select(districts, value='Tất cả', label='Huyện').classes('w-full sm:w-40 bg-background').props('outlined dense rounded').on('update:model-value', lambda e: (setattr(state, 'district_filter', e), apply_filters()))
+                        if app.storage.user.get('role') == 'admin':
+                            ui.button('THÊM LÀNG', icon='add_location', on_click=lambda: ui.navigate.to('/admin/edit/village/0')).props('unelevated rounded color=primary').classes('font-bold shadow-md shadow-primary/20 whitespace-nowrap px-6')
 
-                # Scroll Area
-                with ui.scroll_area().classes('flex-1 w-full'):
-                    with ui.column().classes('p-4 sm:p-6 w-full gap-2'):
+                    # Tabs
+                    with ui.tabs().classes('w-full border-b border-border') as tabs:
+                        list_tab = ui.tab('list', label='DANH SÁCH', icon='grid_view').classes('px-8 font-bold text-sm tracking-widest')
+                        map_tab = ui.tab('map', label='BẢN ĐỒ', icon='map').classes('px-8 font-bold text-sm tracking-widest')
+
+                # Tab Panels
+                with ui.tab_panels(tabs, value='list').classes('w-full bg-transparent overflow-visible') as panels:
+                    with ui.tab_panel('list').classes('p-0'):
                         village_list()
+                    
+                    with ui.tab_panel('map').classes('p-0'):
+                        with ui.card().classes('relative w-full h-[600px] p-0 rounded-2xl border border-border shadow-lg overflow-hidden'):
+                            ui.element('div').props('id="map"').classes('w-full h-full')
+                        
+                        # Trigger map init when tab opens
+                        async def on_tab_change(e):
+                            if e.value == 'map':
+                                # Wait a bit for DOM to settle
+                                await asyncio.sleep(0.5)
+                                await ui.run_javascript('window.initMap()', respond=False)
+                                await asyncio.sleep(0.2)
+                                update_markers()
+                        
+                        tabs.on('update:model-value', on_tab_change)
 
-        # Delayed init for Leaflet animation
-        ui.timer(0.2, lambda: ui.run_javascript('window.initMap()'), once=True)
+        # Initial marker load
         ui.timer(0.5, update_markers, once=True)
 
 @ui.page('/lang-quan-ho/{id}')
@@ -166,7 +214,7 @@ async def village_detail_page(id: int):
                 'latitude': 21.2167, 
                 'longitude': 106.0500, 
                 'description': 'Cái nôi cổ nhất của dân ca Quan họ Bắc Ninh. Làng Diềm (Viêm Xá) là nơi duy nhất thờ vị Thủy tổ Quan họ - Đức Vua Bà. Nơi đây không chỉ giữ được những làn điệu cổ truyền mà còn duy trì nếp sống, văn hóa Quan họ vô cùng đậm đà.', 
-                'image_url': '/static/village_diem_ancient_gate_1775935115741.png', 
+                'image_url': '/static/villages/LangDiem.png', 
                 'history': 'Làng Diềm có lịch sử hàng ngàn năm, gắn liền với huyền tích về Đức Vua Bà. Trải qua bao thăng trầm, làng vẫn giữ được 12 giọng Quan họ cổ tinh túy.', 
                 'culture': 'Hàng năm vào ngày mùng 6 tháng Giêng, làng Diềm mở lễ hội Vua Bà - ngày hội lớn nhất của làng với nghi thức rước kiệu và các canh hát cửa đình, hát dưới thuyền đặc sắc.', 
                 'artist_count': 15, 
@@ -232,7 +280,10 @@ async def village_detail_page(id: int):
                             lat, lng = village.get('latitude'), village.get('longitude')
                             if lat and lng:
                                 src = f"https://www.google.com/maps?q={lat},{lng}&output=embed&z=15"
-                                ui.html(f'<iframe src="{src}" width="100%" height="300" style="border:0; border-radius: 16px" allowfullscreen loading="lazy"></iframe>')
+                                ui.html(f'<iframe src="{src}" width="100%" height="400" style="border:0; border-radius: 20px" allowfullscreen loading="lazy"></iframe>')
+                                with ui.link(target=f"https://www.google.com/maps/search/?api=1&query={lat},{lng}").classes('mt-4 inline-flex items-center gap-2 text-primary no-underline hover:underline'):
+                                    ui.icon('open_in_new', size='16px')
+                                    ui.label('Mở trong Google Maps').classes('text-sm font-bold')
                             else:
                                 ui.element('div').classes('h-[300px] bg-muted rounded-2xl flex items-center justify-center p-6 text-center').add(ui.label('Thông tin tọa độ đang được cập nhật').classes('text-sm italic text-muted-foreground'))
 
