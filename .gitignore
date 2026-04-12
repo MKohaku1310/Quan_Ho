@@ -1,8 +1,12 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 env/
 build/
@@ -20,10 +24,23 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-backend/venv/
-backend/.env
 
-# Node
+# Virtual Environments
+venv/
+ENV/
+.env
+.venv
+virtualenv/
+
+# Database
+*.db
+*.sqlite3
+
+# Backend specific
+backend/.env
+backend/quan_ho.db
+
+# Frontend / Node
 node_modules/
 frontend/dist/
 frontend/node_modules/
@@ -31,12 +48,10 @@ frontend/node_modules/
 .stylelintcache
 *.log
 
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
 .DS_Store
 Thumbs.db

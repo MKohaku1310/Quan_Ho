@@ -2,11 +2,12 @@ from nicegui import ui
 import theme
 
 def hero_banner():
-    with ui.element('section').classes('relative flex min-h-[92vh] items-center overflow-hidden w-full').style('padding-top: 56px;'):
-        ui.image('/static/hero-banner-v2.png').classes('absolute inset-0 h-full w-full object-cover object-center')
-        ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-70')
+    # Adjusted height and object-position to prevent excessive zoom on desktop
+    with ui.element('section').classes('relative flex min-h-[500px] md:min-h-[600px] lg:min-h-[85vh] xl:min-h-[90vh] items-center overflow-visible w-full shadow-2xl').style('padding-top: 56px;'):
+        ui.image('/static/hero-banner-v2.png').classes('absolute inset-0 h-full w-full object-cover object-[center_30%] scale-100')
+        ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-75 md:opacity-70')
         
-        with ui.element('div').classes('relative z-10 container mx-auto px-4 pt-20 pb-52 text-center flex flex-col items-center'):
+        with ui.element('div').classes('relative z-10 container mx-auto px-4 pt-4 pb-24 text-center flex flex-col items-center min-h-[400px] justify-center overflow-visible'):
             ui.label('DI SẢN VĂN HÓA PHI VẬT THỂ UNESCO').classes(
                 'mb-4 text-sm font-medium uppercase tracking-[0.3em] text-gold-light'
             ).style('animation: fade-in-up 0.8s ease-out')
@@ -89,7 +90,7 @@ def costume_block(title, desc, image_url, items=None, reverse=False):
     alignment = 'self-start' if not reverse else 'self-end'
     
     with ui.card().classes(
-        f'relative w-full max-w-[1000px] {alignment} overflow-hidden rounded-[2rem] border border-border/50 '
+        f'relative w-full max-w-[1000px] {alignment} overflow-visible rounded-[2rem] border border-border/50 '
         f'bg-card/40 shadow-elevated hover:shadow-2xl transition-all duration-500 p-0 group z-10'
     ):
         ui.image('/static/lotus-ornament.png').classes(

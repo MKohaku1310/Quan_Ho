@@ -6,7 +6,6 @@ from utils import get_embed_url
 import re
 
 @ui.page('/bai-hat', response_timeout=60.0)
-
 async def songs_page():
     with theme.frame():
         components.page_header('Thư viện bài hát', 'Kho tàng các làn điệu Quan họ Kinh Bắc được sưu tầm và gìn giữ')
@@ -27,23 +26,26 @@ async def songs_page():
 
             with ui.element('section').classes('py-20 bg-background w-full'):
                 with theme.container():
-                    with ui.row().classes('mb-12 w-full gap-4 items-center bg-card p-6 rounded-2xl border border-border shadow-sm'):
-                        search_input = ui.input(placeholder='Tìm kiếm bài hát...', value=state.search).props('outlined dense borderless').classes('flex-1 bg-background rounded-lg px-4')
-                        search_input.on('keydown.enter', lambda e: (setattr(state, 'search', e.sender.value), songs_content.refresh()))
+                    # Container: flex-col for mobile, flex-row for sm+
+                    with ui.element('div').classes('mb-12 w-full bg-card p-4 sm:p-6 rounded-2xl border border-border shadow-sm flex flex-col sm:flex-row gap-4 items-center'):
+                        # Search Part
+                        with ui.element('div').classes('flex-1 w-full flex items-center gap-2'):
+                            search_input = ui.input(placeholder='Tìm kiếm bài hát...', value=state.search).props('outlined dense').classes('flex-1 bg-background rounded-lg')
+                            search_input.on('keydown.enter', lambda e: (setattr(state, 'search', e.sender.value), songs_content.refresh()))
+                            ui.button(icon='search', on_click=lambda: (setattr(state, 'search', search_input.value), songs_content.refresh())).props('flat round size=lg').classes('text-primary bg-primary/5')
                         
-                        cat_select = ui.select(['Tất cả', 'Làn điệu cổ', 'Làn điệu mới', 'Làn điệu cải biên'], value=state.category).props('dense outlined').classes('w-48 bg-background')
-                        cat_select.on('change', lambda e: (setattr(state, 'category', e.value), songs_content.refresh()))
-                        
-                        ui.button(icon='search', on_click=lambda: (setattr(state, 'search', search_input.value), songs_content.refresh())).props('flat round').classes('text-primary')
+                        # Filter Part
+                        with ui.element('div').classes('w-full sm:w-auto flex items-center gap-2'):
+                            cat_select = ui.select(['Tất cả', 'Làn điệu cổ', 'Làn điệu mới', 'Làn điệu cải biên'], value=state.category).props('dense outlined').classes('flex-1 sm:w-48 bg-background')
+                            cat_select.on('change', lambda e: (setattr(state, 'category', e.value), songs_content.refresh()))
                         
                         if app.storage.user.get('role') == 'admin':
-                            ui.button('Thêm bài hát', icon='add', on_click=lambda: ui.navigate.to('/them-bai-hat')).props('unelevated rounded-lg').classes('bg-primary text-white font-bold ml-auto max-md:hidden')
-                            ui.button(icon='add', on_click=lambda: ui.navigate.to('/them-bai-hat')).props('unelevated rounded-lg').classes('bg-primary text-white font-bold md:hidden')
+                            ui.button('Thêm bài hát', icon='add', on_click=lambda: ui.navigate.to('/them-bai-hat')).props('unelevated rounded-lg size=md').classes('bg-primary text-white font-bold w-full sm:w-auto h-11')
 
                     if not melodies:
                         components.empty_state('Không tìm thấy bài hát nào.')
                     else:
-                        with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full'):
+                        with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 w-full px-2'):
                             cat_map_label = {'co': 'Làn điệu cổ', 'moi': 'Làn điệu mới', 'cai-bien': 'Làn điệu cải biên'}
                             for song in melodies:
                                 components.song_card(

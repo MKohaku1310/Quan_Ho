@@ -58,7 +58,28 @@ class User(UserBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
     role: UserRole
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
     created_at: datetime
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+class PasswordChange(BaseModel):
+    old_password: str
+    new_password: str
+
+class UserActivity(BaseModel):
+    type: str # 'favorite', 'history', 'event'
+    title: str
+    date: datetime
+    id: int
+    related_id: int
+
 
 class MelodyBase(BaseModel):
     name: str
@@ -142,6 +163,10 @@ class LocationBase(BaseModel):
     address: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    district: Optional[str] = None
+    artist_count: Optional[int] = 0
+    featured_songs: Optional[str] = None
+    badges: Optional[str] = None
     description: Optional[str] = None
     festival: Optional[str] = None
     type: LocationType = LocationType.lang_quan_ho
@@ -154,6 +179,10 @@ class LocationUpdate(BaseModel):
     name: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    district: Optional[str] = None
+    artist_count: Optional[int] = None
+    featured_songs: Optional[str] = None
+    badges: Optional[str] = None
     type: Optional[LocationType] = None
 
 class Location(LocationBase):

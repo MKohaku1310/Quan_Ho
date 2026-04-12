@@ -9,26 +9,55 @@ async def artists_page():
     with theme.frame():
         components.page_header('Nghệ nhân tiêu biểu', 'Những người nắm giữ hồn cốt và trao truyền di sản cho thế hệ mai sau')
 
-        with ui.element('section').classes('py-20 bg-background w-full'):
+        # Shared state for filtering
+        class ArtistState:
+            def __init__(self, artists):
+                self.all_artists = artists
+                self.filtered_artists = artists
+                self.search_query = ''
+        
+        artists_data = await api_client.get_artists()
+        # Mock fallback
+        if not artists_data:
+            artists_data = [
+                {'id': 1, 'name': 'Nghệ nhân Nguyễn Thị Diềm', 'village': 'Làng Diềm', 'image_url': '/static/quan_ho_teaching_children_1775935150468.png'},
+                {'id': 2, 'name': 'Nghệ nhân Trần Văn Lim', 'village': 'Làng Lim', 'image_url': '/static/quan_ho_festival_boat_1775935130553.png'},
+                {'id': 3, 'name': 'Nghệ nhân Lê Thị Bịu', 'village': 'Làng Bịu', 'image_url': '/static/village_diem_ancient_gate_1775935115741.png'}
+            ]
+            
+        state = ArtistState(artists_data)
+
+        def apply_filters():
+            q = state.search_query.lower()
+            state.filtered_artists = [a for a in state.all_artists if q in a.get('name','').lower() or q in a.get('village','').lower()]
+            artists_content.refresh()
+
+        @ui.refreshable
+        def artists_content():
+            if not state.filtered_artists:
+                components.empty_state('Không tìm thấy nghệ nhân phù hợp.')
+            else:
+                with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full px-2'):
+                    for i, artist in enumerate(state.filtered_artists):
+                        components.artist_card(
+                            artist.get('id'),
+                            artist.get('name', 'Nghệ nhân'),
+                            artist.get('image_url', '/static/chatbot-avatar.png'),
+                            artist.get('village', 'Kinh Bắc'),
+                            index=i
+                        )
+
+        with ui.element('section').classes('py-12 md:py-20 bg-background w-full'):
             with theme.container():
-                if app.storage.user.get('role') == 'admin':
-                    with ui.row().classes('mb-8 w-full justify-end'):
-                        ui.button('Thêm nghệ nhân', icon='person_add', on_click=lambda: ui.navigate.to('/them-nghe-nhan')).props('unelevated rounded-lg').classes('bg-primary text-white font-bold')
+                # Responsive Search Bar
+                with ui.element('div').classes('mb-10 w-full bg-card p-4 sm:p-6 rounded-2xl border border-border shadow-sm flex flex-col sm:flex-row gap-4 items-center'):
+                    search = ui.input(placeholder='Tìm kiếm nghệ nhân, làng quê...').classes('flex-1 w-full bg-background rounded-lg').props('outlined dense clearable icon="search"')
+                    search.on('update:model-value', lambda e: (setattr(state, 'search_query', e or ''), apply_filters()))
+                    
+                    if app.storage.user.get('role') == 'admin':
+                        ui.button('Thêm nghệ nhân', icon='person_add', on_click=lambda: ui.navigate.to('/them-nghe-nhan')).props('unelevated rounded-lg').classes('bg-primary text-white font-bold h-11 px-6 w-full sm:w-auto')
 
-                artists_data = await api_client.get_artists()
-
-                if not artists_data:
-                    components.empty_state('Không tìm thấy dữ liệu nghệ nhân.')
-                else:
-                    with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full'):
-                        for i, artist in enumerate(artists_data):
-                            components.artist_card(
-                                artist.get('id'),
-                                artist.get('name', 'Nghệ nhân'),
-                                artist.get('image_url', '/static/chatbot-avatar.png'),
-                                artist.get('village', 'Kinh Bắc'),
-                                index=i
-                            )
+                artists_content()
 
 @ui.page('/nghe-nhan/{id}', response_timeout=60.0)
 

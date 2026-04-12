@@ -2,6 +2,7 @@ from nicegui import ui
 import theme
 import components
 from api import api_client
+from translation import t
 
 import asyncio
 
@@ -13,7 +14,7 @@ async def home_page():
         # Featured Melodies
         with ui.element('section').classes('py-24 bg-background w-full').props('id="home-content"'):
             with theme.container():
-                components.section_title('Bài hát nổi bật', 'Những làn điệu Quan họ kinh điển được yêu thích nhất')
+                components.section_title(t('home_featured_melodies'), 'Những làn điệu Quan họ kinh điển được yêu thích nhất')
 
                 # Parallel data fetching using asyncio.gather
                 tasks = [
@@ -38,7 +39,7 @@ async def home_page():
                         ui.spinner(size='xl', color='primary', thickness=2)
                 else:
                     with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full'):
-                        cat_map = {'co': 'Làn điệu cổ', 'moi': 'Làn điệu mới', 'cai-bien': 'Làn điệu cải biên'}
+                        cat_map = {'co': t('cat_co'), 'moi': t('cat_moi'), 'cai-bien': t('cat_cai_bien')}
                         for song in featured_melodies:
                             components.song_card(
                                 song.get('id'),
@@ -51,7 +52,7 @@ async def home_page():
 
                 with ui.row().classes('mt-12 w-full justify-center'):
                     with ui.link(target='/bai-hat').classes('no-underline flex items-center gap-2 text-primary font-bold cursor-pointer group'):
-                        ui.label('Khám phá thư viện').classes('text-sm uppercase tracking-widest')
+                        ui.label(t('home_view_all_songs')).classes('text-sm uppercase tracking-widest')
                         ui.icon('arrow_forward', size='20px').classes('group-hover:translate-x-1 transition-transform')
 
         components.hero_stats_section()
@@ -59,7 +60,7 @@ async def home_page():
         # Featured Artists
         with ui.element('section').classes('py-24 bg-background w-full'):
             with theme.container():
-                components.section_title('Nghệ nhân tiêu biểu', 'Những người giữ lửa cho di sản Quan họ muôn đời')
+                components.section_title(t('home_featured_artists'), 'Những người giữ lửa cho di sản Quan họ muôn đời')
 
                 featured_artists = artists_data[:4] if artists_data else []
 
@@ -80,7 +81,7 @@ async def home_page():
         # News & Events
         with ui.element('section').classes('bg-card py-24 border-t border-border w-full'):
             with theme.container():
-                components.section_title('Tin tức & Sự kiện', 'Cập nhật hoạt động văn hóa tiêu biểu')
+                components.section_title(t('home_news_events'), 'Cập nhật hoạt động văn hóa tiêu biểu')
 
                 news_items = (articles_data[:2] if articles_data else []) + (events_data[:2] if events_data else [])
 
@@ -100,5 +101,5 @@ async def home_page():
 
                     with ui.row().classes('mt-12 w-full justify-center'):
                         with ui.link(target='/tin-tuc').classes('no-underline flex items-center gap-2 text-primary font-bold cursor-pointer group'):
-                            ui.label('Xem thêm tin tức').classes('text-sm uppercase tracking-widest')
+                            ui.label(t('home_view_all_news')).classes('text-sm uppercase tracking-widest')
                             ui.icon('arrow_forward', size='20px').classes('group-hover:translate-x-1 transition-transform')

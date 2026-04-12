@@ -172,40 +172,61 @@ def apply_theme():
             /* Reset */
             *, *::before, *::after { box-sizing: border-box; }
 
+            html {
+                font-size: 14px;
+                scroll-behavior: smooth;
+            }
+            @media (min-width: 768px) {
+                html { font-size: 16px; }
+            }
+            @media (min-width: 1440px) {
+                html { font-size: 17px; }
+            }
+
             html, body {
                 margin: 0;
                 padding: 0;
                 width: 100%;
+                max-width: 100vw;
                 overflow-x: hidden;
                 background-color: hsl(var(--background));
                 color: hsl(var(--foreground));
                 font-family: 'Source Sans 3', sans-serif;
+                -webkit-tap-highlight-color: transparent;
             }
+
+            /* Responsive touch targets for all buttons */
+            .q-btn, button, .cursor-pointer {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            .nicegui-content button {
+                touch-action: manipulation;
+            }
+
+            /* ... (rest of CSS remains, but ensure no horizontal scroll) */
+            .w-full { width: 100% !important; max-width: 100vw; }
 
             /* =============================================
                QUASAR LAYOUT RESET
-               Force standard document block flow to avoid 100vh flex lock
-               and overlapping footer issues.
+               Ensure standard document scroll by removing 100vh locks
             ============================================= */
             .q-layout,
             .q-page-container,
             .q-page {
-                display: block !important;
                 min-height: auto !important;
-                overflow: visible !important;
             }
 
-            /* Xóa toàn bộ padding Quasar inject cho sidebar/header */
             .q-page-container {
                 padding: 0 !important;
             }
 
             .q-page {
                 padding: 0 !important;
-                min-height: unset !important;
+                display: block !important;
             }
 
-            /* NiceGUI bọc content trong div.nicegui-content */
+            /* NiceGUI content wrapper */
             .nicegui-content {
                 display: flex !important;
                 flex-direction: column !important;
@@ -213,38 +234,41 @@ def apply_theme():
                 padding: 0 !important;
                 margin: 0 !important;
                 gap: 0 !important;
-                align-items: stretch !important;
                 width: 100% !important;
+                overflow-x: hidden;
             }
 
-            /* header/footer semantic tags */
-            body > .q-layout header,
-            .nicegui-content > header {
-                flex-shrink: 0;
-                width: 100%;
-                position: sticky;
+            /* Sticky Header */
+            .qh-navbar {
+                position: fixed !important;
                 top: 0;
-                z-index: 50;
+                left: 0;
+                width: 100%;
+                z-index: 1000;
+                background: rgba(255, 248, 240, 0.82) !important;
+                backdrop-filter: blur(24px) saturate(180%) !important;
+                -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+                border-bottom: 1px solid rgba(180, 120, 60, 0.1) !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+                transition: all 0.3s ease;
             }
 
-            /* Ensure footer stays at bottom and is full width */
-            .nicegui-content > footer {
-                flex-shrink: 0 !important;
-                width: 100% !important;
-                margin-top: auto !important;
-                display: block !important;
-            }
-
-            /* main giữa header và footer */
+            /* Main area grows to fill space */
             .nicegui-content > main {
                 flex: 1 0 auto !important;
                 display: flex !important;
                 flex-direction: column !important;
-                align-items: stretch !important;
                 width: 100% !important;
+                padding-top: 56px; /* Offset for sticky navbar */
             }
 
-            /* Tất cả section/div con trực tiếp của main full width */
+            /* Footer should not be hidden */
+            .nicegui-content > footer {
+                flex-shrink: 0 !important;
+                width: 100% !important;
+                margin-top: auto !important;
+            }
+
             .nicegui-content > main > * {
                 width: 100% !important;
             }
@@ -337,8 +361,8 @@ def apply_theme():
 
 
 def container():
-    """Centered max-width wrapper."""
-    return ui.element('div').classes('mx-auto px-4 w-full max-w-[1400px]')
+    """Centered max-width wrapper with responsive padding."""
+    return ui.element('div').classes('mx-auto px-4 sm:px-6 lg:px-8 w-full max-w-[1400px]')
 
 
 from contextlib import contextmanager

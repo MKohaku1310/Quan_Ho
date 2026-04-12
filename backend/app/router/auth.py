@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app import crud, schemas, security
 from app.db import get_db
 from datetime import timedelta
+from typing import List
+
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -33,7 +35,9 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         "access_token": access_token, 
         "token_type": "bearer",
         "role": user.role,
-        "name": user.name
+        "name": user.name,
+        "id": user.id,
+        "email": user.email
     }
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -61,3 +65,27 @@ async def get_current_active_admin(current_user: schemas.User = Depends(get_curr
             detail="The user does not have enough privileges"
         )
     return current_user
+
+@router.get("/me", response_model=schemas.User)
+
+async def read_users_me(current_user: schemas.User = Depends(get_current_user)):
+    return current_user
+
+@router.patch("/me", response_model=schemas.User)
+async def update_users_me(user_update: schemas.UserUpdate, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    updated_user = crud.update_user(db, current_user.id, user_update)
+    return updated_user
+
+@router.post("/me/change-password")
+async def change_password(passwords: schemas.PasswordChange, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not security.verify_password(passwords.old_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Mật khẩu cũ không chính xác")
+    crud.update_user_password(db, current_user.id, passwords.new_password)
+    return {"message": "Đổi mật khẩu thành công"}
+
+@router.get("/me/activities", response_model=List[schemas.UserActivity])
+async def read_user_activities(current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return crud.get_user_activities(db, current_user.id)
+
+
+

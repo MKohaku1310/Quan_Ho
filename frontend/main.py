@@ -12,6 +12,14 @@ app.add_static_files('/static', os.path.join(current_dir, 'static'))
 
 
 # ---------------------------------------------------------------------------
+# Initial state
+# ---------------------------------------------------------------------------
+@app.on_connect
+def init_user_state():
+    if 'language' not in app.storage.user:
+        app.storage.user['language'] = 'vi'
+
+# ---------------------------------------------------------------------------
 # Error Handling
 # ---------------------------------------------------------------------------
 @app.on_exception

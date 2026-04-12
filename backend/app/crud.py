@@ -18,6 +18,66 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
 def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
     return db.query(models.User).filter(models.User.email == email).first()
 
+def get_user(db: Session, user_id: int) -> Optional[models.User]:
+    return db.query(models.User).filter(models.User.id == user_id).first()
+
+def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate) -> Optional[models.User]:
+    db_user = get_user(db, user_id)
+    if not db_user:
+        return None
+    for key, value in user_update.model_dump(exclude_unset=True).items():
+        setattr(db_user, key, value)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def update_user_password(db: Session, user_id: int, new_password: str):
+    db_user = get_user(db, user_id)
+    if not db_user:
+        return None
+    db_user.hashed_password = security.get_password_hash(new_password)
+    db.commit()
+    return True
+
+def get_user_activities(db: Session, user_id: int) -> List[schemas.UserActivity]:
+    activities = []
+    
+    # Favorites
+    favs = db.query(models.Favorite).filter(models.Favorite.user_id == user_id).all()
+    for f in favs:
+        activities.append(schemas.UserActivity(
+            type='favorite',
+            title=f"Yêu thích: {f.melody.name}",
+            date=f.created_at,
+            id=f.id,
+            related_id=f.melody_id
+        ))
+    
+    # History
+    hist = db.query(models.History).filter(models.History.user_id == user_id).order_by(models.History.created_at.desc()).limit(10).all()
+    for h in hist:
+        activities.append(schemas.UserActivity(
+            type='history',
+            title=f"Đã nghe: {h.melody.name}",
+            date=h.created_at,
+            id=h.id,
+            related_id=h.melody_id
+        ))
+        
+    # Events
+    regs = db.query(models.EventRegistration).filter(models.EventRegistration.user_id == user_id).all()
+    for r in regs:
+        activities.append(schemas.UserActivity(
+            type='event',
+            title=f"Đăng ký sự kiện: {r.event.title}",
+            date=r.created_at,
+            id=r.id,
+            related_id=r.event_id
+        ))
+        
+    return sorted(activities, key=lambda x: x.date, reverse=True)
+
+
 def create_melody(db: Session, melody: schemas.MelodyCreate) -> models.Melody:
     db_melody = models.Melody(**melody.model_dump())
     db.add(db_melody)

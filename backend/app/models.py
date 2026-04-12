@@ -57,8 +57,48 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     role = Column(Enum(UserRole), default=UserRole.user, index=True)
+    phone = Column(String(20))
+    bio = Column(Text)
+    avatar_url = Column(String(500))
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
+    histories = relationship("History", back_populates="user", cascade="all, delete-orphan")
+    registrations = relationship("EventRegistration", back_populates="user", cascade="all, delete-orphan")
+
+class Favorite(Base):
+    __tablename__ = "favorites"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    melody_id = Column(Integer, ForeignKey("melodies.id", ondelete="CASCADE"))
+    created_at = Column(DateTime, server_default=func.now())
+    
+    user = relationship("User", back_populates="favorites")
+    melody = relationship("Melody")
+
+class History(Base):
+    __tablename__ = "histories"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    melody_id = Column(Integer, ForeignKey("melodies.id", ondelete="CASCADE"))
+    created_at = Column(DateTime, server_default=func.now())
+    
+    user = relationship("User", back_populates="histories")
+    melody = relationship("Melody")
+
+class EventRegistration(Base):
+    __tablename__ = "event_registrations"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"))
+    status = Column(String(50), default="registered") # registered, cancelled, attended
+    created_at = Column(DateTime, server_default=func.now())
+    
+    user = relationship("User", back_populates="registrations")
+    event = relationship("Event")
+
 
 class Article(Base):
     __tablename__ = "articles"
@@ -120,6 +160,10 @@ class Location(Base):
     address = Column(Text)
     latitude = Column(Float(10, 8))
     longitude = Column(Float(11, 8))
+    district = Column(String(255))
+    artist_count = Column(Integer, default=0)
+    featured_songs = Column(Text) # Comma separated labels
+    badges = Column(Text) # Comma separated labels
     description = Column(Text)
     festival = Column(String(255))
     image_url = Column(String(500))

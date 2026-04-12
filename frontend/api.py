@@ -37,7 +37,9 @@ class APIClient:
                     headers["Authorization"] = f"Bearer {token}"
 
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.post(f"{API_BASE_URL}/{endpoint}/", json=data, headers=headers)
+                url = f"{API_BASE_URL}/{endpoint}"
+                if not url.endswith('/'): url += '/'
+                response = await client.post(url, json=data, headers=headers)
                 if response.status_code in [200, 201]:
                     return response.json()
                 else:
@@ -48,6 +50,25 @@ class APIClient:
             print(f"Error posting to {API_BASE_URL}/{endpoint}: {e}")
         return None
 
+    async def _patch(self, endpoint: str, data: Dict[str, Any], use_token: bool = True) -> Optional[Dict[str, Any]]:
+        try:
+            headers = {}
+            if use_token:
+                token = app.storage.user.get('access_token')
+                if token:
+                    headers["Authorization"] = f"Bearer {token}"
+
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                url = f"{API_BASE_URL}/{endpoint}"
+                if not url.endswith('/'): url += '/'
+                response = await client.patch(url, json=data, headers=headers)
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    print(f"Patch error {response.status_code}: {response.text}")
+        except Exception as e:
+            print(f"Error patching to {API_BASE_URL}/{endpoint}: {e}")
+        return None
 
     async def _put(self, endpoint: str, data: Dict[str, Any], use_token: bool = True) -> Optional[Dict[str, Any]]:
         try:
@@ -58,7 +79,9 @@ class APIClient:
                     headers["Authorization"] = f"Bearer {token}"
 
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.put(f"{API_BASE_URL}/{endpoint}/", json=data, headers=headers)
+                url = f"{API_BASE_URL}/{endpoint}"
+                if not url.endswith('/'): url += '/'
+                response = await client.put(url, json=data, headers=headers)
                 if response.status_code in [200, 204]:
                     return response.json()
                 else:
@@ -69,7 +92,6 @@ class APIClient:
             print(f"Error putting to {API_BASE_URL}/{endpoint}: {e}")
         return None
 
-
     async def login(self, username: str, password: str) -> bool:
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -79,10 +101,13 @@ class APIClient:
                 )
                 if response.status_code == 200:
                     data = response.json()
+                    app.storage.user.update(data)
                     app.storage.user['access_token'] = data.get('access_token')
                     app.storage.user['is_authenticated'] = True
                     app.storage.user['role'] = data.get('role', 'user')
                     app.storage.user['user_name'] = data.get('name', 'User')
+                    app.storage.user['email'] = data.get('email', '')
+                    app.storage.user['user_id'] = data.get('id')
                     return True
         except httpx.ConnectError:
             print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
@@ -90,12 +115,51 @@ class APIClient:
             print(f"Login error: {e}")
         return False
 
-
     async def register(self, name: str, email: str, password: str) -> Optional[Dict[str, Any]]:
         return await self._post("auth/register", {"name": name, "email": email, "password": password})
 
     async def logout(self):
+        app.storage.user.clear()
         app.storage.user.update({'access_token': None, 'is_authenticated': False, 'role': None, 'user_name': None})
+
+    async def get_me(self) -> Optional[Dict[str, Any]]:
+        token = app.storage.user.get('access_token')
+        if not token: return None
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(f"{API_BASE_URL}/auth/me/", headers={"Authorization": f"Bearer {token}"})
+                if response.status_code == 200:
+                    return response.json()
+        except Exception: pass
+        return None
+
+    async def update_profile(self, data: Dict[str, Any]) -> bool:
+        res = await self._patch("auth/me", data, use_token=True)
+        if res:
+            app.storage.user['user_name'] = res.get('name', app.storage.user.get('user_name'))
+            return True
+        return False
+
+    async def change_password(self, old_p: str, new_p: str) -> bool:
+        res = await self._post("auth/me/change-password", {"old_password": old_p, "new_password": new_p}, use_token=True)
+        return res is not None
+
+    async def get_activities(self) -> List[Dict[str, Any]]:
+        token = app.storage.user.get('access_token')
+        if not token: return []
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(f"{API_BASE_URL}/auth/me/activities/", headers={"Authorization": f"Bearer {token}"})
+                if response.status_code == 200:
+                    return response.json()
+        except: return []
+        return []
+
+    async def ask_chatbot(self, message: str) -> Optional[str]:
+        res = await self._post("chatbot", {"message": message})
+        return res.get('response') if res else None
+
+
 
     async def get_melodies(self) -> List[Dict[str, Any]]:
         return await self._get("melodies")
@@ -106,11 +170,45 @@ class APIClient:
     async def get_locations(self) -> List[Dict[str, Any]]:
         return await self._get("locations")
 
-    async def get_articles(self) -> List[Dict[str, Any]]:
-        return await self._get("articles")
+    async def get_villages(self) -> List[Dict[str, Any]]:
+        # Map /villages route if exists, otherwise use /locations?type=lang-quan-ho
+        # The prompt mentioned GET /api/villages, but our router uses /locations
+        # I will check /locations with type filter if possible, or just /locations
+        return await self._get("locations?type=lang-quan-ho")
+
+    async def get_village(self, village_id: int) -> Optional[Dict[str, Any]]:
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.get(f"{API_BASE_URL}/locations/{village_id}/")
+                if response.status_code == 200:
+                    return response.json()
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
+        except Exception as e:
+            print(f"Error fetching village {village_id}: {e}")
+        return None
+
+    async def get_articles(self, article_type: Optional[str] = None) -> List[Dict[str, Any]]:
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                url = f"{API_BASE_URL}/articles/"
+                params = {"type": article_type} if article_type else {}
+                response = await client.get(url, params=params)
+                if response.status_code == 200:
+                    return response.json()
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
+        except Exception as e:
+            print(f"Error fetching articles: {e}")
+        return []
 
     async def get_events(self) -> List[Dict[str, Any]]:
         return await self._get("events")
+
+    async def register_event(self, event_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        # The endpoint argument for _post will have unexpected / injected if we append query params directly 
+        # so we rely on _post ensuring the URL looks like /events/{event_id}/register/
+        return await self._post(f"events/{event_id}/register", data, use_token=True)
 
     async def search_melodies(self, query: str) -> List[Dict[str, Any]]:
         if not query:

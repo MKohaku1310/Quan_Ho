@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.db import engine, Base
-from app.router import auth, melodies, artists, articles, locations, events, comments
+from app.router import auth, melodies, artists, articles, locations, events, comments, chatbot
 import os
 
 Base.metadata.create_all(bind=engine)
@@ -38,6 +38,8 @@ app.include_router(articles.router, prefix="/api")
 app.include_router(locations.router, prefix="/api")
 app.include_router(events.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
+app.include_router(chatbot.router, prefix="/api")
+
 
 @app.get("/api/health")
 def health_check():
