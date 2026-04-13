@@ -38,7 +38,7 @@ async def chatbot_page():
                                     ui.label(msg['time']).classes(f'text-[9px] mt-1 opacity-60 {"text-right w-full" if sent else "text-left"}')
                         
                         # Typing Indicator
-                        if is_typing.value:
+                        if state.is_typing:
                             with ui.row().classes('w-full justify-start items-center gap-2'):
                                 with ui.card().classes('p-3 rounded-2xl bg-card border border-border flex flex-row items-center gap-1'):
                                     ui.element('div').classes('w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce')
@@ -48,7 +48,11 @@ async def chatbot_page():
                         # Direct call to scroll to bottom after rendering
                         ui.run_javascript('window.scrollTo(0, document.body.scrollHeight)')
 
-                is_typing = ui.state(False)
+                class ChatState:
+                    def __init__(self):
+                        self.is_typing = False
+                
+                state = ChatState()
                 
                 with ui.element('div').classes('flex-grow overflow-hidden relative mb-4'):
                     message_list()
@@ -80,7 +84,7 @@ async def chatbot_page():
                         message_list.refresh()
                         
                         # Show typing
-                        is_typing.value = True
+                        state.is_typing = True
                         message_list.refresh()
                         
                         # Get Bot Response
@@ -92,7 +96,7 @@ async def chatbot_page():
                             'role': 'bot', 'text': response or 'Tôi không thể kết nối hệ thống lúc này. Vui lòng thử lại!', 'time': datetime.now().strftime('%H:%M')
                         })
                         
-                        is_typing.value = False
+                        state.is_typing = False
                         message_list.refresh()
 
                     ui.button(icon='send', on_click=handle_send).props('round unelevated shadow-md').classes('bg-primary text-white')

@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import app, ui
 import theme
 
 def hero_banner():
@@ -71,19 +71,109 @@ def hero_stats_section():
                         ui.label(label).classes('text-[10px] font-bold text-muted-foreground uppercase tracking-widest')
 
 
+from datetime import datetime
+from api import api_client
+
 def chatbot_persona():
-    with ui.element('div').classes('fixed bottom-8 right-8 z-[100] chat-persona'):
-        with ui.link(target='/chatbot').classes('block no-underline'):
-            with ui.element('div').classes('relative group'):
-                with ui.element('div').classes('h-16 w-16 rounded-full border-4 border-white shadow-elevated overflow-hidden bg-white'):
-                    ui.image('/static/common/chatbot-avatar.png').classes('h-full w-full object-cover')
-                with ui.element('div').classes('absolute -top-1 -right-1 bg-green-500 h-4 w-4 rounded-full border-2 border-white shadow-sm'):
-                    pass
-                ui.label('Bạn cần giúp đỡ?').classes(
-                    'absolute right-20 top-1/2 -translate-y-1/2 bg-white px-4 py-2 rounded-lg '
-                    'text-sm font-bold text-foreground shadow-lg opacity-0 group-hover:opacity-100 '
-                    'transition-opacity whitespace-nowrap pointer-events-none'
-                )
+    # Khởi tạo history nếu chưa có
+    if 'chat_history' not in app.storage.user:
+        app.storage.user['chat_history'] = [
+            {'role': 'bot', 'text': 'Chào bạn! Tôi là Trợ lý Quan Họ AI. Tôi có thể giúp gì cho bạn hôm nay?', 'time': datetime.now().strftime('%H:%M')}
+        ]
+
+    # Dùng class để quản lý state đơn giản tránh lỗi tuple của ui.state
+    class ChatState:
+        def __init__(self):
+            self.is_open = False
+            self.is_typing = False
+    
+    state = ChatState()
+
+    def toggle_chat():
+        state.is_open = not state.is_open
+        chat_container.refresh()
+        if state.is_open:
+            # Cuộn xuống cuối khi mở
+            ui.run_javascript('setTimeout(() => { var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight; }, 100)')
+
+    async def send_msg(text_input):
+        val = text_input.value
+        if not val: return
+        text_input.value = ''
+        
+        # Thêm tin nhắn user
+        app.storage.user['chat_history'].append({
+            'role': 'user', 'text': val, 'time': datetime.now().strftime('%H:%M')
+        })
+        chat_messages.refresh()
+        
+        # Hiệu ứng đang gõ
+        state.is_typing = True
+        chat_messages.refresh()
+        
+        # Gọi API
+        response = await api_client.ask_chatbot(val)
+        
+        # Thêm tin nhắn bot
+        app.storage.user['chat_history'].append({
+            'role': 'bot', 'text': response or 'Tôi đang bận một chút, bạn thử lại sau nhé!', 'time': datetime.now().strftime('%H:%M')
+        })
+        state.is_typing = False
+        chat_messages.refresh()
+        # Cuộn xuống
+        ui.run_javascript('var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight;')
+
+    # Container chính của Chatbot
+    with ui.element('div').classes('fixed bottom-6 right-6 z-[1000] flex flex-col items-end gap-4'):
+        
+        # Chat Messages Section
+        @ui.refreshable
+        def chat_messages():
+            with ui.scroll_area().classes('flex-1 p-4 bg-paper-texture/30').props('id=chat-scroll'):
+                with ui.column().classes('w-full gap-4'):
+                    for msg in app.storage.user['chat_history']:
+                        sent = msg['role'] == 'user'
+                        with ui.row().classes(f'w-full {"justify-end" if sent else "justify-start"}'):
+                            with ui.card().classes(f'max-w-[85%] p-3 rounded-xl shadow-sm border {"bg-primary text-white border-primary" if sent else "bg-white border-border text-foreground"}'):
+                                ui.label(msg['text']).classes('text-sm leading-relaxed')
+                                ui.label(msg['time']).classes(f'text-[9px] mt-1 opacity-60 {"text-right" if sent else "text-left"}')
+                    
+                    if state.is_typing:
+                        with ui.row().classes('w-full justify-start'):
+                            ui.label('AI đang nhập...').classes('text-xs text-muted-foreground italic')
+
+        # Tách container ra để refresh phần ẩn hiện
+        @ui.refreshable
+        def chat_container():
+            with ui.card().classes('w-[350px] sm:w-[400px] h-[500px] flex flex-col p-0 shadow-elevated border border-border overflow-hidden transition-all duration-300 transform origin-bottom-right rounded-2xl bg-background').style(
+                f'transform: scale({"1" if state.is_open else "0"}); opacity: {"1" if state.is_open else "0"}; pointer-events: {"auto" if state.is_open else "none"};'
+            ):
+                # Header
+                with ui.row().classes('w-full p-4 bg-primary text-white items-center justify-between shrink-0'):
+                    with ui.row().classes('items-center gap-3'):
+                        ui.image('/static/common/chatbot-avatar.png').classes('w-10 h-10 rounded-full border-2 border-white/20')
+                        with ui.column().classes('gap-0'):
+                            ui.label('Trợ lý Quan Họ AI').classes('font-bold text-sm')
+                            ui.label('Trực tuyến').classes('text-[10px] opacity-80 uppercase tracking-wider font-black')
+                    ui.button(icon='close', on_click=toggle_chat).props('flat round color=white size=sm')
+
+                chat_messages()
+
+                # Footer/Input
+                ui.separator()
+                with ui.row().classes('w-full p-3 bg-white items-center gap-2 shrink-0'):
+                    ti = ui.input(placeholder='Hỏi gì đó...').props('rounded outlined dense').classes('flex-1 text-sm')
+                    ui.button(icon='send', on_click=lambda: send_msg(ti)).props('round unelevated color=primary').classes('shadow-md')
+                    ti.on('keydown.enter', lambda: send_msg(ti))
+
+        chat_container()
+
+        # Nút bong bóng (Bubble Button)
+        with ui.button(on_click=toggle_chat).props('round').classes('w-16 h-16 shadow-elevated bg-white border-4 border-primary hover:scale-110 transition-transform p-0 overflow-hidden'):
+            ui.image('/static/common/chatbot-avatar.png').classes('w-full h-full object-cover')
+            # Chấm xanh online
+            with ui.element('div').classes('absolute top-1 right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white'):
+                pass
 
 
 def costume_block(title, desc, image_url, items=None, reverse=False):

@@ -7,11 +7,17 @@ from api import api_client
 
 @ui.page('/admin')
 async def admin_page():
+    print(f"DEBUG ADMIN_PAGE: app.storage.user keys: {list(app.storage.user.keys())}")
+    print(f"DEBUG ADMIN_PAGE: role: {app.storage.user.get('role')}, auth: {app.storage.user.get('is_authenticated')}")
+    
     if not app.storage.user.get('is_authenticated') or app.storage.user.get('role') != 'admin':
+        print("DEBUG ADMIN_PAGE: Redirecting due to missing auth/role")
         ui.navigate.to('/dang-nhap')
         return
 
+    print("DEBUG ADMIN_PAGE: Fetching users...")
     users = await api_client.get_users()
+    print(f"DEBUG ADMIN_PAGE: Received {len(users)} users")
     
     with theme.frame():
         with ui.element('section').classes('pt-12 pb-24 bg-background min-h-screen'):

@@ -17,14 +17,19 @@ class APIClient:
             headers = {}
             if use_token:
                 token = app.storage.user.get('access_token')
+                print(f"DEBUG FRONTEND: Endpoint {endpoint}, token in storage: {'Yes' if token else 'No'}")
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
+                    print(f"DEBUG FRONTEND: Auth header set for {endpoint}")
+                else:
+                    print(f"DEBUG FRONTEND: WARNING - use_token=True but no token found in storage for {endpoint}")
 
             async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 # Some FastAPI routes handle slashes strictly, some don't.
                 # Standardizing to NO forced trailing slash here, as httpx handles it better.
                 url = f"{API_BASE_URL}/{endpoint}"
                 response = await client.get(url, params=params, headers=headers)
+                print(f"DEBUG FRONTEND: GET {url} returned {response.status_code}")
                 if response.status_code == 200:
                     return response.json()
                 else:

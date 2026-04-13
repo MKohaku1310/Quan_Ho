@@ -39,26 +39,24 @@ def navbar():
                     )
 
             # 3. Right: Actions
-            with ui.element('div').classes('flex-1 flex justify-end items-center gap-1 sm:gap-2').style('display: flex !important;'):
+            with ui.element('div').classes('flex-1 flex justify-end items-center gap-1 sm:gap-2 flex-nowrap').style('display: flex !important;'):
                 # Language Toggle
                 lang_label = t('language_toggle')
-                with ui.button(lang_label, on_click=lambda: (toggle_language(), ui.navigate.reload())).props('flat rounded size=md').classes('text-muted-foreground font-bold border border-border/50 px-3'):
-                    pass
+                ui.button(lang_label, on_click=lambda: (toggle_language(), ui.navigate.reload())).props('flat rounded size=md').classes('text-muted-foreground font-bold border border-border/50 px-2 min-w-0 h-9 shrink-0')
 
-                # Auth buttons (visible on sm and up)
-                with ui.element('div').classes('items-center gap-2').style('display: flex !important;'):
-                    if app.storage.user.get('is_authenticated'):
-                        if app.storage.user.get('role') == 'admin':
-                            ui.button('DASHBOARD', icon='dashboard', on_click=lambda: ui.navigate.to('/admin')).props('flat rounded size=md').classes('text-secondary font-black px-3 h-11 border border-secondary/20 hover:bg-secondary/10')
-                        
-                        ui.button(t('profile'), icon='account_circle', on_click=lambda: ui.navigate.to('/ho-so')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-3 h-11 hover:bg-muted')
-                        ui.button(icon='logout', on_click=api_client.logout).props('flat round size=md').classes('text-destructive hover:bg-destructive/10')
-                    else:
-                        ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-11 transition-all hover:bg-muted')
-                        ui.button(t('register'), on_click=lambda: ui.navigate.to('/dang-ky')).props('unelevated rounded size=md').classes('bg-primary text-white font-semibold px-6 h-11 shadow-md hover:brightness-110')
+                # Auth buttons - Integrated into one row for consistent alignment
+                if app.storage.user.get('is_authenticated'):
+                    if app.storage.user.get('role') == 'admin':
+                        ui.button('ADMIN', icon='dashboard', on_click=lambda: ui.navigate.to('/admin')).props('flat rounded size=md').classes('text-secondary font-black px-3 h-10 border border-secondary/20 hover:bg-secondary/10 shrink-0')
+                    
+                    ui.button(t('profile'), icon='account_circle', on_click=lambda: ui.navigate.to('/ho-so')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-3 h-10 hover:bg-muted shrink-0')
+                    ui.button(icon='logout', on_click=api_client.logout).props('flat round size=md').classes('text-destructive hover:bg-destructive/10 h-10 w-10 flex-shrink-0')
+                else:
+                    ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-10 transition-all hover:bg-muted shrink-0')
+                    ui.button(t('register'), on_click=lambda: ui.navigate.to('/dang-ky')).props('unelevated rounded size=md').classes('bg-primary text-white font-semibold px-6 h-10 shadow-md hover:brightness-110 shrink-0')
                 
                 # Mobile Menu Button (Visible on < md)
-                mobile_btn = ui.button(icon='menu', on_click=lambda: drawer.open()).props('flat round size=md').classes('md:hidden text-primary bg-primary/5 ml-1')
+                mobile_btn = ui.button(icon='menu', on_click=lambda: drawer.open()).props('flat round size=md').classes('md:hidden text-primary bg-primary/5 ml-1 shrink-0')
                 
                 with ui.dialog() as drawer:
                     with ui.card().classes('w-screen max-w-[320px] h-full p-0 overflow-hidden flex flex-col bg-background'):

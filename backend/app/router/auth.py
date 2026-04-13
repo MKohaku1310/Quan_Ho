@@ -46,15 +46,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    print(f"DEBUG BACKEND: Received token starting with: {token[:10]}..." if token else "DEBUG BACKEND: No token received")
     try:
         payload = security.decode_access_token(token)
+        print(f"DEBUG BACKEND: Decoded payload: {payload}")
         email: str = payload.get("sub")
         if email is None:
+            print("DEBUG BACKEND: 'sub' missing from payload")
             raise credentials_exception
-    except Exception:
+    except Exception as e:
+        print(f"DEBUG BACKEND: JWT Decode Error: {e}")
         raise credentials_exception
     user = crud.get_user_by_email(db, email=email)
     if user is None:
+        print(f"DEBUG BACKEND: User with email {email} not found in DB")
         raise credentials_exception
     return user
 

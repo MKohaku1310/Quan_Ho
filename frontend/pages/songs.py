@@ -3,6 +3,7 @@ import theme
 import components
 from api import api_client
 from utils import get_embed_url
+from translation import t
 import re
 import asyncio
 
