@@ -81,17 +81,20 @@ async def admin_page():
                                     with ui.element('tr'):
                                         headers = ['ID', 'Người dùng', 'Email', 'Vai trò', 'Ngày tham gia', 'Thao tác']
                                         for h in headers:
-                                            ui.element('th').classes('px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground').text(h)
+                                            with ui.element('th').classes('px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground'):
+                                                ui.label(h)
                                 
                                 with ui.element('tbody').classes('divide-y divide-border'):
                                     if not users:
                                         with ui.element('tr'):
-                                            ui.element('td').props('colspan=6').classes('px-6 py-12 text-center text-muted-foreground').text('Không có dữ liệu')
+                                            with ui.element('td').props('colspan=6').classes('px-6 py-12 text-center text-muted-foreground'):
+                                                ui.label('Không có dữ liệu')
                                     else:
                                         for u in users:
                                             with ui.element('tr').classes('hover:bg-muted/20 transition-colors group'):
                                                 # ID
-                                                ui.element('td').classes('px-6 py-4 font-body text-xs text-muted-foreground opacity-60').text(f"#{u['id']}")
+                                                with ui.element('td').classes('px-6 py-4 font-body text-xs text-muted-foreground opacity-60'):
+                                                    ui.label(f"#{u['id']}")
                                                 
                                                 # User info
                                                 with ui.element('td').classes('px-6 py-4'):
@@ -100,7 +103,8 @@ async def admin_page():
                                                         ui.label(u['name']).classes('font-bold text-sm')
                                                 
                                                 # Email
-                                                ui.element('td').classes('px-6 py-4 text-sm font-medium opacity-80').text(u['email'])
+                                                with ui.element('td').classes('px-6 py-4 text-sm font-medium opacity-80'):
+                                                    ui.label(u['email'])
                                                 
                                                 # Role Badge
                                                 with ui.element('td').classes('px-6 py-4'):
@@ -110,7 +114,8 @@ async def admin_page():
                                                         ui.label(u['role'])
 
                                                 # Joined Date
-                                                ui.element('td').classes('px-6 py-4 text-xs text-muted-foreground').text(u['created_at'][:10])
+                                                with ui.element('td').classes('px-6 py-4 text-xs text-muted-foreground'):
+                                                    ui.label(u['created_at'][:10])
 
                                                 # Actions
                                                 with ui.element('td').classes('px-6 py-4 text-right'):

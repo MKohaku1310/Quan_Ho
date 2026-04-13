@@ -4,6 +4,7 @@ import theme
 import components
 from api import api_client
 import asyncio
+from translation import t
 
 # Tài sản Leaflet và Logic khởi tạo
 LEAFLET_CSS = '<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>'
@@ -87,7 +88,7 @@ async def villages_page():
     
     with theme.frame():
         # Hero section
-        components.page_header('49 Làng Quan họ gốc', 'Khám phá không gian văn hóa di sản tại quê hương Quan họ')
+        components.page_header(t('villages_title'), t('villages_subtitle'))
 
         # ... (phần còn lại của logic state và fetching giữ nguyên)
         class State:
@@ -125,7 +126,7 @@ async def villages_page():
         @ui.refreshable
         def village_list():
             if not state.filtered_items:
-                components.empty_state('Không tìm thấy làng nào phù hợp.')
+                components.empty_state(t('no_villages_found'))
                 return
             
             start = (state.page - 1) * state.items_per_page
@@ -164,20 +165,20 @@ async def villages_page():
                     # Thanh điều khiển
                     with ui.element('div').classes('modern-search-card p-3 gap-4 w-full flex flex-col md:flex-row items-center rounded-2xl border border-border bg-card shadow-sm'):
                         with ui.row().classes('flex-1 w-full items-center gap-4'):
-                            search_input = ui.input(placeholder='Tìm làng...').classes('modern-input flex-1 bg-background rounded-lg').props('outlined dense clearable debounce=500 icon=search')
+                            search_input = ui.input(placeholder=t('search_village')).classes('modern-input flex-1 bg-background rounded-lg').props('outlined dense clearable debounce=500 icon=search')
                             search_input.on('update:model-value', lambda e: (setattr(state, 'search_query', e or ''), apply_filters()))
                             
-                            districts = ['Tất cả', 'Tiên Du', 'Từ Sơn', 'Yên Phong', 'TP Bắc Ninh']
-                            district_select = ui.select(districts, value='Tất cả').classes('modern-select w-44 bg-background').props('outlined dense rounded-lg options-dense')
-                            district_select.on('update:model-value', lambda e: (setattr(state, 'district_filter', e or 'Tất cả'), apply_filters()))
+                            districts = [t('all_districts'), 'Tiên Du', 'Từ Sơn', 'Yên Phong', 'TP Bắc Ninh']
+                            district_select = ui.select(districts, value=t('all_districts')).classes('modern-select w-44 bg-background').props('outlined dense rounded-lg options-dense')
+                            district_select.on('update:model-value', lambda e: (setattr(state, 'district_filter', e or t('all_districts')), apply_filters()))
                         
                         if app.storage.user.get('role') == 'admin':
-                            ui.button('THÊM LÀNG', icon='add_location', on_click=lambda: ui.navigate.to('/admin/edit/village/0')).props('unelevated rounded color=primary').classes('font-bold shadow-md shadow-primary/20 whitespace-nowrap px-6')
+                            ui.button(t('add_village'), icon='add_location', on_click=lambda: ui.navigate.to('/admin/edit/village/0')).props('unelevated rounded color=primary').classes('font-bold shadow-md shadow-primary/20 whitespace-nowrap px-6')
 
                     # Các tab
                     with ui.tabs().classes('w-full border-b border-border') as tabs:
-                        list_tab = ui.tab('list', label='DANH SÁCH', icon='grid_view').classes('px-8 font-bold text-sm tracking-widest')
-                        map_tab = ui.tab('map', label='BẢN ĐỒ', icon='map').classes('px-8 font-bold text-sm tracking-widest')
+                        list_tab = ui.tab('list', label=t('list_tab'), icon='grid_view').classes('px-8 font-bold text-sm tracking-widest')
+                        map_tab = ui.tab('map', label=t('map_tab'), icon='map').classes('px-8 font-bold text-sm tracking-widest')
 
                 # Các Panel Tab
                 with ui.tab_panels(tabs, value='list').classes('w-full bg-transparent overflow-visible') as panels:
@@ -207,7 +208,7 @@ async def village_detail_page(id: int):
     with theme.frame():
         village = await api_client.get_village(id)
         if not village:
-            components.empty_state('Không tìm thấy thông tin làng này.')
+            components.empty_state('Village information not found.')
             return
 
         with ui.element('section').classes('w-full bg-background min-h-screen'):
@@ -217,7 +218,7 @@ async def village_detail_page(id: int):
                 with ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-background via-black/20 to-transparent'):
                     with theme.container().classes('h-full flex flex-col justify-end pb-12'):
                         with ui.row().classes('items-center mb-4 gap-2'):
-                            badges = village.get('badges') or 'Di sản'
+                            badges = village.get('badges') or t('village_detail_badge')
                             for badge in badges.split(','):
                                 ui.label(badge.strip()).classes('bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg h-min')
                         
@@ -227,10 +228,10 @@ async def village_detail_page(id: int):
                             with ui.row().classes('items-center gap-2'):
                                 ui.icon('location_on', size='22px').classes('text-primary')
                                 district = village.get('district') or 'Kinh Bắc'
-                                ui.label(f"Huyện {district}").classes('text-lg font-medium')
+                                ui.label(f"{t('village_district_prefix')} {district}").classes('text-lg font-medium')
                             with ui.row().classes('items-center gap-2'):
                                 ui.icon('group', size='22px').classes('text-primary')
-                                ui.label(f"{village.get('artist_count', 0)} Nghệ nhân").classes('text-lg font-medium')
+                                ui.label(f"{village.get('artist_count', 0)} {t('village_artists_suffix')}").classes('text-lg font-medium')
 
             # Các phần nội dung
             with theme.container().classes('py-16 gap-12'):
@@ -238,7 +239,7 @@ async def village_detail_page(id: int):
                     # Văn bản chi tiết
                     with ui.column().classes('lg:col-span-2 gap-10'):
                         with ui.column().classes('gap-4'):
-                            ui.label('Giới thiệu chung').classes('text-3xl font-display font-bold text-primary')
+                            ui.label(t('village_intro_title')).classes('text-3xl font-display font-bold text-primary')
                             ui.label(village.get('description')).classes('text-lg leading-relaxed text-foreground/80 text-justify')
                         
                         ui.separator().classes('opacity-50')
@@ -247,19 +248,19 @@ async def village_detail_page(id: int):
                             with ui.column().classes('gap-4'):
                                 with ui.row().classes('items-center gap-2'):
                                     ui.icon('history_edu', size='28px').classes('text-primary')
-                                    ui.label('Lịch sử hình thành').classes('text-xl font-bold font-display')
-                                ui.label(village.get('history', 'Đang cập nhật...')).classes('text-muted-foreground leading-relaxed text-sm')
+                                    ui.label(t('village_history_title')).classes('text-xl font-bold font-display')
+                                ui.label(village.get('history', t('updating'))).classes('text-muted-foreground leading-relaxed text-sm')
                             
                             with ui.column().classes('gap-4'):
                                 with ui.row().classes('items-center gap-2'):
                                     ui.icon('auto_awesome', size='28px').classes('text-primary')
-                                    ui.label('Đặc trưng văn hóa').classes('text-xl font-bold font-display')
-                                ui.label(village.get('culture', 'Đang cập nhật...')).classes('text-muted-foreground leading-relaxed text-sm')
+                                    ui.label(t('village_culture_title')).classes('text-xl font-bold font-display')
+                                ui.label(village.get('culture', t('updating'))).classes('text-muted-foreground leading-relaxed text-sm')
 
                         with ui.column().classes('p-8 bg-card rounded-3xl border border-border shadow-sm w-full gap-4'):
-                            ui.label('Làn điệu đặc trưng').classes('text-xl font-bold text-center w-full')
+                            ui.label(t('village_melodies_title')).classes('text-xl font-bold text-center w-full')
                             with ui.row().classes('justify-center gap-3 w-full wrap'):
-                                featured_songs = village.get('featured_songs') or 'Đang cập nhật'
+                                featured_songs = village.get('featured_songs') or t('updating')
                                 for song in featured_songs.split(','):
                                     ui.label(song.strip()).classes('bg-muted px-4 py-2 rounded-xl text-foreground font-medium border border-border/50 hover:border-primary transition-all')
 
@@ -268,7 +269,7 @@ async def village_detail_page(id: int):
                         with ui.column().classes('gap-4'):
                             with ui.row().classes('items-center gap-2'):
                                 ui.icon('map', size='28px').classes('text-primary')
-                                ui.label('Vị trí địa lý').classes('text-xl font-bold font-display')
+                                ui.label(t('village_location_title')).classes('text-xl font-bold font-display')
                             
                             # Refined Google Maps integration
                             name = village.get('name')
@@ -285,25 +286,25 @@ async def village_detail_page(id: int):
                                 
                                 with ui.link(target=f"https://www.google.com/maps/search/?api=1&query={src_query}").classes('flex items-center gap-2 text-primary hover:text-primary-focus transition-colors font-medium mt-2'):
                                     ui.icon('open_in_new', size='18px')
-                                    ui.label('Mở trong Google Maps').classes('text-sm font-bold')
+                                    ui.label(t('village_open_maps')).classes('text-sm font-bold')
                             else:
-                                ui.element('div').classes('h-[300px] bg-muted rounded-2xl flex items-center justify-center p-6 text-center').add(ui.label('Thông tin tọa độ đang được cập nhật').classes('text-sm italic text-muted-foreground'))
+                                ui.element('div').classes('h-[300px] bg-muted rounded-2xl flex items-center justify-center p-6 text-center').add(ui.label(t('village_no_coordinates')).classes('text-sm italic text-muted-foreground'))
 
                         # Quick Links
                         with ui.card().classes('w-full p-6 rounded-3xl bg-primary text-white space-y-4'):
-                            ui.label('Khám phá thêm').classes('text-xl font-bold')
+                            ui.label(t('village_explore_more')).classes('text-xl font-bold')
                             with ui.row().classes('w-full justify-between items-center cursor-pointer group').on('click', lambda: ui.navigate.to('/nghe-nhan')):
-                                ui.label('Nghệ nhân của làng').classes('font-medium')
+                                ui.label(t('village_artists')).classes('font-medium')
                                 ui.icon('chevron_right').classes('group-hover:translate-x-1 transition-transform')
                             ui.separator().classes('bg-white/20')
                             with ui.row().classes('w-full justify-between items-center cursor-pointer group').on('click', lambda: ui.navigate.to('/bai-hat')):
-                                ui.label('Kho tàng làn điệu').classes('font-medium')
+                                ui.label(t('village_melodies')).classes('font-medium')
                                 ui.icon('chevron_right').classes('group-hover:translate-x-1 transition-transform')
 
             # Navigation
             ui.separator().classes('my-12 opacity-30')
             with ui.row().classes('w-full justify-between items-center py-4'):
-                ui.button('Làng trước đó', icon='arrow_back', on_click=lambda: ui.navigate.to(f'/lang-quan-ho/{max(1, id-1)}')).props('flat rounded color="primary"').classes('font-bold')
-                ui.button('Về danh sách', on_click=lambda: ui.navigate.to('/lang-quan-ho')).props('outline rounded color="primary"').classes('px-8 font-bold')
-                ui.button('Làng tiếp theo', icon='arrow_forward', on_click=lambda: ui.navigate.to(f'/lang-quan-ho/{id+1}')).props('flat rounded color="primary" icon-right="arrow_forward"').classes('font-bold')
+                ui.button(t('village_previous'), icon='arrow_back', on_click=lambda: ui.navigate.to(f'/lang-quan-ho/{max(1, id-1)}')).props('flat rounded color="primary"').classes('font-bold')
+                ui.button(t('village_back_to_list'), on_click=lambda: ui.navigate.to('/lang-quan-ho')).props('outline rounded color="primary"').classes('px-8 font-bold')
+                ui.button(t('village_next'), icon='arrow_forward', on_click=lambda: ui.navigate.to(f'/lang-quan-ho/{id+1}')).props('flat rounded color="primary" icon-right="arrow_forward"').classes('font-bold')
 

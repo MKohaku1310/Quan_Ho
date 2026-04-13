@@ -4,6 +4,7 @@ import components
 from api import api_client
 import asyncio
 from datetime import datetime
+from translation import t
 
 def _show_registration_dialog(event_item, button_ref):
     event_id = event_item.get('id')
@@ -14,11 +15,11 @@ def _show_registration_dialog(event_item, button_ref):
             with ui.column().classes('items-center gap-4 text-center w-full'):
                 with ui.element('div').classes('flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary mb-2'):
                     ui.icon('lock_person', size='2rem')
-                ui.label('Yêu cầu đăng nhập').classes('text-2xl font-bold font-display text-foreground')
-                ui.label('Vui lòng đăng nhập vào tài khoản của bạn để đăng ký tham gia sự kiện này.').classes('text-muted-foreground text-sm leading-relaxed')
+                ui.label(t('login_required')).classes('text-2xl font-bold font-display text-foreground')
+                ui.label(t('login_message')).classes('text-muted-foreground text-sm leading-relaxed')
                 with ui.row().classes('w-full justify-center gap-3 mt-4 flex-nowrap'):
-                    ui.button('Đóng', on_click=dialog.close).props('outline color="grey"').classes('flex-1 rounded-lg')
-                    ui.button('Đăng nhập', on_click=lambda: ui.navigate.to('/dang-nhap')).props('color="primary" unelevated').classes('flex-1 rounded-lg font-bold')
+                    ui.button(t('close'), on_click=dialog.close).props('outline color="grey"').classes('flex-1 rounded-lg')
+                    ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('color="primary" unelevated').classes('flex-1 rounded-lg font-bold')
         dialog.open()
     else:
         user_name = app.storage.user.get('user_name', '')
@@ -29,24 +30,24 @@ def _show_registration_dialog(event_item, button_ref):
                 with ui.element('div').classes('flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary'):
                     ui.icon('how_to_reg', size='1.5rem')
                 with ui.column().classes('gap-0 flex-1 min-w-0'):
-                    ui.label('Đăng ký tham gia').classes('text-sm text-muted-foreground font-medium')
+                    ui.label(t('register_event')).classes('text-sm text-muted-foreground font-medium')
                     ui.label(title).classes('text-lg font-bold font-display text-foreground line-clamp-1')
             
             with ui.column().classes('w-full gap-4'):
-                name_input = ui.input('Họ và tên *').classes('w-full').props('outlined dense')
+                name_input = ui.input(t('name_required')).classes('w-full').props('outlined dense')
                 name_input.value = user_name
                 
-                email_input = ui.input('Email').classes('w-full').props('outlined dense')
+                email_input = ui.input(t('email_field')).classes('w-full').props('outlined dense')
                 email_input.value = email_val
                 
-                phone_input = ui.input('Số điện thoại *').classes('w-full').props('outlined dense')
-                note_input = ui.textarea('Ghi chú thêm').classes('w-full').props('outlined auto-grow')
+                phone_input = ui.input(t('phone_required')).classes('w-full').props('outlined dense')
+                note_input = ui.textarea(t('note_field')).classes('w-full').props('outlined auto-grow')
                 
                 status_label = ui.label("").classes("text-negative text-sm font-medium hidden bg-negative/10 px-3 py-2 rounded-lg w-full text-center")
                 
                 async def submit():
                     if not phone_input.value or not name_input.value:
-                        status_label.text = "Vui lòng nhập đầy đủ thông tin bắt buộc (*)"
+                        status_label.text = t('required_fields')
                         status_label.classes(remove='hidden')
                         return
                     
@@ -62,22 +63,22 @@ def _show_registration_dialog(event_item, button_ref):
                     
                     if res is not None:
                         dialog.close()
-                        ui.notify('Đăng ký sự kiện thành công!', type='positive', position='top', icon='check_circle')
-                        button_ref.text = 'Đã đăng ký'
+                        ui.notify(t('register_success'), type='positive', position='top', icon='check_circle')
+                        button_ref.text = t('already_registered')
                         button_ref.props('color="grey" disable icon="check_circle"')
                     else:
-                        status_label.text = "Đăng ký thất bại. Vui lòng thử lại sau."
+                        status_label.text = t('register_failed')
                         status_label.classes(remove='hidden')
 
                 with ui.row().classes('w-full justify-end gap-3 mt-2'):
-                    ui.button('Hủy', on_click=dialog.close).props('flat color="grey"').classes('px-4 rounded-lg font-medium')
-                    sub_btn = ui.button('Xác nhận đăng ký', on_click=submit).props('color="primary" unelevated').classes('px-6 rounded-lg font-bold shadow-sm')
+                    ui.button(t('cancel'), on_click=dialog.close).props('flat color="grey"').classes('px-4 rounded-lg font-medium')
+                    sub_btn = ui.button(t('confirm_register'), on_click=submit).props('color="primary" unelevated').classes('px-6 rounded-lg font-bold shadow-sm')
         dialog.open()
 
 @ui.page('/tin-tuc', response_timeout=60.0)
 async def news_page():
     with theme.frame():
-        components.page_header('Tin tức & Sự kiện', 'Cập nhật dòng chảy văn hóa Quan họ đương đại')
+        components.page_header(t('news_title'), t('news_subtitle'))
         
         # Shared state
         class NewsState:
@@ -132,8 +133,8 @@ async def news_page():
         @ui.refreshable
         def content_area():
             with ui.tabs().classes('w-full border-b border-border bg-card/30 rounded-t-2xl shadow-sm') as tabs:
-                news_tab = ui.tab('Tin tức', icon='article').classes('font-bold px-4 sm:px-8 py-4')
-                event_tab = ui.tab('Sự kiện', icon='event').classes('font-bold px-4 sm:px-8 py-4')
+                news_tab = ui.tab(t('news_tab'), icon='article').classes('font-bold px-4 sm:px-8 py-4')
+                event_tab = ui.tab(t('events_tab'), icon='event').classes('font-bold px-4 sm:px-8 py-4')
 
             with ui.tab_panels(tabs, value=news_tab).classes('w-full bg-transparent p-0 mt-8'):
                 with ui.tab_panel(news_tab).classes('p-0 w-full'):

@@ -97,11 +97,32 @@ class APIClient:
             print(f"Error putting to {API_BASE_URL}/{endpoint}: {e}")
         return None
 
+    async def _delete(self, endpoint: str, use_token: bool = True) -> Optional[Dict[str, Any]]:
+        try:
+            headers = {}
+            if use_token:
+                token = app.storage.user.get('access_token')
+                if token:
+                    headers["Authorization"] = f"Bearer {token}"
+
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
+                url = f"{API_BASE_URL}/{endpoint}"
+                response = await client.delete(url, headers=headers)
+                if response.status_code in [200, 204]:
+                    return {"message": "Deleted successfully"}
+                else:
+                    print(f"Delete error {response.status_code}: {response.text}")
+        except httpx.ConnectError:
+            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
+        except Exception as e:
+            print(f"Error deleting to {API_BASE_URL}/{endpoint}: {e}")
+        return None
+
     async def login(self, username: str, password: str) -> bool:
         try:
             async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 response = await client.post(
-                    f"{API_BASE_URL}/auth/login/", 
+                    f"{API_BASE_URL}/auth/login", 
                     data={"username": username, "password": password}
                 )
                 if response.status_code == 200:
@@ -187,8 +208,8 @@ class APIClient:
 
     async def register_event(self, event_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         # The endpoint argument for _post will have unexpected / injected if we append query params directly 
-        # so we rely on _post ensuring the URL looks like /events/{event_id}/register/
-        return await self._post(f"events/{event_id}/register/", data, use_token=True)
+        # so we rely on _post ensuring the URL looks like /events/{event_id}/register
+        return await self._post(f"events/{event_id}/register", data, use_token=True)
 
     async def search_melodies(self, query: str) -> List[Dict[str, Any]]:
         if not query:

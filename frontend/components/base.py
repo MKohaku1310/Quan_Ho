@@ -49,9 +49,9 @@ def navbar():
                 with ui.element('div').classes('items-center gap-2').style('display: flex !important;'):
                     if app.storage.user.get('is_authenticated'):
                         if app.storage.user.get('role') == 'admin':
-                            ui.button('DASHBOARD', icon='dashboard', on_click=lambda: ui.navigate.to('/admin')).props('flat rounded size=md').classes('text-secondary font-black px-4 h-11 border border-secondary/20 mr-2 hover:bg-secondary/10')
+                            ui.button('DASHBOARD', icon='dashboard', on_click=lambda: ui.navigate.to('/admin')).props('flat rounded size=md').classes('text-secondary font-black px-3 h-11 border border-secondary/20 hover:bg-secondary/10')
                         
-                        ui.button(t('profile'), icon='account_circle', on_click=lambda: ui.navigate.to('/ho-so')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-11 hover:bg-muted')
+                        ui.button(t('profile'), icon='account_circle', on_click=lambda: ui.navigate.to('/ho-so')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-3 h-11 hover:bg-muted')
                         ui.button(icon='logout', on_click=api_client.logout).props('flat round size=md').classes('text-destructive hover:bg-destructive/10')
                     else:
                         ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-11 transition-all hover:bg-muted')
