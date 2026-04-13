@@ -5,21 +5,21 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Base directory for the backend
+# Thư mục gốc cho backend
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
-# If DATABASE_URL is not provided, use default relative to backend directory
+# Nếu DATABASE_URL không được cung cấp, sử dụng mặc định tương đối với thư mục backend
 if not SQLALCHEMY_DATABASE_URL:
     db_path = BASE_DIR / "quan_ho.db"
     SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
     print(f"INFO: DATABASE_URL not found in .env, using default: {SQLALCHEMY_DATABASE_URL}")
 
-# Ensure the database URL for SQLite works correctly on Windows (needs 3 slashes)
+# Đảm bảo URL database SQLite hoạt động đúng trên Windows (cần 3 dấu gạch chéo)
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite:///./"):
-    # Convert relative path to absolute to avoid confusion
+    # Chuyển đường dẫn tương đối thành tuyệt đối để tránh nhầm lẫn
     rel_path = SQLALCHEMY_DATABASE_URL.replace("sqlite:///./", "")
     abs_path = (BASE_DIR / rel_path).resolve()
     SQLALCHEMY_DATABASE_URL = f"sqlite:///{abs_path}"

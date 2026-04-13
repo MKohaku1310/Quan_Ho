@@ -10,16 +10,16 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Quan Họ Bắc Ninh API", version="1.0.0")
 
-# Setup CORS
+# Thiết lập CORS
 cors_origins_raw = os.getenv("CORS_ORIGINS", "")
 if cors_origins_raw:
     allow_origins = [o.strip() for o in cors_origins_raw.split(",")]
 else:
-    # Safe defaults including localhost and potential LAN access
+    # Mặc định an toàn bao gồm localhost và truy cập LAN tiềm năng
     allow_origins = [
         "http://localhost:5173", "http://127.0.0.1:5173",
         "http://localhost:8080", "http://127.0.0.1:8080",
-        "*" # Broad for local debugging, recommended to restrict in production
+        "*" # Rộng gàng cho debug local, nên giới hạn trong production
     ]
 
 app.add_middleware(
@@ -39,6 +39,8 @@ app.include_router(locations.router, prefix="/api")
 app.include_router(events.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
 app.include_router(chatbot.router, prefix="/api")
+
+# File tĩnh được xử lý bởi frontend theo yêu cầu người dùng
 
 
 @app.get("/api/health")

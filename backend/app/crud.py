@@ -59,43 +59,56 @@ def update_user_role(db: Session, user_id: int, role: str) -> Optional[models.Us
     db.refresh(db_user)
     return db_user
 
-def get_user_activities(db: Session, user_id: int) -> List[schemas.UserActivity]:
+def get_user_activities(db: Session, user_id: int) -> List[dict]:
     activities = []
     
     # Favorites
     favs = db.query(models.Favorite).filter(models.Favorite.user_id == user_id).all()
     for f in favs:
-        activities.append(schemas.UserActivity(
-            type='favorite',
-            title=f"Yêu thích: {f.melody.name}",
-            date=f.created_at,
-            id=f.id,
-            related_id=f.melody_id
-        ))
+        activities.append({
+            "id": f.id,
+            "type": 'favorite',
+            "title": f"Yêu thích: {f.melody.name}" if f.melody else "Yêu thích giai điệu",
+            "date": f.created_at,
+            "details": f.melody.description[:50] + "..." if f.melody and f.melody.description and len(f.melody.description) > 50 else (f.melody.description if f.melody else "")
+        })
     
     # History
-    hist = db.query(models.History).filter(models.History.user_id == user_id).order_by(models.History.created_at.desc()).limit(10).all()
+    hist = db.query(models.History).filter(models.History.user_id == user_id).order_by(models.History.created_at.desc()).limit(20).all()
     for h in hist:
-        activities.append(schemas.UserActivity(
-            type='history',
-            title=f"Đã nghe: {h.melody.name}",
-            date=h.created_at,
-            id=h.id,
-            related_id=h.melody_id
-        ))
-        
+        activities.append({
+            "id": h.id,
+            "type": 'history',
+            "title": f"Đã nghe: {h.melody.name}" if h.melody else "Nghe giai điệu",
+            "date": h.created_at,
+            "details": f"Thời gian: {h.created_at.strftime('%H:%M %d/%m/%Y')}"
+        })
+    
     # Events
     regs = db.query(models.EventRegistration).filter(models.EventRegistration.user_id == user_id).all()
     for r in regs:
-        activities.append(schemas.UserActivity(
-            type='event',
-            title=f"Đăng ký sự kiện: {r.event.title}",
-            date=r.created_at,
-            id=r.id,
-            related_id=r.event_id
-        ))
+        activities.append({
+            "id": r.id,
+            "type": "registration",
+            "title": f"Đăng ký: {r.event.title}" if r.event else "Đăng ký sự kiện",
+            "date": r.created_at,
+            "details": f"Trạng thái: {r.status}"
+        })
         
-    return sorted(activities, key=lambda x: x.date, reverse=True)
+    # Comments
+    comments = db.query(models.Comment).filter(models.Comment.user_id == user_id).all()
+    for c in comments:
+        activities.append({
+            "id": c.id,
+            "type": "comment",
+            "title": "Bình luận",
+            "date": c.created_at,
+            "details": c.content[:50] + "..." if len(c.content) > 50 else c.content
+        })
+        
+    # Sort by date
+    activities.sort(key=lambda x: x['date'], reverse=True)
+    return activities
 
 
 def create_melody(db: Session, melody: schemas.MelodyCreate) -> models.Melody:
@@ -180,6 +193,21 @@ def create_event(db: Session, event: schemas.EventCreate) -> models.Event:
 
 def get_events(db: Session, skip: int = 0, limit: int = 100) -> List[models.Event]:
     return db.query(models.Event).offset(skip).limit(limit).all()
+
+def create_event_registration(db: Session, event_id: int, user_id: int, registration_data: dict) -> models.EventRegistration:
+    db_reg = models.EventRegistration(
+        event_id=event_id,
+        user_id=user_id,
+        status="registered"
+    )
+    db.add(db_reg)
+    db.commit()
+    db.refresh(db_reg)
+    
+    # Mock Email Notification
+    print(f"MOCK EMAIL: Gửi thông báo đăng ký thành công cho người dùng ID {user_id} tại sự kiện {event_id}")
+    
+    return db_reg
 
 def create_comment(db: Session, comment: schemas.CommentCreate, user_id: int) -> models.Comment:
     db_comment = models.Comment(**comment.model_dump(), user_id=user_id)
@@ -271,3 +299,4 @@ def update_location(db: Session, location_id: int, location_update: dict) -> Opt
     db.commit()
     db.refresh(db_location)
     return db_location
+

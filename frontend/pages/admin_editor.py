@@ -2,12 +2,15 @@ from nicegui import app, ui
 import theme
 import components
 from api import api_client
-from pages.auth import admin_required
+
 import asyncio
 
 @ui.page('/admin/edit/{et_type}/{et_id}')
-@admin_required
 async def admin_editor_page(et_type: str, et_id: int):
+    if not app.storage.user.get('is_authenticated') or app.storage.user.get('role') != 'admin':
+        ui.navigate.to('/dang-nhap')
+        return
+
     # Mapping for titles and icons
     type_map = {
         'song': ('Bài hát', 'music_note'),

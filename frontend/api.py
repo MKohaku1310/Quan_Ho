@@ -1,6 +1,6 @@
 import httpx
 from typing import List, Dict, Any, Optional, Union
-from nicegui import app
+from nicegui import app, ui
 import os
 
 # Use environment variable for API URL, default to localhost
@@ -12,15 +12,23 @@ class APIClient:
     def __init__(self, timeout: float = 10.0):
         self.timeout = timeout
 
-    async def _get(self, endpoint: str) -> List[Dict[str, Any]]:
+    async def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None, use_token: bool = False) -> Any:
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                # Ensure endpoint has trailing slash for FastAPI
-                path = endpoint if endpoint.endswith('/') else f"{endpoint}/"
-                url = f"{API_BASE_URL}/{path}"
-                response = await client.get(url)
+            headers = {}
+            if use_token:
+                token = app.storage.user.get('access_token')
+                if token:
+                    headers["Authorization"] = f"Bearer {token}"
+
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
+                # Some FastAPI routes handle slashes strictly, some don't.
+                # Standardizing to NO forced trailing slash here, as httpx handles it better.
+                url = f"{API_BASE_URL}/{endpoint}"
+                response = await client.get(url, params=params, headers=headers)
                 if response.status_code == 200:
                     return response.json()
+                else:
+                    print(f"GET error {response.status_code} for {url}: {response.text}")
         except httpx.ConnectError:
             print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}. Ensure backend is running.")
         except Exception as e:
@@ -36,9 +44,8 @@ class APIClient:
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
 
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 url = f"{API_BASE_URL}/{endpoint}"
-                if not url.endswith('/'): url += '/'
                 response = await client.post(url, json=data, headers=headers)
                 if response.status_code in [200, 201]:
                     return response.json()
@@ -58,9 +65,8 @@ class APIClient:
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
 
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 url = f"{API_BASE_URL}/{endpoint}"
-                if not url.endswith('/'): url += '/'
                 response = await client.patch(url, json=data, headers=headers)
                 if response.status_code == 200:
                     return response.json()
@@ -78,9 +84,8 @@ class APIClient:
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
 
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 url = f"{API_BASE_URL}/{endpoint}"
-                if not url.endswith('/'): url += '/'
                 response = await client.put(url, json=data, headers=headers)
                 if response.status_code in [200, 204]:
                     return response.json()
@@ -94,9 +99,9 @@ class APIClient:
 
     async def login(self, username: str, password: str) -> bool:
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 response = await client.post(
-                    f"{API_BASE_URL}/auth/login", 
+                    f"{API_BASE_URL}/auth/login/", 
                     data={"username": username, "password": password}
                 )
                 if response.status_code == 200:
@@ -121,17 +126,10 @@ class APIClient:
     async def logout(self):
         app.storage.user.clear()
         app.storage.user.update({'access_token': None, 'is_authenticated': False, 'role': None, 'user_name': None})
+        ui.navigate.to('/')
 
     async def get_me(self) -> Optional[Dict[str, Any]]:
-        token = app.storage.user.get('access_token')
-        if not token: return None
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(f"{API_BASE_URL}/auth/me/", headers={"Authorization": f"Bearer {token}"})
-                if response.status_code == 200:
-                    return response.json()
-        except Exception: pass
-        return None
+        return await self._get("auth/me", use_token=True)
 
     async def update_profile(self, data: Dict[str, Any]) -> bool:
         res = await self._patch("auth/me", data, use_token=True)
@@ -145,39 +143,15 @@ class APIClient:
         return res is not None
 
     async def get_activities(self) -> List[Dict[str, Any]]:
-        token = app.storage.user.get('access_token')
-        if not token: return []
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(f"{API_BASE_URL}/auth/me/activities/", headers={"Authorization": f"Bearer {token}"})
-                if response.status_code == 200:
-                    return response.json()
-        except: return []
-        return []
+        return await self._get("auth/me/activities")
 
     # Administrative APIs
     async def get_users(self) -> List[Dict[str, Any]]:
-        token = app.storage.user.get('access_token')
-        if not token: return []
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(f"{API_BASE_URL}/auth/users/", headers={"Authorization": f"Bearer {token}"})
-                if response.status_code == 200:
-                    return response.json()
-        except Exception as e:
-            print(f"Error fetching users: {e}")
-        return []
+        return await self._get("auth/users", use_token=True)
 
     async def delete_user(self, user_id: int) -> bool:
-        token = app.storage.user.get('access_token')
-        if not token: return False
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.delete(f"{API_BASE_URL}/auth/users/{user_id}/", headers={"Authorization": f"Bearer {token}"})
-                return response.status_code == 200
-        except Exception as e:
-            print(f"Error deleting user: {e}")
-        return False
+        res = await self._delete(f"auth/users/{user_id}", use_token=True)
+        return res is not None
 
     async def ask_chatbot(self, message: str) -> Optional[str]:
         res = await self._post("chatbot", {"message": message})
@@ -194,37 +168,19 @@ class APIClient:
     async def get_locations(self) -> List[Dict[str, Any]]:
         return await self._get("locations")
 
-    async def get_villages(self) -> List[Dict[str, Any]]:
-        # Map /villages route if exists, otherwise use /locations?type=lang-quan-ho
-        # The prompt mentioned GET /api/villages, but our router uses /locations
-        # I will check /locations with type filter if possible, or just /locations
-        return await self._get("locations?type=lang-quan-ho")
+    async def get_villages(self, district: Optional[str] = None) -> List[Dict[str, Any]]:
+        params = {}
+        if district and district != 'Tất cả':
+            params['district'] = district
+        return await self._get("locations", params=params)
 
     async def get_village(self, village_id: int) -> Optional[Dict[str, Any]]:
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(f"{API_BASE_URL}/locations/{village_id}/")
-                if response.status_code == 200:
-                    return response.json()
-        except httpx.ConnectError:
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
-        except Exception as e:
-            print(f"Error fetching village {village_id}: {e}")
-        return None
+        # Ensure we always treat village_id as an integer and fetch directly
+        return await self._get(f"locations/{int(village_id)}", use_token=False)
 
     async def get_articles(self, article_type: Optional[str] = None) -> List[Dict[str, Any]]:
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                url = f"{API_BASE_URL}/articles/"
-                params = {"type": article_type} if article_type else {}
-                response = await client.get(url, params=params)
-                if response.status_code == 200:
-                    return response.json()
-        except httpx.ConnectError:
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
-        except Exception as e:
-            print(f"Error fetching articles: {e}")
-        return []
+        params = {"category": article_type} if article_type else {}
+        return await self._get("articles", params=params)
 
     async def get_events(self) -> List[Dict[str, Any]]:
         return await self._get("events")
@@ -232,13 +188,13 @@ class APIClient:
     async def register_event(self, event_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         # The endpoint argument for _post will have unexpected / injected if we append query params directly 
         # so we rely on _post ensuring the URL looks like /events/{event_id}/register/
-        return await self._post(f"events/{event_id}/register", data, use_token=True)
+        return await self._post(f"events/{event_id}/register/", data, use_token=True)
 
     async def search_melodies(self, query: str) -> List[Dict[str, Any]]:
         if not query:
             return await self.get_melodies()
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 response = await client.get(f"{API_BASE_URL}/melodies/search/", params={"search": query})
                 if response.status_code == 200:
                     return response.json()
@@ -291,8 +247,8 @@ class APIClient:
 
     async def get_melody(self, melody_id: int) -> Optional[Dict[str, Any]]:
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(f"{API_BASE_URL}/melodies/{melody_id}")
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
+                response = await client.get(f"{API_BASE_URL}/melodies/{melody_id}/")
                 if response.status_code == 200:
                     return response.json()
         except httpx.ConnectError:
@@ -324,8 +280,8 @@ class APIClient:
 
     async def get_event(self, event_id: int) -> Optional[Dict[str, Any]]:
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(f"{API_BASE_URL}/events/{event_id}")
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
+                response = await client.get(f"{API_BASE_URL}/events/{event_id}/")
                 if response.status_code == 200:
                     return response.json()
         except httpx.ConnectError:
@@ -338,23 +294,16 @@ class APIClient:
         params = {}
         if melody_id: params['melody_id'] = melody_id
         if article_id: params['article_id'] = article_id
-        
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(f"{API_BASE_URL}/comments/", params=params)
-                if response.status_code == 200:
-                    return response.json()
-        except httpx.ConnectError:
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
-        except Exception as e:
-            print(f"Error fetching comments: {e}")
-        return []
+        return await self._get("comments", params=params)
 
 
     async def create_comment(self, content: str, melody_id: Optional[int] = None, article_id: Optional[int] = None) -> Optional[Dict[str, Any]]:
         data = {"content": content}
         if melody_id: data['melody_id'] = melody_id
         if article_id: data['article_id'] = article_id
-        return await self._post("comments", data, use_token=True)
+        return await self._post("comments/", data, use_token=True)
+
+    async def get_my_activities(self) -> List[Dict[str, Any]]:
+        return await self._get("auth/me/activities", use_token=True)
 
 api_client = APIClient()

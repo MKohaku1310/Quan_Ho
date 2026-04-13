@@ -5,7 +5,9 @@ from api import api_client
 import asyncio
 from datetime import datetime
 
-def _show_registration_dialog(event_id, title, button_ref):
+def _show_registration_dialog(event_item, button_ref):
+    event_id = event_item.get('id')
+    title = event_item.get('title')
     token = app.storage.user.get('token') or app.storage.user.get('access_token')
     if not token:
         with ui.dialog() as dialog, ui.card().classes('p-8 rounded-2xl shadow-elevated border border-border bg-card max-w-sm w-full'):
@@ -94,8 +96,8 @@ async def news_page():
                 self.items_per_page = 8
 
         # Fetch data
-        news_data = await api_client.get_articles(article_type='news')
-        event_data = await api_client.get_articles(article_type='event')
+        news_data = await api_client.get_articles(article_type='tin-tuc')
+        event_data = await api_client.get_events()
 
         state = NewsState(news_data, event_data)
 
@@ -114,8 +116,14 @@ async def news_page():
                     return match_m and match_y
                 except: return True # Fallback for malformed
             
-            state.filtered_news = [n for n in state.all_news if (q in n.get('title','').lower() or q in n.get('description','').lower()) and match(n, 'created_at')]
-            state.filtered_events = [e for e in state.all_events if (q in e.get('title','').lower() or q in e.get('description','').lower()) and match(e, 'start_date')]
+            state.filtered_news = [
+                n for n in state.all_news 
+                if (q in n.get('title','').lower() or q in n.get('excerpt','').lower()) and match(n, 'created_at')
+            ]
+            state.filtered_events = [
+                e for e in state.all_events 
+                if (q in e.get('title','').lower() or q in e.get('description','').lower()) and match(e, 'start_date')
+            ]
             
             state.news_page = 1
             state.events_page = 1
@@ -195,23 +203,29 @@ async def news_page():
 async def article_detail_page(id: int):
     with theme.frame():
         news_data = await api_client.get_article(id)
-        if not news_data:
-            components.empty_state('Không tìm thấy bài viết này.')
-            return
-            
-        _render_detail_view(news_data, is_event=False)
+        # Fetch related news for the sidebar
+        try:
+            related = await api_client.get_articles(article_type='tin-tuc')
+            related = [n for n in related if n.get('id') != id][:3]
+        except:
+            related = []
+
+        await _render_detail_view(news_data, is_event=False, related_news=related)
 
 @ui.page('/su-kien/{id}')
 async def event_detail_page(id: int):
     with theme.frame():
         event_data = await api_client.get_event(id)
-        if not event_data:
-            components.empty_state('Không tìm thấy sự kiện này.')
-            return
-            
-        _render_detail_view(event_data, is_event=True)
+        # Fetch related events for the sidebar
+        try:
+            related = await api_client.get_events()
+            related = [e for e in related if e.get('id') != id][:3]
+        except:
+            related = []
 
-def _render_detail_view(data, is_event=False):
+        await _render_detail_view(event_data, is_event=True, related_news=related)
+
+async def _render_detail_view(data, is_event=False, related_news=None):
     with ui.element('section').classes('w-full bg-background pb-20'):
         # Hero Image Header
         with ui.element('div').classes('relative h-[400px] md:h-[500px] w-full mb-12'):
@@ -239,12 +253,13 @@ def _render_detail_view(data, is_event=False):
                                 ui.label('Địa điểm tổ chức').classes('text-xs text-primary font-bold uppercase tracking-wider')
                                 ui.label(data.get('location', 'Bắc Ninh')).classes('text-lg font-bold')
                 
-                ui.label(data.get('content') or data.get('description', 'Chưa có thông tin chi tiết.')).classes('text-lg leading-relaxed text-foreground/90 whitespace-pre-line text-justify')
+                content_html = data.get('content') or data.get('description', 'Chưa có thông tin chi tiết.')
+                ui.html(content_html).classes('text-lg leading-relaxed text-foreground/90 text-justify w-full')
                 
                 if is_event:
                     with ui.row().classes('w-full justify-center mt-12'):
                         btn = ui.button('Đăng ký tham gia ngay').props('color="primary" unelevated size="lg" icon="how_to_reg"').classes('px-10 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform')
-                        btn.on('click', lambda: _show_registration_dialog(data.get('id'), data.get('title'), btn))
+                        btn.on('click', lambda: _show_registration_dialog(data, btn))
 
                 # Share buttons
                 with ui.row().classes('w-full items-center gap-4 py-8 border-y border-border mt-12'):
@@ -252,16 +267,65 @@ def _render_detail_view(data, is_event=False):
                     ui.button(icon='facebook').props('flat round color="primary"')
                     ui.button(icon='share').props('flat round color="primary"')
 
+                # Comment Section
+                with ui.column().classes('w-full mt-16 gap-6'):
+                    ui.label('Bình luận cộng đồng').classes('text-2xl font-bold font-display border-l-4 border-primary pl-4')
+                    
+                    @ui.refreshable
+                    async def render_news_comments():
+                        comments = await api_client.get_comments(article_id=data['id'])
+                        if not comments:
+                            ui.label('Chưa có thảo luận nào cho bài viết này. Hãy là người đầu tiên!').classes('text-muted-foreground italic py-4')
+                        else:
+                            with ui.column().classes('gap-6 w-full'):
+                                for c in comments:
+                                    with ui.row().classes('gap-4 items-start w-full'):
+                                        ui.avatar(icon='account_circle', color='muted').classes('shrink-0 shadow-sm')
+                                        with ui.column().classes('flex-1 gap-1'):
+                                            with ui.row().classes('items-baseline gap-2'):
+                                                ui.label(c.get('user', {}).get('name', 'Thành viên')).classes('font-bold text-sm text-foreground')
+                                                ui.label(c.get('created_at', '')[:10]).classes('text-[10px] text-muted-foreground font-black')
+                                            ui.label(c.get('content')).classes('text-sm text-foreground bg-card p-4 rounded-2xl border border-border/50 shadow-sm')
+                    
+                    await render_news_comments()
+
+                    if app.storage.user.get('is_authenticated'):
+                        with ui.element('div').classes('w-full mt-6 p-0 sm:p-2'):
+                            with ui.row().classes('w-full items-start gap-3 sm:gap-4 no-wrap'):
+                                # User Avatar
+                                ui.avatar(icon='account_circle', color='primary', text_color='white').classes('shadow-sm hover:scale-110 transition-transform cursor-pointer shrink-0')
+                                
+                                # Modern Input Card
+                                with ui.card().classes('flex-1 p-0 bg-white/40 backdrop-blur-md border border-border/50 rounded-2xl shadow-sm hover:shadow-md transition-all group'):
+                                    with ui.column().classes('w-full p-4 gap-2'):
+                                        comment_input = ui.textarea(placeholder='Viết cảm nghĩ của bạn về bài viết này...').classes('flex-1 w-full bg-transparent border-none text-base').props('borderless autogrow counter maxLength=500 dense')
+                                        
+                                        with ui.row().classes('w-full justify-end items-center mt-1'):
+                                            async def post_news_comment(e=None):
+                                                if not comment_input.value.strip(): return
+                                                res = await api_client.create_comment(content=comment_input.value, article_id=data['id'])
+                                                if res:
+                                                    comment_input.value = ''
+                                                    ui.notify('Đã gửi phản hồi! Đang cập nhật trang...', icon='check_circle', color='positive')
+                                                    await asyncio.sleep(1.0)
+                                                    ui.navigate.reload()
+                                            
+                                            ui.button('GỬI', icon='send', on_click=post_news_comment).props('unelevated rounded-lg').classes('bg-primary text-white font-bold px-6 py-2 shadow-sm hover:scale-105 transition-all')
+                    else:
+                        with ui.card().classes('w-full p-6 border border-dashed border-border bg-muted/5 flex flex-col items-center gap-3 opacity-80 mt-4'):
+                            ui.label('Bạn cần đăng nhập để tham gia thảo luận.').classes('text-sm italic text-muted-foreground')
+                            ui.button('ĐĂNG NHẬP', on_click=lambda: ui.navigate.to('/dang-nhap')).props('flat rounded color=primary').classes('font-bold')
+
             # Sidebar
             with ui.column().classes('gap-8'):
                 ui.label('Khám phá thêm').classes('text-2xl font-bold font-display border-l-4 border-primary pl-4 mb-2')
                 # Simple back button
                 ui.button('Quay lại danh sách', on_click=lambda: ui.navigate.to('/tin-tuc')).props('flat icon="arrow_back" color="primary"').classes('font-bold')
-                # Related content placeholder
-                with ui.column().classes('gap-4'):
-                    for i in range(1, 4):
-                        with ui.row().classes('gap-4 group cursor-pointer pb-4 border-b border-border/50').on('click', lambda i=i: ui.navigate.to(f'/tin-tuc/{i}')):
-                            ui.image(f'https://picsum.photos/id/{i+10}/100/100').classes('w-16 h-16 rounded-lg object-cover')
-                            with ui.column().classes('gap-0'):
-                                ui.label(f'Bài viết liên quan {i}').classes('text-sm font-bold group-hover:text-primary transition-colors')
-                                ui.label('Xem chi tiết').classes('text-[10px] text-muted-foreground')
+                # Related content (Show real articles if possible, but for now fix the link logic)
+                related_news = related_news or []
+                for art in related_news:
+                    with ui.row().classes('gap-4 group cursor-pointer pb-4 border-b border-border/50').on('click', lambda a=art: ui.navigate.to(f'/tin-tuc/{a["id"]}')):
+                        ui.image(art.get('image_url') or 'https://picsum.photos/seed/quanho/100/100').classes('w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform')
+                        with ui.column().classes('gap-0 flex-1'):
+                            ui.label(art.get('title')).classes('text-sm font-bold group-hover:text-primary transition-colors line-clamp-1')
+                            ui.label('Xem chi tiết').classes('text-[10px] text-muted-foreground')

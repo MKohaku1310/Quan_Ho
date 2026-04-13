@@ -68,17 +68,13 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
+    role: Optional[UserRole] = None
 
 class PasswordChange(BaseModel):
     old_password: str
     new_password: str
 
-class UserActivity(BaseModel):
-    type: str # 'favorite', 'history', 'event'
-    title: str
-    date: datetime
-    id: int
-    related_id: int
+
 
 
 class MelodyBase(BaseModel):
@@ -168,6 +164,8 @@ class LocationBase(BaseModel):
     featured_songs: Optional[str] = None
     badges: Optional[str] = None
     description: Optional[str] = None
+    history: Optional[str] = None
+    culture: Optional[str] = None
     festival: Optional[str] = None
     type: LocationType = LocationType.lang_quan_ho
     image_url: Optional[str] = None
@@ -224,3 +222,19 @@ class Comment(CommentBase):
     user_id: int
     user: User
     created_at: datetime
+
+class EventRegistration(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    event_id: int
+    user_id: int
+    created_at: datetime
+    status: str
+    event: Optional[Event] = None
+
+class UserActivity(BaseModel):
+    id: int
+    type: str  # 'registration', 'comment'
+    title: str
+    date: datetime
+    details: Optional[str] = None

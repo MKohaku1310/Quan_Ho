@@ -169,7 +169,7 @@ def apply_theme():
                 --shadow-elevated: 0 12px 40px -8px hsl(0 0% 0% / 0.5);
             }
 
-            /* Reset */
+            /* Đặt lại CSS */
             *, *::before, *::after { box-sizing: border-box; }
 
             html {
@@ -195,7 +195,7 @@ def apply_theme():
                 -webkit-tap-highlight-color: transparent;
             }
 
-            /* Responsive touch targets for all buttons */
+            /* Nút responsive cho mọi thiết bị */
             .q-btn, button, .cursor-pointer {
                 min-height: 44px;
                 min-width: 44px;
@@ -204,90 +204,89 @@ def apply_theme():
                 touch-action: manipulation;
             }
 
-            /* ... (rest of CSS remains, but ensure no horizontal scroll) */
             .w-full { width: 100% !important; max-width: 100vw; }
 
             /* =============================================
-               QUASAR LAYOUT RESET
-               Ensure standard document scroll by removing 100vh locks
-            ============================================= */
-            .q-layout,
-            .q-page-container,
-            .q-page {
-                min-height: auto !important;
-            }
+       ĐẶT LẠI LAYOUT QUASAR
+       Đảm bảo cuộn tài liệu tiêu chuẩn bằng cách loại bỏ khóa 100vh
+    ============================================= */
+    .q-layout,
+    .q-page-container,
+    .q-page {
+        min-height: auto !important;
+    }
 
-            .q-page-container {
-                padding: 0 !important;
-            }
+    .q-page-container {
+        padding: 0 !important;
+    }
 
-            .q-page {
-                padding: 0 !important;
-                display: block !important;
-            }
+    .q-page {
+        padding: 0 !important;
+        display: block !important;
+    }
 
-            /* NiceGUI content wrapper */
-            .nicegui-content {
-                display: flex !important;
-                flex-direction: column !important;
-                min-height: 100vh !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                gap: 0 !important;
-                width: 100% !important;
-                overflow-x: hidden;
-            }
+    /* Wrapper nội dung NiceGUI */
+    .nicegui-content {
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 100vh !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        gap: 0 !important;
+        width: 100% !important;
+        overflow-x: hidden;
+    }
 
-            /* Sticky Header */
-            .qh-navbar {
-                position: fixed !important;
-                top: 0;
-                left: 0;
-                width: 100%;
-                z-index: 1000;
-                background: rgba(255, 248, 240, 0.82) !important;
-                backdrop-filter: blur(24px) saturate(180%) !important;
-                -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-                border-bottom: 1px solid rgba(180, 120, 60, 0.1) !important;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-                transition: all 0.3s ease;
-            }
+    /* Header cố định */
+    .qh-navbar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        background: rgba(255, 248, 240, 0.82) !important;
+        backdrop-filter: blur(24px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+        border-bottom: 1px solid rgba(180, 120, 60, 0.1) !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
+    }
 
-            /* Main area grows to fill space */
-            .nicegui-content > main {
-                flex: 1 0 auto !important;
-                display: flex !important;
-                flex-direction: column !important;
-                width: 100% !important;
-                padding-top: 56px; /* Offset for sticky navbar */
-            }
+    /* Main area grows to fill space */
+    .nicegui-content > main {
+        flex: 1 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        padding-top: 56px; /* Khoảng cách cho navbar cố định */
+    }
 
-            /* Footer should not be hidden */
-            .nicegui-content > footer {
-                flex-shrink: 0 !important;
-                width: 100% !important;
-                margin-top: auto !important;
-            }
+    /* Footer không bị ẩn */
+    .nicegui-content > footer {
+        flex-shrink: 0 !important;
+        width: 100% !important;
+        margin-top: auto !important;
+    }
 
-            .nicegui-content > main > * {
-                width: 100% !important;
-            }
+    .nicegui-content > main > * {
+        width: 100% !important;
+    }
 
-            /* =============================================
-               UTILITY
-            ============================================= */
-            .text-gradient-gold {
-                background: var(--gradient-gold);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
-            .bg-hero-gradient  { background: var(--gradient-hero); }
-            .bg-warm-gradient  { background: var(--gradient-warm); }
-            .shadow-card       { box-shadow: var(--shadow-card); }
-            .shadow-elevated   { box-shadow: var(--shadow-elevated); }
+    /* =============================================
+       TIỆN ÍCH
+    ============================================= */
+    .text-gradient-gold {
+        background: var(--gradient-gold);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .bg-hero-gradient  { background: var(--gradient-hero); }
+    .bg-warm-gradient  { background: var(--gradient-warm); }
+    .shadow-card       { box-shadow: var(--shadow-card); }
+    .shadow-elevated   { box-shadow: var(--shadow-elevated); }
 
-            /* Advanced Skeleton Shimmer */
+            /* Hiệu ứng Skeleton Shimmer */
             .skeleton-shimmer {
                 position: relative;
                 overflow: hidden;
@@ -302,12 +301,12 @@ def apply_theme():
                 animation: shimmer 1.5s infinite;
             }
 
-            /* Cultural Background Pattern */
+            /* Hình nền văn hóa */
             .bg-pattern-lotus {
                 background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-5 0-9 4-9 9 0 4 3 8 7 9-4 1-7 5-7 9 0 5 4 9 9 9s9-4 9-9c0-4-3-8-7-9 4-1 7-5 7-9 0-5-4-9-9-9zm0 2c3.9 0 7 3.1 7 7 0 3.3-2.3 6.1-5.4 6.8-.4-1.1-.9-2.1-1.6-3.1 2.2-.6 4-2.4 4-4.7 0-2.8-2.2-5-5-5s-5 2.2-5 5c0 2.3 1.8 4.1 4 4.7-.7 1-1.2 2-1.6 3.1-3.1-.7-5.4-3.5-5.4-6.8 0-3.9 3.1-7 7-7zm0 18c3.9 0 7 3.1 7 7 0 3.3-2.3 6.1-5.4 6.8-.4-1.1-.9-2.1-1.6-3.1 2.2-.6 4-2.4 4-4.7 0-2.8-2.2-5-5-5s-5 2.2-5 5c0 2.3 1.8 4.1 4 4.7-.7 1-1.2 2-1.6 3.1-3.1-.7-5.4-3.5-5.4-6.8 0-3.9 3.1-7 7-7z' fill='%23b21e1e' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
             }
             
-            /* Ancient "Dó" Paper Texture */
+            /* Hình ảnh giấy Dó cổ */
             .bg-paper-texture {
                 background-color: #fdfcf0;
                 background-image: 
@@ -317,7 +316,7 @@ def apply_theme():
                 opacity: 0.98;
             }
 
-            /* Traditional "Triện Đỏ" Seal */
+            /* Con dấu Triện Đỏ truyền thống */
             .seal-stamped {
                 background: linear-gradient(135deg, #b21e1e 0%, #8b0000 100%);
                 box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 2px 2px 5px rgba(0,0,0,0.3);
@@ -341,7 +340,7 @@ def apply_theme():
                 to { stroke-dashoffset: 0; }
             }
 
-            /* Modern UI Search Components */
+            /* Thành phần tìm kiếm UI hiện đại */
             .modern-search-card {
                 background: rgba(255, 255, 255, 0.6) !important;
                 backdrop-filter: blur(10px);
@@ -397,16 +396,16 @@ from contextlib import contextmanager
 
 @contextmanager
 def frame():
-    import components  # late import to avoid circular dependency
+    import components  # import trễ để tránh circular dependency
     apply_theme()
     
     # Header
     components.navbar()
     
-    # Main Content
+    # Nội dung chính
     with ui.element('main'):
         yield
         
-    # Footer and Chatbot
+    # Footer và Chatbot
     components.chatbot_persona()
     components.footer()

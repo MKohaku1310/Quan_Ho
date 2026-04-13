@@ -1,6 +1,6 @@
 from nicegui import app
 
-# Dictionary of translations
+# Dictionary các chuoi dich
 TRANSLATIONS = {
     'vi': {
         'home': 'Trang chủ',

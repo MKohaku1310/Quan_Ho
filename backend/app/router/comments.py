@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from app import crud, schemas, security
 from app.db import get_db
-from app.router.auth import oauth2_scheme
+from app.router.auth import get_current_user
 
 router = APIRouter(prefix="/comments", tags=["comments"])
 
@@ -21,19 +21,6 @@ def read_comments(
 def create_comment(
     comment: schemas.CommentCreate,
     db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
+    current_user: schemas.User = Depends(get_current_user)
 ):
-    # Get user from token
-    try:
-        payload = security.decode_access_token(token)
-        email: str = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
-    except Exception:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
-        
-    user = crud.get_user_by_email(db, email=email)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-        
-    return crud.create_comment(db=db, comment=comment, user_id=user.id)
+    return crud.create_comment(db=db, comment=comment, user_id=current_user.id)

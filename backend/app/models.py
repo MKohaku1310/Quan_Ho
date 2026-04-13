@@ -63,7 +63,7 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
-    # Relationships
+    # Quan hệ
     favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
     histories = relationship("History", back_populates="user", cascade="all, delete-orphan")
     registrations = relationship("EventRegistration", back_populates="user", cascade="all, delete-orphan")
@@ -93,7 +93,7 @@ class EventRegistration(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"))
-    status = Column(String(50), default="registered") # registered, cancelled, attended
+    status = Column(String(50), default="registered") # đã đăng ký, đã hủy, đã tham gia
     created_at = Column(DateTime, server_default=func.now())
     
     user = relationship("User", back_populates="registrations")
@@ -105,7 +105,7 @@ class Article(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(500), nullable=False)
     slug = Column(String(500), unique=True, index=True)
-    content = Column(Text) # Changed from LONGTEXT for SQLite compatibility
+    content = Column(Text) # Đổi từ LONGTEXT cho tương thích SQLite
     excerpt = Column(Text)
     image_url = Column(String(500))
     category = Column(Enum(ArticleCategory), default=ArticleCategory.tin_tuc)
@@ -140,8 +140,8 @@ class Artist(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     slug = Column(String(255), unique=True, index=True)
-    birth_year = Column(Integer) # Changed from YEAR
-    death_year = Column(Integer, nullable=True) # Changed from YEAR
+    birth_year = Column(Integer) # Đổi từ YEAR
+    death_year = Column(Integer, nullable=True) # Đổi từ YEAR
     description = Column(Text)
     biography = Column(Text)
     contributions = Column(Text)
@@ -162,9 +162,11 @@ class Location(Base):
     longitude = Column(Float(11, 8))
     district = Column(String(255))
     artist_count = Column(Integer, default=0)
-    featured_songs = Column(Text) # Comma separated labels
-    badges = Column(Text) # Comma separated labels
+    featured_songs = Column(Text) # Các nhãn phân cách bằng dấu phẩy
+    badges = Column(Text) # Các nhãn phân cách bằng dấu phẩy
     description = Column(Text)
+    history = Column(Text)
+    culture = Column(Text)
     festival = Column(String(255))
     image_url = Column(String(500))
     type = Column(Enum(LocationType), default=LocationType.lang_quan_ho, index=True)

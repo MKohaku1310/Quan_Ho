@@ -39,7 +39,7 @@ def song_card(id, title, artist, image_url, melody=None, duration=None):
         # Admin controls (Integrated)
         _admin_controls('song', id)
         
-        with ui.element('div').classes('w-full').on('click', lambda: ui.navigate.to(f'/bai-hat/{id}')):
+        with ui.element('div').classes('w-full').on('click', lambda id=id: ui.navigate.to(f'/bai-hat/{id}')):
             # Favorite button
             with ui.element('div').classes(
                 'absolute left-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full '
@@ -54,7 +54,7 @@ def song_card(id, title, artist, image_url, melody=None, duration=None):
             ):
                 # Thumbnail
                 with ui.element('div').classes('relative aspect-[4/3] w-full overflow-hidden'):
-                    ui.image(image_url).classes('h-full w-full object-cover transition-transform duration-500 group-hover:scale-110')
+                    ui.image(image_url or 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2').classes('h-full w-full object-cover transition-transform duration-500 group-hover:scale-110')
                     # Play overlay
                     with ui.element('div').classes(
                         'absolute inset-0 flex items-center justify-center bg-black/0 '
@@ -161,19 +161,20 @@ def village_grid_card(item, on_map_click=None):
             'hover:shadow-elevated transition-all p-0 flex flex-col h-full'
         ):
             # Image
-            with ui.element('div').classes('relative aspect-[16/10] w-full overflow-hidden cursor-pointer').on('click', lambda: ui.navigate.to(f'/lang-quan-ho/{item.get("id")}')):
+            with ui.element('div').classes('relative aspect-[16/10] w-full overflow-hidden cursor-pointer').on('click', lambda id=item.get('id'): ui.navigate.to(f'/lang-quan-ho/{id}')):
                 ui.image(item.get('image_url') or 'https://images.unsplash.com/photo-1526462981764-f6cf0f4ea260?auto=format&fit=crop&q=80&w=600').classes('h-full w-full object-cover transition-transform duration-500 group-hover:scale-105')
                 
                 # Badges overlay
-                if item.get('badges'):
+                badges = item.get('badges')
+                if badges:
                     with ui.row().classes('absolute top-3 left-3 gap-2'):
-                        for badge in item.get('badges').split(','):
+                        for badge in badges.split(','):
                             ui.label(badge.strip()).classes('bg-primary/90 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm backdrop-blur-sm')
 
             # Content
             with ui.column().classes('p-4 gap-2 flex-1'):
                 with ui.column().classes('gap-1'):
-                    ui.label(item.get('name', 'Làng Quan họ')).classes('font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors cursor-pointer').on('click', lambda: ui.navigate.to(f'/lang-quan-ho/{item.get("id")}'))
+                    ui.label(item.get('name', 'Làng Quan họ')).classes('font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors cursor-pointer').on('click', lambda id=item.get('id'): ui.navigate.to(f'/lang-quan-ho/{id}'))
                     with ui.row().classes('items-center gap-1.5 text-xs text-muted-foreground'):
                         ui.icon('place', size='14px').classes('text-primary')
                         ui.label(f"Huyện {item.get('district') or 'Kinh Bắc'}")
@@ -195,7 +196,7 @@ def village_grid_card(item, on_map_click=None):
 
                 # Action
                 with ui.row().classes('w-full mt-auto pt-1 gap-2'):
-                    ui.button(t('card_view_detail'), on_click=lambda: ui.navigate.to(f'/lang-quan-ho/{item.get("id")}')).props('outline color="primary" rounded dense').classes('flex-1 text-[10px] font-bold')
+                    ui.button(t('card_view_detail'), on_click=lambda id=item.get('id'): ui.navigate.to(f'/lang-quan-ho/{id}')).props('outline color="primary" rounded dense').classes('flex-1 text-[10px] font-bold')
                     if on_map_click:
                         ui.button(t('card_map'), icon='map', on_click=on_map_click).props('unelevated color="primary" rounded dense').classes('flex-1 text-[10px] font-bold')
 
@@ -203,7 +204,7 @@ def news_grid_card(item):
     with ui.element('div').classes('relative group h-full'):
         _admin_controls('news', item.get('id'))
         
-        with ui.card().classes('w-full p-0 flex flex-col overflow-hidden hover:shadow-elevated transition-all duration-300 cursor-pointer bg-card border border-border h-full').on('click', lambda: ui.navigate.to(f'/tin-tuc/{item.get("id")}')):
+        with ui.card().classes('w-full p-0 flex flex-col overflow-hidden hover:shadow-elevated transition-all duration-300 cursor-pointer bg-card border border-border h-full').on('click', lambda id=item.get('id'): ui.navigate.to(f'/tin-tuc/{id}')):
             with ui.element('div').classes('relative w-full aspect-[16/10] overflow-hidden'):
                 ui.image(item.get('image_url') or 'https://images.unsplash.com/photo-1599908608021-b5d929aa054e?auto=format&fit=crop&w=800&q=80').classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-105')
                 ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none')
@@ -217,7 +218,7 @@ def news_grid_card(item):
                         ui.label(date_str).classes('text-[10px] font-medium')
                         
                 ui.label(item.get('title', 'Không có tiêu đề')).classes('text-base font-bold font-display line-clamp-2 mb-2 group-hover:text-primary transition-colors leading-snug')
-                ui.label(item.get('description', '...')).classes('text-xs text-muted-foreground line-clamp-2 mb-3 flex-grow')
+                ui.label(item.get('excerpt') or item.get('description') or 'Đang cập nhật...').classes('text-xs text-muted-foreground line-clamp-2 mb-3 flex-grow')
                 
                 with ui.row().classes('items-center text-primary mt-auto gap-1 text-sm font-bold opacity-0 -translate-x-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0'):
                     ui.label('Đọc thêm')
@@ -228,7 +229,7 @@ def event_grid_card(item, on_register=None):
         _admin_controls('news', item.get('id'))
         
         with ui.card().classes('w-full p-0 flex flex-col overflow-hidden hover:shadow-elevated transition-all duration-300 bg-card border border-border h-full'):
-            with ui.element('div').classes('relative w-full aspect-[16/10] overflow-hidden cursor-pointer').on('click', lambda: ui.navigate.to(f'/tin-tuc/{item.get("id")}')):
+            with ui.element('div').classes('relative w-full aspect-[16/10] overflow-hidden cursor-pointer').on('click', lambda id=item.get('id'): ui.navigate.to(f'/su-kien/{id}')):
                 ui.image(item.get('image_url') or 'https://images.unsplash.com/photo-1526462981764-f6cf0f4ea260?auto=format&fit=crop&w=800&q=80').classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-105')
                 ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-black/50 to-transparent')
                 ui.label('Sự kiện').classes('absolute top-3 left-3 text-[10px] font-bold text-white uppercase tracking-wider bg-primary px-2.5 py-1 rounded-sm shadow-md z-10')
@@ -240,7 +241,7 @@ def event_grid_card(item, on_register=None):
                     ui.label(date_str).classes('text-sm font-medium drop-shadow-md')
 
             with ui.column().classes('p-4 sm:p-5 flex-grow w-full gap-0 relative'):
-                ui.label(item.get('title', 'Không có tiêu đề')).classes('text-base font-bold font-display line-clamp-2 mb-2 hover:text-primary transition-colors cursor-pointer leading-snug').on('click', lambda: ui.navigate.to(f'/tin-tuc/{item.get("id")}'))
+                ui.label(item.get('title', 'Không có tiêu đề')).classes('text-base font-bold font-display line-clamp-2 mb-2 hover:text-primary transition-colors cursor-pointer leading-snug').on('click', lambda id=item.get('id'): ui.navigate.to(f'/su-kien/{id}'))
                 
                 # Countdown timer
                 with ui.row().classes('items-center gap-2 mb-4 bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10 w-fit'):
@@ -277,8 +278,10 @@ def event_grid_card(item, on_register=None):
                         ui.label(item.get('location', 'Tại địa phương')).classes('line-clamp-1 font-medium leading-tight')
                     with ui.row().classes('items-center gap-2 text-xs text-foreground'):
                         ui.icon('group', size='16px').classes('text-primary shrink-0')
-                        slots = item.get('available_slots', 0)
-                        ui.label(f"Số lượng: Còn {slots} chỗ" if slots > 0 else "Đã hết chỗ").classes(f'font-medium {"text-negative" if slots <= 0 else ""}')
+                        # Fallback to max_participants if available_slots not provided
+                        slots = item.get('available_slots')
+                        if slots is None: slots = item.get('max_participants', 100)
+                        ui.label(f"Số lượng: Còn {slots} chỗ").classes('font-medium')
                 
                 is_registered = item.get('is_registered', False)
                 btn_text = 'Đã đăng ký' if is_registered else 'Đăng ký tham gia'

@@ -4,6 +4,7 @@ import components
 from api import api_client
 from utils import get_embed_url
 import re
+import asyncio
 
 @ui.page('/bai-hat', response_timeout=60.0)
 async def songs_page():
@@ -166,14 +167,37 @@ async def song_detail_page(id: int):
                             await render_comments()
 
                             if app.storage.user.get('is_authenticated'):
-                                with ui.row().classes('w-full items-end gap-2 bg-card p-4 rounded-xl border border-border'):
-                                    comment_input = ui.textarea(placeholder='Viết bình luận...').classes('flex-1').props('outlined autogrow')
-                                    async def post_comment():
-                                        if await api_client.create_comment(content=comment_input.value, melody_id=id):
-                                            comment_input.value = ''
-                                            render_comments.refresh()
-                                            ui.notify('Đã gửi bình luận!', type='positive')
-                                    ui.button(icon='send', on_click=post_comment).props('round unelevated').classes('bg-primary text-white mb-1')
+                                with ui.element('div').classes('w-full mt-10 p-0 sm:p-2'):
+                                    with ui.row().classes('w-full items-start gap-3 sm:gap-4 no-wrap'):
+                                        # User Avatar
+                                        user_name = app.storage.user.get('user_name', 'U')
+                                        ui.avatar(icon='account_circle', color='primary', text_color='white').classes('shadow-sm hover:scale-110 transition-transform cursor-pointer shrink-0')
+                                        
+                                        # Modern Input Card
+                                        with ui.card().classes('flex-1 p-0 bg-white/40 backdrop-blur-md border border-border/50 rounded-2xl shadow-sm hover:shadow-md transition-all group'):
+                                            with ui.column().classes('w-full p-3 sm:p-4 gap-2'):
+                                                comment_input = ui.textarea(placeholder='Bạn đang nghĩ gì về làn điệu này?').classes('flex-1 w-full bg-transparent border-none text-base').props('borderless autogrow counter maxLength=500 dense')
+                                                
+                                                with ui.row().classes('w-full justify-end items-center mt-1'):
+                                                    async def post_comment(e=None):
+                                                        if not comment_input.value.strip():
+                                                            ui.notify('Vui lòng nhập nội dung bình luận', type='warning')
+                                                            return
+                                                        res = await api_client.create_comment(content=comment_input.value, melody_id=id)
+                                                        if res:
+                                                            comment_input.value = ''
+                                                            ui.notify('Bình luận của bạn đã được gửi! Đang cập nhật...', icon='check_circle', color='positive')
+                                                            await asyncio.sleep(1.0)
+                                                            ui.navigate.reload()
+                                                        else:
+                                                            ui.notify('Gửi bình luận thất bại', icon='error', color='negative')
+                                                    
+                                                    ui.button('GỬI', icon='send', on_click=post_comment).props('unelevated rounded-lg').classes('bg-primary text-white font-bold px-6 py-2 shadow-sm hover:scale-105 transition-all')
+                            else:
+                                with ui.card().classes('w-full p-8 border border-dashed border-border flex flex-col items-center gap-4 bg-muted/20 opacity-80 mt-8'):
+                                    ui.icon('login', size='32px', color='muted')
+                                    ui.label('Vui lòng đăng nhập để gửi bình luận hâm mộ các nghệ sĩ.').classes('text-muted-foreground italic text-center')
+                                    ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('unelevated rounded-lg color=primary').classes('px-8 font-bold')
 
 @ui.page('/them-bai-hat', response_timeout=60.0)
 @ui.page('/sua-bai-hat/{id}', response_timeout=60.0)

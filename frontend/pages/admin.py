@@ -2,12 +2,15 @@ from nicegui import app, ui
 import theme
 import components
 from api import api_client
-from pages.auth import auth_required, admin_required
+
 
 
 @ui.page('/admin')
-@admin_required
 async def admin_page():
+    if not app.storage.user.get('is_authenticated') or app.storage.user.get('role') != 'admin':
+        ui.navigate.to('/dang-nhap')
+        return
+
     users = await api_client.get_users()
     
     with theme.frame():

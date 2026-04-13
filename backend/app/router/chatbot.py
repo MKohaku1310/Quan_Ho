@@ -15,14 +15,14 @@ class ChatMessage(BaseModel):
 async def ask_chatbot(msg: ChatMessage, db: Session = Depends(get_db)):
     text = msg.message.lower()
     
-    # Logic for History & Meaning
+    # Logic cho Lịch sử và Ý nghĩa
     if any(k in text for k in ['lịch sử', 'ý nghĩa', 'nguồn gốc', 'tại sao']):
         articles = db.query(models.Article).filter(models.Article.category == "lich-su").limit(1).all()
         if articles:
             return {"response": f"Về lịch sử Quan họ: {articles[0].excerpt or 'Quan họ Bắc Ninh là loại hình dân ca phong phú bậc nhất của Việt Nam.'} Bạn có thể xem thêm tại mục Giới thiệu."}
         return {"response": "Quan họ Bắc Ninh có lịch sử lâu đời, gắn liền với văn hóa lúa nước vùng Kinh Bắc. Theo truyền thuyết, nó bắt nguồn từ những cuộc giao duyên của các làng kết chạ."}
 
-    # Logic for Festivals & Events
+    # Logic cho Lễ hội và Sự kiện
     if any(k in text for k in ['lễ hội', 'sự kiện', 'khi nào', 'lịch']):
         events = db.query(models.Event).filter(models.Event.status == "upcoming").limit(3).all()
         if events:
@@ -30,11 +30,11 @@ async def ask_chatbot(msg: ChatMessage, db: Session = Depends(get_db)):
             return {"response": f"Các lễ hội và sự kiện sắp tới nè:\n{ev_list}\nBạn nhớ đăng ký tham gia nhé!"}
         return {"response": "Hiện tại chưa có lịch lễ hội cụ thể gần đây, nhưng Hội Lim thường diễn ra vào ngày 13 tháng Giêng hàng năm bạn nhé."}
 
-    # Logic for Registration
+    # Logic cho Đăng ký
     if any(k in text for k in ['đăng ký', 'tham gia', 'làm sao']):
         return {"response": "Để đăng ký tham gia sự kiện, bạn chỉ cần vào mục 'Sự kiện', chọn sự kiện yêu thích và nhấn nút 'Đăng ký'. Nếu bạn đã đăng nhập, tôi sẽ tự động điền thông tin cho bạn!"}
 
-    # Logic for Mood-based Song Suggestions
+    # Logic cho Gợi ý bài hát theo tâm trạng
     mood_map = {
         "buồn": ["Người ơi người ở đừng về", "Khách đến chơi nhà", "Ngồi tựa mạn thuyền"],
         "vui": ["Trống cơm", "Lên chùa", "Hội Lim", "Mời nước mời trầu"],
@@ -53,5 +53,5 @@ async def ask_chatbot(msg: ChatMessage, db: Session = Depends(get_db)):
         v_names = ", ".join([v.name for v in villages])
         return {"response": f"Vùng Kinh Bắc có 49 làng Quan họ gốc được công nhận. Một số làng tiêu biểu có thể kể đến như: {v_names}... Bạn có thể xem bản đồ chi tiết tại mục 'Làng Quan họ'."}
 
-    # Default
+    # Mặc định
     return {"response": "Chào bạn! Tôi có thể giúp bạn tìm hiểu về 49 làng Quan họ gốc, ý nghĩa các làn điệu cổ, hoặc gợi ý bài hát theo tâm trạng của bạn. Bạn muốn bắt đầu từ đâu?"}

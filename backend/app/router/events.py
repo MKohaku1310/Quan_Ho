@@ -4,6 +4,7 @@ from typing import List, Optional
 from app import crud, schemas, models
 from app.db import get_db
 
+from app.router import auth
 from app.router.auth import get_current_active_admin
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -23,8 +24,7 @@ def update_event(
     db: Session = Depends(get_db),
     admin: schemas.User = Depends(get_current_active_admin)
 ):
-    # I didn't add update_event to crud.py, let me just use a generic update if I can or I will add it.
-    # Actually I will add update_event to crud.py in the next step or I can just use db query here.
+    # Cập nhật sự kiện trực tiếp từ database
     db_event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if not db_event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -62,3 +62,20 @@ def read_event(event_id: int, db: Session = Depends(get_db)):
     if db_event is None:
         raise HTTPException(status_code=404, detail="Event not found")
     return db_event
+
+@router.post("/{event_id}/register", response_model=schemas.EventRegistration)
+async def register_for_event(
+    event_id: int, 
+    reg_data: dict, 
+    db: Session = Depends(get_db), 
+    current_user: schemas.User = Depends(auth.get_current_user)
+):
+    # Kiểm tra xem đã đăng ký chưa
+    existing = db.query(models.EventRegistration).filter(
+        models.EventRegistration.event_id == event_id,
+        models.EventRegistration.user_id == current_user.id
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Already registered for this event")
+        
+    return crud.create_event_registration(db, event_id, current_user.id, reg_data)

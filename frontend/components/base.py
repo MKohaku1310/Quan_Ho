@@ -49,10 +49,10 @@ def navbar():
                 with ui.element('div').classes('items-center gap-2').style('display: flex !important;'):
                     if app.storage.user.get('is_authenticated'):
                         if app.storage.user.get('role') == 'admin':
-                            ui.button('ADMIN', icon='admin_panel_settings', on_click=lambda: ui.navigate.to('/admin')).props('flat rounded size=md').classes('text-secondary font-black px-4 h-11 border border-secondary/20 mr-2')
+                            ui.button('DASHBOARD', icon='dashboard', on_click=lambda: ui.navigate.to('/admin')).props('flat rounded size=md').classes('text-secondary font-black px-4 h-11 border border-secondary/20 mr-2 hover:bg-secondary/10')
                         
-                        ui.button(t('profile'), icon='account_circle', on_click=lambda: ui.navigate.to('/ho-so')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-11')
-                        ui.button(icon='logout', on_click=lambda: (api_client.logout(), ui.navigate.to('/'))).props('flat round size=md').classes('text-destructive hover:bg-destructive/10')
+                        ui.button(t('profile'), icon='account_circle', on_click=lambda: ui.navigate.to('/ho-so')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-11 hover:bg-muted')
+                        ui.button(icon='logout', on_click=api_client.logout).props('flat round size=md').classes('text-destructive hover:bg-destructive/10')
                     else:
                         ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-11 transition-all hover:bg-muted')
                         ui.button(t('register'), on_click=lambda: ui.navigate.to('/dang-ky')).props('unelevated rounded size=md').classes('bg-primary text-white font-semibold px-6 h-11 shadow-md hover:brightness-110')
@@ -101,7 +101,7 @@ def navbar():
                                         with ui.element('div').classes('w-full px-4 py-4 rounded-xl flex items-center gap-4 text-muted-foreground hover:bg-muted/50'):
                                             ui.icon('settings', size='24px')
                                             ui.label('Quản lý tài khoản').classes('font-bold')
-                                    ui.button(t('logout'), icon='logout', on_click=lambda: (api_client.logout(), ui.navigate.to('/'), drawer.close())).props('flat rounded size=lg').classes('w-full text-destructive mt-4 font-bold')
+                                    ui.button(t('logout'), icon='logout', on_click=api_client.logout).props('flat rounded size=lg').classes('w-full text-destructive mt-4 font-bold')
                                 else:
                                     with ui.column().classes('w-full gap-3 mt-2'):
                                         ui.button(t('login'), icon='login', on_click=lambda: (ui.navigate.to('/dang-nhap'), drawer.close())).props('outline rounded size=lg').classes('w-full text-primary font-bold h-14')

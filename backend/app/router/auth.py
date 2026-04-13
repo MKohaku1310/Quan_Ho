@@ -112,14 +112,14 @@ async def remove_user(
 @router.patch("/users/{user_id}/role", response_model=schemas.User)
 async def change_user_role(
     user_id: int,
-    role_update: schemas.UserUpdate, # We can reuse or create specific schema, but role is in models.User but maybe not in schemas.UserUpdate?
+    role_update: schemas.UserUpdate,
     admin: schemas.User = Depends(get_current_active_admin),
     db: Session = Depends(get_db)
 ):
-    # I should check if role is in UserUpdate, based on previous view it's not.
-    # I will allow passing 'role' in a dict or just assume it's there if I update schemas.
-    # For now, let's just implement delete and list which are enough for 'quản lý'.
-    pass
+    updated_user = crud.update_user(db, user_id, role_update)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated_user
 
 
 

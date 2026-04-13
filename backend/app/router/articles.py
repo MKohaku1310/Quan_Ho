@@ -2,6 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app import crud, schemas, models
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List, Optional
+from app import crud, schemas, models
 from app.db import get_db
 
 from app.router.auth import get_current_active_admin
@@ -11,11 +15,10 @@ router = APIRouter(prefix="/articles", tags=["articles"])
 @router.post("/", response_model=schemas.Article)
 def create_article(
     article: schemas.ArticleCreate, 
-    author_id: Optional[int] = None, 
     db: Session = Depends(get_db),
     admin: schemas.User = Depends(get_current_active_admin)
 ):
-    return crud.create_article(db=db, article=article, author_id=author_id)
+    return crud.create_article(db=db, article=article, author_id=admin.id)
 
 @router.put("/{article_id}", response_model=schemas.Article)
 def update_article(
