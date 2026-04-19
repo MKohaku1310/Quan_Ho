@@ -4,13 +4,14 @@ import components
 import asyncio
 from api import api_client
 from datetime import datetime
+from translation import t
 
 @ui.page('/chatbot')
 async def chatbot_page():
     # Initialize history in session if not exists
     if 'chat_history' not in app.storage.user:
         app.storage.user['chat_history'] = [
-            {'role': 'bot', 'text': 'Chào bạn! Tôi là Trợ lý Quan Họ AI. Tôi có thể giúp gì cho bạn hôm nay?', 'time': datetime.now().strftime('%H:%M')}
+            {'role': 'bot', 'text': t('chatbot_greet'), 'time': datetime.now().strftime('%H:%M')}
         ]
 
     with theme.frame():
@@ -21,10 +22,10 @@ async def chatbot_page():
                 with ui.row().classes('items-center gap-4 mb-4 bg-card p-4 rounded-2xl border border-border shadow-sm shrink-0 mx-2'):
                     ui.image('/static/common/chatbot-avatar.png').classes('w-12 h-12 rounded-full border-2 border-primary/20 bg-muted shadow-sm')
                     with ui.column().classes('gap-0'):
-                        ui.label('Trợ lý Quan Họ AI').classes('font-display text-lg font-bold text-primary')
+                        ui.label(t('chatbot_title')).classes('font-display text-lg font-bold text-primary')
                         with ui.row().classes('items-center gap-1.5'):
                             ui.element('div').classes('w-2 h-2 rounded-full bg-positive animate-pulse')
-                            ui.label('Sẵn sàng hỗ trợ').classes('text-[10px] text-muted-foreground uppercase font-bold tracking-wider')
+                            ui.label(t('chatbot_ready')).classes('text-[10px] text-muted-foreground uppercase font-bold tracking-wider')
 
                 # Message Area
                 @ui.refreshable
@@ -60,17 +61,17 @@ async def chatbot_page():
                 # Quick Replies
                 with ui.row().classes('w-full gap-2 mb-4 px-2 overflow-x-auto no-scrollbar flex-nowrap shrink-0'):
                     quick_options = [
-                        ("Giới thiệu Quan họ", "Giới thiệu Quan họ"),
-                        ("Sự kiện sắp tới", "Sự kiện sắp tới"),
-                        ("Bài hát nổi tiếng", "Bài hát nổi tiếng"),
-                        ("49 làng Quan họ", "49 làng Quan họ")
+                        (t('quick_intro'), t('quick_intro')),
+                        (t('quick_events'), t('quick_events')),
+                        (t('quick_famous_songs'), t('quick_famous_songs')),
+                        (t('quick_49_villages'), t('quick_49_villages'))
                     ]
                     for label, val in quick_options:
                         ui.button(label, on_click=lambda v=val: handle_send(v)).props('outline rounded-full dense size="sm"').classes('text-[11px] font-bold px-4 shrink-0 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10')
 
                 # Input Section
                 with ui.row().classes('w-full bg-card shadow-elevated rounded-2xl p-2 border border-border items-center shrink-0'):
-                    msg_input = ui.input(placeholder='Hỏi điều gì đó về Quan họ...').props('rounded borderless').classes('flex-1 px-4 bg-transparent')
+                    msg_input = ui.input(placeholder=t('chatbot_ask_placeholder')).props('rounded borderless').classes('flex-1 px-4 bg-transparent')
                     
                     async def handle_send(text=None):
                         val = text or msg_input.value
@@ -93,7 +94,7 @@ async def chatbot_page():
                         
                         # Add bot response
                         app.storage.user['chat_history'].append({
-                            'role': 'bot', 'text': response or 'Tôi không thể kết nối hệ thống lúc này. Vui lòng thử lại!', 'time': datetime.now().strftime('%H:%M')
+                            'role': 'bot', 'text': response or t('chatbot_error'), 'time': datetime.now().strftime('%H:%M')
                         })
                         
                         state.is_typing = False
@@ -103,5 +104,5 @@ async def chatbot_page():
                     msg_input.on('keydown.enter', lambda: handle_send())
 
                 # Footer hint
-                ui.label('Thông tin mang tính chất tham khảo, hãy khám phá thêm tại các chuyên mục chính.').classes('text-[10px] text-muted-foreground w-full text-center mt-3 opacity-60')
+                ui.label(t('chatbot_hint')).classes('text-[10px] text-muted-foreground w-full text-center mt-3 opacity-60')
 

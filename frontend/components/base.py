@@ -28,9 +28,8 @@ def navbar():
                         ui.label('Quan Họ').classes('font-display text-lg font-bold text-primary whitespace-nowrap')
                         ui.label('Bắc Ninh').classes('font-display text-lg font-bold text-[#d4af37] whitespace-nowrap')
 
-            # 2. Center: Nav Items (Desktop)
-            # Using style('display: flex') to bypass Tailwind md: breakpoint issues in NiceGUI
-            with ui.element('div').classes('items-center justify-center gap-1 whitespace-nowrap px-2').style('display: flex !important;'):
+            # 2. Center: Nav Items (Desktop only)
+            with ui.element('div').classes('flex max-md:hidden items-center justify-center gap-1 whitespace-nowrap px-2'):
                 for path, key, label in nav_items:
                     is_active = (current_path == path)
                     ui.link(label, target=path).classes(
@@ -39,21 +38,22 @@ def navbar():
                     )
 
             # 3. Right: Actions
-            with ui.element('div').classes('flex-1 flex justify-end items-center gap-1 sm:gap-2 flex-nowrap').style('display: flex !important;'):
+            with ui.element('div').classes('flex-1 flex justify-end items-center gap-1 sm:gap-2 flex-nowrap'):
                 # Language Toggle
                 lang_label = t('language_toggle')
                 ui.button(lang_label, on_click=lambda: (toggle_language(), ui.navigate.reload())).props('flat rounded size=md').classes('text-muted-foreground font-bold border border-border/50 px-2 min-w-0 h-9 shrink-0')
 
-                # Auth buttons - Integrated into one row for consistent alignment
-                if app.storage.user.get('is_authenticated'):
-                    if app.storage.user.get('role') == 'admin':
-                        ui.button('ADMIN', icon='dashboard', on_click=lambda: ui.navigate.to('/admin')).props('flat rounded size=md').classes('text-secondary font-black px-3 h-10 border border-secondary/20 hover:bg-secondary/10 shrink-0')
-                    
-                    ui.button(t('profile'), icon='account_circle', on_click=lambda: ui.navigate.to('/ho-so')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-3 h-10 hover:bg-muted shrink-0')
-                    ui.button(icon='logout', on_click=api_client.logout).props('flat round size=md').classes('text-destructive hover:bg-destructive/10 h-10 w-10 flex-shrink-0')
-                else:
-                    ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-10 transition-all hover:bg-muted shrink-0')
-                    ui.button(t('register'), on_click=lambda: ui.navigate.to('/dang-ky')).props('unelevated rounded size=md').classes('bg-primary text-white font-semibold px-6 h-10 shadow-md hover:brightness-110 shrink-0')
+                # Auth buttons - Hidden on mobile, visible on desktop
+                with ui.element('div').classes('flex max-md:hidden items-center gap-2'):
+                    if app.storage.user.get('is_authenticated'):
+                        if app.storage.user.get('role') == 'admin':
+                            ui.button('ADMIN', icon='dashboard', on_click=lambda: ui.navigate.to('/admin')).props('flat rounded size=md').classes('text-secondary font-black px-3 h-10 border border-secondary/20 hover:bg-secondary/10 shrink-0')
+                        
+                        ui.button(t('profile'), icon='account_circle', on_click=lambda: ui.navigate.to('/ho-so')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-3 h-10 hover:bg-muted shrink-0')
+                        ui.button(icon='logout', on_click=api_client.logout).props('flat round size=md').classes('text-destructive hover:bg-destructive/10 h-10 w-10 flex-shrink-0')
+                    else:
+                        ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-10 transition-all hover:bg-muted shrink-0')
+                        ui.button(t('register'), on_click=lambda: ui.navigate.to('/dang-ky')).props('unelevated rounded size=md').classes('bg-primary text-white font-semibold px-6 h-10 shadow-md hover:brightness-110 shrink-0')
                 
                 # Mobile Menu Button (Visible on < md)
                 mobile_btn = ui.button(icon='menu', on_click=lambda: drawer.open()).props('flat round size=md').classes('md:hidden text-primary bg-primary/5 ml-1 shrink-0')
@@ -63,17 +63,17 @@ def navbar():
                         # Drawer Header
                         with ui.element('div').classes('p-6 bg-primary text-white flex flex-col gap-4'):
                             with ui.row().classes('justify-between items-center'):
-                                ui.label('DANH MỤC').classes('font-black tracking-[0.2em] text-sm opacity-80')
+                                ui.label(t('drawer_category')).classes('font-black tracking-[0.2em] text-sm opacity-80')
                                 ui.button(icon='close', on_click=drawer.close).props('flat round color=white size=md')
                             
                             if app.storage.user.get('is_authenticated'):
                                 with ui.row().classes('items-center gap-3 mt-4'):
                                     ui.avatar('account_circle', color='white', text_color='primary').classes('shadow-lg')
                                     with ui.column().classes('gap-0'):
-                                        ui.label(app.storage.user.get('user_name', 'Người dùng')).classes('font-bold leading-tight')
-                                        ui.label('Thành viên Quan họ').classes('text-[10px] opacity-70 uppercase font-black')
+                                        ui.label(app.storage.user.get('user_name', t('anonymous'))).classes('font-bold leading-tight')
+                                        ui.label(t('drawer_member')).classes('text-[10px] opacity-70 uppercase font-black')
                             else:
-                                ui.label('Chào mừng bạn!').classes('text-xl font-display font-bold')
+                                ui.label(t('drawer_guest')).classes('text-xl font-display font-bold')
 
                         # Drawer Links
                         with ui.scroll_area().classes('flex-1'):
@@ -98,7 +98,7 @@ def navbar():
                                     with ui.link(target='/ho-so').classes('w-full no-underline').on('click', drawer.close):
                                         with ui.element('div').classes('w-full px-4 py-4 rounded-xl flex items-center gap-4 text-muted-foreground hover:bg-muted/50'):
                                             ui.icon('settings', size='24px')
-                                            ui.label('Quản lý tài khoản').classes('font-bold')
+                                            ui.label(t('drawer_manage_account')).classes('font-bold')
                                     ui.button(t('logout'), icon='logout', on_click=api_client.logout).props('flat rounded size=lg').classes('w-full text-destructive mt-4 font-bold')
                                 else:
                                     with ui.column().classes('w-full gap-3 mt-2'):
@@ -108,59 +108,86 @@ def navbar():
                 pass # mobile_btn handles open
 
 def footer():
-    with ui.element('footer').classes('w-full border-t border-border bg-card mt-auto shrink-0'):
-        with ui.element('div').classes('mx-auto max-w-7xl px-4 py-12'):
-            with ui.element('div').classes('grid grid-cols-1 gap-12 md:grid-cols-4'):
-                # Column 1: Brand
-                with ui.column().classes('gap-4'):
-                    with ui.row().classes('items-center gap-2'):
-                        ui.image('/static/common/lotus-ornament.png').classes('h-8 w-8')
-                        ui.label('Quan Họ Bắc Ninh').classes('font-display text-lg font-bold text-primary')
-                    ui.label(t('footer_brand_desc')).classes('text-sm text-muted-foreground leading-relaxed')
+    # Warm Earthy Brown (Nâu Vàng) Palette
+    with ui.element('footer').classes('w-full bg-[#2d1a12] text-[#f5f5f0]/70 mt-auto shrink-0 relative overflow-hidden'):
+        # Top Decorative Bar (Gold Gradient)
+        ui.element('div').classes('w-full h-[2px] bg-gradient-to-r from-transparent via-[#d68e33] to-transparent opacity-60')
+        with ui.element('div').classes('absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 bg-[#2d1a12] rounded-full flex items-center justify-center border border-[#d68e33]/30 shadow-xl z-10'):
+            ui.image('/static/common/lotus-ornament.png').classes('h-6 w-6 animate-spin-slow opacity-80')
 
-                # Column 2: Explore
-                with ui.column().classes('gap-3'):
-                    ui.label(t('footer_explore')).classes('font-display text-sm font-semibold text-foreground mb-1')
-                    for key, path in [
-                        ('intro',   '/gioi-thieu'),
-                        ('songs',      '/bai-hat'),
-                        ('artists',    '/nghe-nhan'),
-                        ('villages', '/lang-quan-ho'),
-                    ]:
-                        ui.link(t(key), target=path).classes('text-sm text-muted-foreground hover:text-primary no-underline transition-colors')
+        with ui.element('div').classes('mx-auto max-w-7xl px-6 py-20 relative z-0'):
+            # Background decoration (Subtle Lotus)
+            ui.image('/static/common/lotus-pattern.png').classes('absolute -right-20 -bottom-20 w-80 opacity-[0.04] pointer-events-none brightness-0 invert')
 
-                # Column 3: Contact
-                with ui.column().classes('gap-3'):
-                    ui.label(t('footer_contact')).classes('font-display text-sm font-semibold text-foreground mb-1')
-                    ui.label('Sở Văn hóa, Thể thao và Du lịch tỉnh Bắc Ninh').classes('text-sm text-muted-foreground')
-                    ui.label('Email: quanho@bacninh.gov.vn').classes('text-sm text-muted-foreground')
+            with ui.element('div').classes('grid grid-cols-1 gap-16 lg:grid-cols-12'):
+                # Column 1: Brand (4 cols)
+                with ui.column().classes('lg:col-span-4 gap-6'):
+                    with ui.row().classes('items-center gap-3'):
+                        ui.image('/static/common/lotus-ornament.png').classes('h-10 w-10 brightness-0 invert opacity-90')
+                        with ui.column().classes('gap-0'):
+                            ui.label('Quan Họ Bắc Ninh').classes('font-display text-2xl font-black text-[#f5f5f0] tracking-tight')
+                            ui.label('KINH BẮC HERITAGE').classes('text-[10px] font-black tracking-[0.4em] text-[#d68e33]')
+                    
+                    ui.label(t('footer_brand_desc')).classes('text-sm leading-relaxed opacity-80 max-w-sm text-[#f5f5f0]')
+                    
+                    with ui.row().classes('items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 mt-2'):
+                        ui.icon('verified', color='secondary', size='24px')
+                        with ui.column().classes('gap-0'):
+                            ui.label('UNESCO 2009').classes('text-xs font-black text-white')
+                            ui.label(t('intro_quote_sub')).classes('text-[9px] opacity-60 uppercase tracking-widest')
 
-                # Column 4: Social Media
-                with ui.column().classes('gap-3'):
-                    ui.label(t('footer_connect')).classes('font-display text-sm font-semibold text-foreground mb-1')
-                    with ui.row().classes('gap-3'):
-                        with ui.element('a').classes(
-                            'flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 '
-                            'text-primary hover:bg-primary hover:text-white transition-all cursor-pointer'
-                        ).props('href="https://facebook.com" target="_blank"'):
-                            ui.html('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>')
-                        with ui.element('a').classes(
-                            'flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 '
-                            'text-primary hover:bg-primary hover:text-white transition-all cursor-pointer'
-                        ).props('href="https://youtube.com" target="_blank"'):
-                            ui.html('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>')
-                    ui.label('Theo dõi chúng tôi trên mạng xã hội').classes('text-xs text-muted-foreground')
+                # Column 2: Explore (2 cols)
+                with ui.column().classes('lg:col-span-2 gap-6'):
+                    ui.label(t('footer_explore')).classes('font-display text-xs font-black text-[#d68e33] tracking-[0.3em] uppercase')
+                    with ui.column().classes('gap-3'):
+                        for key, path in [
+                            ('intro',   '/gioi-thieu'),
+                            ('songs',      '/bai-hat'),
+                            ('artists',    '/nghe-nhan'),
+                            ('villages', '/lang-quan-ho'),
+                        ]:
+                            ui.link(t(key), target=path).classes('text-sm text-[#f5f5f0]/80 hover:text-[#d68e33] no-underline transition-all hover:translate-x-1')
+
+                # Column 3: Contact (3 cols)
+                with ui.column().classes('lg:col-span-3 gap-6'):
+                    ui.label(t('footer_contact')).classes('font-display text-xs font-black text-[#d68e33] tracking-[0.3em] uppercase')
+                    with ui.column().classes('gap-5'):
+                        with ui.row().classes('items-start gap-3'):
+                            ui.icon('place', size='20px', color='secondary')
+                            ui.label(t('footer_address')).classes('text-sm leading-relaxed text-[#f5f5f0]/80')
+                        
+                        with ui.row().classes('items-start gap-3'):
+                            ui.icon('mail', size='20px', color='secondary')
+                            ui.label('quanho@bacninh.gov.vn').classes('text-sm text-[#f5f5f0]/80')
+
+                # Column 4: Newsletter (3 cols)
+                with ui.column().classes('lg:col-span-3 gap-6'):
+                    ui.label(t('footer_newsletter_title')).classes('font-display text-xs font-black text-[#d68e33] tracking-[0.3em] uppercase')
+                    ui.label(t('footer_newsletter_desc')).classes('text-xs leading-relaxed opacity-60 text-[#f5f5f0]')
+                    
+                    with ui.element('div').classes('w-full relative'):
+                        newsletter_input = ui.input(placeholder='Email...').props('dark dense borderless').classes('w-full bg-white/5 rounded-full px-6 py-2 text-sm border border-white/10 focus:border-[#d68e33]/50 transition-colors h-12 text-white')
+                        with newsletter_input.add_slot('append'):
+                            ui.button(icon='send', on_click=lambda: ui.notify('Thank you!')).props('flat round dense color=secondary').classes('mr-2')
 
             # Bottom Bar
-            ui.element('div').classes('mt-12 border-t border-border pt-8')
-            with ui.row().classes('w-full justify-between items-center gap-4 flex-wrap'):
-                with ui.row().classes('items-center gap-2'):
-                    ui.label('© 2024 Quan Họ Bắc Ninh.').classes('text-xs font-bold text-foreground')
-                    ui.label('Trân quý và bảo tồn di sản thế giới.').classes('text-xs text-muted-foreground')
+            ui.separator().classes('my-12 opacity-5 bg-white')
+            with ui.row().classes('w-full justify-between items-center gap-8 flex-wrap'):
+                with ui.row().classes('items-center gap-6'):
+                    ui.label('© 2024 Quan Họ Bắc Ninh.').classes('text-xs font-bold text-[#f5f5f0]/40')
+                    with ui.row().classes('gap-6 hidden sm:flex'):
+                        for link_key in ['footer_terms', 'footer_privacy', 'footer_contact_link']:
+                            ui.link(t(link_key), '#').classes('text-[10px] uppercase tracking-widest font-black text-[#f5f5f0]/30 hover:text-[#d68e33] no-underline transition-colors')
                 
-                with ui.row().classes('gap-4'):
-                    for link_label in ['Điều khoản', 'Bảo mật', 'Liên hệ']:
-                        ui.link(link_label, '#').classes('text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-primary no-underline transition-colors')
+                with ui.row().classes('gap-3'):
+                    socials = [
+                        ('facebook', 'https://facebook.com'),
+                        ('youtube', 'https://youtube.com'),
+                        ('instagram', 'https://instagram.com')
+                    ]
+                    for icon, link in socials:
+                        with ui.element('a').classes('h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-[#d68e33] transition-all group').props(f'href="{link}" target="_blank"'):
+                            ui.icon(icon, color='white', size='20px').classes('group-hover:scale-110 transition-transform')
 
 def section_title(title, subtitle=None):
     with ui.column().classes('mb-8 text-center w-full items-center gap-2'):
@@ -190,3 +217,45 @@ def page_header(title, subtitle):
             ui.image('/static/common/lotus-ornament.png').classes('mb-6 h-12 w-12 mx-auto')
             ui.label(title).classes('font-display text-5xl font-black text-foreground mb-4 tracking-tight')
             ui.label(subtitle).classes('max-w-2xl mx-auto text-lg text-muted-foreground font-light leading-relaxed')
+
+def pagination_controls(state, total_count, on_change):
+    """
+    State must have 'page' and 'items_per_page'
+    on_change is the refreshable function to call
+    """
+    total_pages = (total_count + state.items_per_page - 1) // state.items_per_page
+    if total_pages <= 1:
+        return
+        
+    with ui.row().classes('w-full justify-center mt-12 gap-2 items-center'):
+        # Previous Button
+        ui.button(icon='chevron_left', on_click=lambda: (setattr(state, 'page', max(1, state.page-1)), on_change.refresh())) \
+            .props('flat round dense').classes('text-primary').tooltip(t('prev_page'))
+        
+        # Page Numbers
+        # Logic to show a limited number of page buttons around current page
+        max_btns = 5
+        start_p = max(1, state.page - 2)
+        end_p = min(total_pages, start_p + max_btns - 1)
+        if end_p - start_p < max_btns - 1:
+            start_p = max(1, end_p - max_btns + 1)
+            
+        if start_p > 1:
+            ui.button('1', on_click=lambda: (setattr(state, 'page', 1), on_change.refresh())).props('flat round dense color=grey')
+            if start_p > 2:
+                ui.label('...').classes('text-muted-foreground')
+            
+        for p in range(start_p, end_p + 1):
+            is_active = (p == state.page)
+            ui.button(str(p), on_click=lambda p=p: (setattr(state, 'page', p), on_change.refresh())) \
+                .props(f'flat round dense {"color=primary shadow-md bg-primary/10" if is_active else "color=grey"}') \
+                .classes('font-bold text-sm width-8')
+                
+        if end_p < total_pages:
+            if end_p < total_pages - 1:
+                ui.label('...').classes('text-muted-foreground')
+            ui.button(str(total_pages), on_click=lambda: (setattr(state, 'page', total_pages), on_change.refresh())).props('flat round dense color=grey')
+
+        # Next Button
+        ui.button(icon='chevron_right', on_click=lambda: (setattr(state, 'page', min(total_pages, state.page+1)), on_change.refresh())) \
+            .props('flat round dense').classes('text-primary').tooltip(t('next_page'))

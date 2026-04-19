@@ -21,11 +21,21 @@ def get_user_by_email(db: Session, email: str) -> Optional[models.User]:
 def get_user(db: Session, user_id: int) -> Optional[models.User]:
     return db.query(models.User).filter(models.User.id == user_id).first()
 
-def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate) -> Optional[models.User]:
+def update_user(
+    db: Session,
+    user_id: int,
+    user_update: schemas.UserUpdate | schemas.UserSelfUpdate | schemas.UserAdminUpdate,
+    allow_role: bool = True
+) -> Optional[models.User]:
     db_user = get_user(db, user_id)
     if not db_user:
         return None
+    allowed_fields = {"name", "phone", "bio", "avatar_url"}
+    if allow_role:
+        allowed_fields.add("role")
     for key, value in user_update.model_dump(exclude_unset=True).items():
+        if key not in allowed_fields:
+            continue
         setattr(db_user, key, value)
     db.commit()
     db.refresh(db_user)
@@ -46,6 +56,12 @@ def delete_user(db: Session, user_id: int) -> bool:
     db_user = get_user(db, user_id)
     if not db_user:
         return False
+    # Cleanup explicit dependencies first so user deletion is stable
+    # across DB engines where FK cascade may differ.
+    db.query(models.Comment).filter(models.Comment.user_id == user_id).delete(synchronize_session=False)
+    db.query(models.Article).filter(models.Article.author_id == user_id).update(
+        {models.Article.author_id: None}, synchronize_session=False
+    )
     db.delete(db_user)
     db.commit()
     return True
@@ -178,10 +194,19 @@ def create_location(db: Session, location: schemas.LocationCreate) -> models.Loc
     db.refresh(db_location)
     return db_location
 
-def get_locations(db: Session, skip: int = 0, limit: int = 100, type: Optional[str] = None) -> List[models.Location]:
+def get_locations(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    type: Optional[str] = None,
+    district: Optional[str] = None
+) -> List[models.Location]:
     query = db.query(models.Location)
     if type:
         query = query.filter(models.Location.type == type)
+    if district:
+        district_norm = district.strip().lower()
+        query = query.filter(func.lower(func.trim(models.Location.district)) == district_norm)
     return query.offset(skip).limit(limit).all()
 
 def create_event(db: Session, event: schemas.EventCreate) -> models.Event:
@@ -198,6 +223,10 @@ def create_event_registration(db: Session, event_id: int, user_id: int, registra
     db_reg = models.EventRegistration(
         event_id=event_id,
         user_id=user_id,
+        name=registration_data.get("name"),
+        email=registration_data.get("email"),
+        phone=registration_data.get("phone"),
+        note=registration_data.get("note"),
         status="registered"
     )
     db.add(db_reg)
@@ -209,12 +238,52 @@ def create_event_registration(db: Session, event_id: int, user_id: int, registra
     
     return db_reg
 
+def get_event_registration_count(db: Session, event_id: int) -> int:
+    return db.query(models.EventRegistration).filter(models.EventRegistration.event_id == event_id).count()
+
+def get_event_registrations(db: Session, event_id: int) -> List[models.EventRegistration]:
+    return db.query(models.EventRegistration).filter(
+        models.EventRegistration.event_id == event_id
+    ).order_by(models.EventRegistration.created_at.desc()).all()
+
 def create_comment(db: Session, comment: schemas.CommentCreate, user_id: int) -> models.Comment:
     db_comment = models.Comment(**comment.model_dump(), user_id=user_id)
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
     return db_comment
+
+def get_favorites(db: Session, user_id: int) -> List[models.Favorite]:
+    return db.query(models.Favorite).filter(
+        models.Favorite.user_id == user_id
+    ).order_by(models.Favorite.created_at.desc()).all()
+
+def create_favorite(db: Session, user_id: int, melody_id: int) -> Optional[models.Favorite]:
+    existing = db.query(models.Favorite).filter(
+        models.Favorite.user_id == user_id,
+        models.Favorite.melody_id == melody_id
+    ).first()
+    if existing:
+        return existing
+    melody = get_melody(db, melody_id)
+    if not melody:
+        return None
+    db_favorite = models.Favorite(user_id=user_id, melody_id=melody_id)
+    db.add(db_favorite)
+    db.commit()
+    db.refresh(db_favorite)
+    return db_favorite
+
+def delete_favorite(db: Session, user_id: int, melody_id: int) -> bool:
+    favorite = db.query(models.Favorite).filter(
+        models.Favorite.user_id == user_id,
+        models.Favorite.melody_id == melody_id
+    ).first()
+    if not favorite:
+        return False
+    db.delete(favorite)
+    db.commit()
+    return True
 
 def get_comments(
     db: Session, 
@@ -300,3 +369,58 @@ def update_location(db: Session, location_id: int, location_update: dict) -> Opt
     db.refresh(db_location)
     return db_location
 
+def delete_comment(db: Session, comment_id: int) -> bool:
+    db_comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    if not db_comment:
+        return False
+    db.delete(db_comment)
+    db.commit()
+    return True
+
+# --- COUNT FUNCTIONS FOR PAGINATION ---
+
+def count_users(db: Session) -> int:
+    return db.query(models.User).count()
+
+def count_melodies(db: Session, village: Optional[str] = None, category: Optional[str] = None) -> int:
+    query = db.query(models.Melody)
+    if village:
+        query = query.filter(models.Melody.village == village)
+    if category:
+        query = query.filter(models.Melody.category == category)
+    return query.count()
+
+def count_artists(db: Session) -> int:
+    return db.query(models.Artist).count()
+
+def count_articles(db: Session, category: Optional[str] = None) -> int:
+    query = db.query(models.Article)
+    if category:
+        query = query.filter(models.Article.category == category)
+    return query.count()
+
+def count_locations(db: Session, type: Optional[str] = None, district: Optional[str] = None) -> int:
+    query = db.query(models.Location)
+    if type:
+        query = query.filter(models.Location.type == type)
+    if district:
+        district_norm = district.strip().lower()
+        query = query.filter(func.lower(func.trim(models.Location.district)) == district_norm)
+    return query.count()
+
+def count_events(db: Session) -> int:
+    return db.query(models.Event).count()
+
+def count_registrations(db: Session, event_id: Optional[int] = None) -> int:
+    query = db.query(models.EventRegistration)
+    if event_id:
+        query = query.filter(models.EventRegistration.event_id == event_id)
+    return query.count()
+
+def count_comments(db: Session, melody_id: Optional[int] = None, article_id: Optional[int] = None) -> int:
+    query = db.query(models.Comment)
+    if melody_id:
+        query = query.filter(models.Comment.melody_id == melody_id)
+    if article_id:
+        query = query.filter(models.Comment.article_id == article_id)
+    return query.count()

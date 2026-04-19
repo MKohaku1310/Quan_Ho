@@ -10,9 +10,9 @@ def introduction_page():
 
         # ── 1. Hero Section ────────────────────────────────────────────────────
         with ui.element('section').classes(
-            'relative min-h-[70vh] md:min-h-[85vh] flex items-center justify-center overflow-hidden w-full'
-        ).style('padding-top: 56px;'):
-            ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-center scale-100 animate-slow-zoom')
+            'relative min-h-[50vh] md:min-h-[60vh] lg:min-h-[65vh] flex items-center justify-center overflow-hidden w-full'
+        ):
+            ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-bottom scale-100')
             ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-60')
             with ui.column().classes('relative z-10 text-center items-center px-4 gap-4'):
                 ui.label(t('intro_hero_desc')).classes(
@@ -106,23 +106,23 @@ def introduction_page():
 
         # ── 5. Costume Section (KEPT FROM ORIGINAL) ───────────────────────────
         with ui.element('section').classes('py-24 bg-card/50 border-y border-border w-full relative overflow-hidden'):
-            ui.label('TRUYỀN THỐNG').classes(
+            ui.label(t('costume_tradition')).classes(
                 'absolute -right-20 top-20 text-[12vw] font-black text-primary/5 select-none pointer-events-none uppercase'
             )
             with theme.container():
-                components.section_title(t('intro_costume'), 'Nét đặc trưng làm nên linh hồn của dân ca Quan họ.')
+                components.section_title(t('intro_costume'), t('intro_costume_subtitle'))
                 with ui.column().classes('mt-12 gap-12 w-full'):
                     components.costume_block(
-                        t('Trang phục Liền chị'),
-                        t('Nổi bật với áo mớ ba mớ bảy, nón quai thao thắt dải lụa thướt tha mang vẻ đẹp dịu dàng kiêu sa đặc trưng của người con gái Kinh Bắc.'),
+                        t('costume_lien_chi_title'),
+                        t('costume_lien_chi_desc'),
                         '/static/intro/costume_lien_chi.png',
-                        items=[t('Áo mớ ba mớ bảy (Silk layers)'), t('Nón quai thao (Palm hat)'), t('Khăn mỏ quạ (Headscarf)')],
+                        items=[t('costume_lien_chi_item1'), t('costume_lien_chi_item2'), t('costume_lien_chi_item3')],
                     )
                     components.costume_block(
-                        t('Trang phục Liền anh'),
-                        t('Đậm chất nam nhi Kinh Bắc với áo the đen, quần lụa trắng, khăn xếp và chiếc ô đen che nghiêng thể hiện phong thái thanh lịch.'),
+                        t('costume_lien_anh_title'),
+                        t('costume_lien_anh_desc'),
                         '/static/intro/costume_lien_anh.png',
-                        items=[t('Áo the thâm (Black robe)'), t('Khăn xếp (Layered wrap)'), t('Ô đen (Traditional umbrella)')],
+                        items=[t('costume_lien_anh_item1'), t('costume_lien_anh_item2'), t('costume_lien_anh_item3')],
                         reverse=True,
                     )
 

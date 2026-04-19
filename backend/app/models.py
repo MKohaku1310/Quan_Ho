@@ -93,6 +93,10 @@ class EventRegistration(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"))
+    name = Column(String(255))
+    email = Column(String(255))
+    phone = Column(String(20))
+    note = Column(Text)
     status = Column(String(50), default="registered") # đã đăng ký, đã hủy, đã tham gia
     created_at = Column(DateTime, server_default=func.now())
     
@@ -104,14 +108,17 @@ class Article(Base):
     __tablename__ = "articles"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(500), nullable=False)
+    title_en = Column(String(500))
     slug = Column(String(500), unique=True, index=True)
     content = Column(Text) # Đổi từ LONGTEXT cho tương thích SQLite
+    content_en = Column(Text)
     excerpt = Column(Text)
+    excerpt_en = Column(Text)
     image_url = Column(String(500))
     category = Column(Enum(ArticleCategory), default=ArticleCategory.tin_tuc)
     views = Column(Integer, default=0)
     status = Column(Enum(ArticleStatus), default=ArticleStatus.draft)
-    author_id = Column(Integer, ForeignKey("users.id"))
+    author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     author = relationship("User")
@@ -120,9 +127,12 @@ class Melody(Base):
     __tablename__ = "melodies"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
+    name_en = Column(String(255))
     slug = Column(String(255), unique=True, index=True)
     description = Column(Text)
+    description_en = Column(Text)
     lyrics = Column(Text)
+    lyrics_en = Column(Text)
     audio_url = Column(String(500))
     video_url = Column(String(500))
     category = Column(Enum(MelodyCategory), default=MelodyCategory.co, index=True)
@@ -130,7 +140,7 @@ class Melody(Base):
     difficulty = Column(Enum(Difficulty), default=Difficulty.trung_binh)
     image_url = Column(String(500))
     duration = Column(String(50))
-    artist_id = Column(Integer, ForeignKey("artists.id"))
+    artist_id = Column(Integer, ForeignKey("artists.id", ondelete="CASCADE"))
     views = Column(Integer, default=0)
     created_at = Column(DateTime, server_default=func.now())
     artist = relationship("Artist")
@@ -139,16 +149,21 @@ class Artist(Base):
     __tablename__ = "artists"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
+    name_en = Column(String(255))
     slug = Column(String(255), unique=True, index=True)
     birth_year = Column(Integer) # Đổi từ YEAR
     death_year = Column(Integer, nullable=True) # Đổi từ YEAR
     description = Column(Text)
+    description_en = Column(Text)
     biography = Column(Text)
+    biography_en = Column(Text)
     contributions = Column(Text)
+    contributions_en = Column(Text)
     performances = Column(Integer, default=0)
     image_url = Column(String(500))
     village = Column(String(255))
     achievements = Column(Text)
+    achievements_en = Column(Text)
     generation = Column(Enum(ArtistGeneration), default=ArtistGeneration.truyen_thong)
     created_at = Column(DateTime, server_default=func.now())
 
@@ -165,9 +180,13 @@ class Location(Base):
     featured_songs = Column(Text) # Các nhãn phân cách bằng dấu phẩy
     badges = Column(Text) # Các nhãn phân cách bằng dấu phẩy
     description = Column(Text)
+    description_en = Column(Text)
     history = Column(Text)
+    history_en = Column(Text)
     culture = Column(Text)
+    culture_en = Column(Text)
     festival = Column(String(255))
+    festival_en = Column(String(255))
     image_url = Column(String(500))
     type = Column(Enum(LocationType), default=LocationType.lang_quan_ho, index=True)
     created_at = Column(DateTime, server_default=func.now())
@@ -176,11 +195,13 @@ class Event(Base):
     __tablename__ = "events"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(500), nullable=False)
+    title_en = Column(String(500))
     slug = Column(String(500), unique=True, index=True)
     description = Column(Text)
+    description_en = Column(Text)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
-    location_id = Column(Integer, ForeignKey("locations.id"))
+    location_id = Column(Integer, ForeignKey("locations.id", ondelete="CASCADE"))
     image_url = Column(String(500))
     status = Column(Enum(EventStatus), default=EventStatus.upcoming)
     max_participants = Column(Integer, default=100)
@@ -199,7 +220,7 @@ class Media(Base):
     article_id = Column(Integer, ForeignKey("articles.id", ondelete="CASCADE"))
     location_id = Column(Integer, ForeignKey("locations.id", ondelete="CASCADE"))
     event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"))
-    upload_by = Column(Integer, ForeignKey("users.id"))
+    upload_by = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     created_at = Column(DateTime, server_default=func.now())
 
 class Comment(Base):

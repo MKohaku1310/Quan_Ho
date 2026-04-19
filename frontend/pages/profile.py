@@ -10,10 +10,13 @@ async def profile_page():
         ui.navigate.to('/dang-nhap')
         return
 
+    me = await api_client.get_me() or {}
     user_data = {
-        'name': app.storage.user.get('user_name', 'Người dùng'),
-        'email': app.storage.user.get('email', 'Email không xác định'),
-        'role': app.storage.user.get('role', 'user'),
+        'name': me.get('name') or app.storage.user.get('user_name', t('anonymous')),
+        'email': me.get('email') or app.storage.user.get('email', t('no_title')),
+        'role': me.get('role') or app.storage.user.get('role', 'user'),
+        'phone': me.get('phone') or '',
+        'bio': me.get('bio') or '',
         'avatar': '/static/common/chatbot-avatar.png'
     }
 
@@ -41,6 +44,7 @@ async def profile_page():
                 with ui.tabs().classes('w-full border-b border-border mb-8 bg-card rounded-t-xl shadow-sm') as tabs:
                     act_tab = ui.tab(t('profile_activities'), icon='history').classes('px-10 font-bold text-xs tracking-widest')
                     info_tab = ui.tab(t('profile_membership'), icon='verified_user').classes('px-10 font-bold text-xs tracking-widest')
+                    fav_tab = ui.tab(t('favorites_tab'), icon='favorite').classes('px-10 font-bold text-xs tracking-widest')
 
                 with ui.tab_panels(tabs, value=act_tab).classes('w-full bg-transparent overflow-visible') as panels:
                     with ui.tab_panel(act_tab).classes('p-0'):
@@ -94,7 +98,50 @@ async def profile_page():
                                         ui.label(date_str).classes('text-[10px] font-black text-muted-foreground bg-muted px-2 py-1 rounded uppercase tracking-tighter')
 
                     with ui.tab_panel(info_tab).classes('p-0'):
-                        with ui.card().classes('w-full p-8 bg-card border border-border rounded-2xl'):
+                        with ui.card().classes('w-full p-8 bg-card border border-border rounded-[2.5rem] shadow-elevated'):
+                            ui.label(t('update_personal_info')).classes('text-2xl font-bold mb-8 tracking-tight')
+                            
+                            with ui.column().classes('w-full gap-4 mb-8'):
+                                name_in = ui.input(t('full_name'), value=user_data['name']).classes('w-full modern-input').props('outlined rounded-2xl')
+                                phone_in = ui.input(t('phone_number'), value=user_data['phone']).classes('w-full modern-input').props('outlined rounded-2xl')
+                                bio_in = ui.textarea(t('introduction_label'), value=user_data['bio']).classes('w-full modern-input').props('outlined rounded-2xl autogrow')
+                            
+                            ui.separator().classes('my-8 opacity-50')
+                            ui.label(t('change_password_btn')).classes('text-lg font-bold mb-4 opacity-70')
+                            
+                            with ui.row().classes('w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-8'):
+                                old_pw = ui.input(t('old_password')).classes('w-full modern-input').props('outlined rounded-2xl password password_toggle_button')
+                                new_pw = ui.input(t('new_password')).classes('w-full modern-input').props('outlined rounded-2xl password password_toggle_button')
+
+                            async def save_profile():
+                                payload = {
+                                    'name': name_in.value,
+                                    'phone': phone_in.value,
+                                    'bio': bio_in.value,
+                                }
+                                ok = await api_client.update_profile(payload)
+                                if ok:
+                                    app.storage.user['user_name'] = name_in.value
+                                    ui.notify(t('profile_updated'), type='positive')
+                                else:
+                                    ui.notify(api_client.get_last_error() or t('profile_update_failed'), type='negative')
+
+                            async def change_pw():
+                                if not old_pw.value or not new_pw.value:
+                                    ui.notify(t('pw_fill_required'), type='warning')
+                                    return
+                                ok = await api_client.change_password(old_pw.value, new_pw.value)
+                                if ok:
+                                    old_pw.value = ''
+                                    new_pw.value = ''
+                                    ui.notify(t('change_pw_success'), type='positive')
+                                else:
+                                    ui.notify(api_client.get_last_error() or t('change_pw_failed'), type='negative')
+
+                            with ui.row().classes('gap-3 mb-12'):
+                                ui.button(t('save_profile'), on_click=save_profile).classes('px-8 py-2 elevated-btn font-bold rounded-xl').props('unelevated color=primary')
+                                ui.button(t('change_password_btn'), on_click=change_pw).classes('px-8 py-2 font-bold rounded-xl').props('outline color=primary')
+
                             ui.label(t('profile_member_benefits')).classes('text-xl font-bold font-display text-primary mb-6')
                             benefits = [
                                 (t('profile_event_priority'), t('profile_event_priority_desc')),
@@ -107,6 +154,21 @@ async def profile_page():
                                     with ui.column().classes('gap-0'):
                                         ui.label(b_title).classes('font-bold')
                                         ui.label(b_desc).classes('text-sm text-muted-foreground')
+
+                    with ui.tab_panel(fav_tab).classes('p-0'):
+                        favorites = await api_client.get_favorites()
+                        if not favorites:
+                            ui.label(t('no_favorites')).classes('text-muted-foreground italic py-6')
+                        else:
+                            with ui.column().classes('gap-4'):
+                                for fav in favorites:
+                                    melody = fav.get('melody') or {}
+                                    with ui.card().classes('p-4 rounded-xl border border-border'):
+                                        with ui.row().classes('w-full justify-between items-center'):
+                                            with ui.column().classes('gap-0'):
+                                                ui.label(melody.get('name', t('song_label'))).classes('font-bold')
+                                                ui.label(melody.get('village') or '').classes('text-xs text-muted-foreground')
+                                            ui.button(t('view_btn'), on_click=lambda m_id=fav.get('melody_id'): ui.navigate.to(f'/bai-hat/{m_id}')).props('flat color=primary')
                 
                 # Bottom Actions
                 ui.separator().classes('my-12 opacity-30')

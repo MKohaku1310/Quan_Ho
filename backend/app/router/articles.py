@@ -1,10 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from app import crud, schemas, models
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from app import crud, schemas, models
 from app.db import get_db
 
@@ -12,7 +8,7 @@ from app.router.auth import get_current_active_admin
 
 router = APIRouter(prefix="/articles", tags=["articles"])
 
-@router.post("/", response_model=schemas.Article)
+@router.post("", response_model=schemas.Article)
 def create_article(
     article: schemas.ArticleCreate, 
     db: Session = Depends(get_db),
@@ -23,7 +19,7 @@ def create_article(
 @router.put("/{article_id}", response_model=schemas.Article)
 def update_article(
     article_id: int, 
-    article_update: dict, 
+    article_update: Dict[str, Any] = Body(...), 
     db: Session = Depends(get_db),
     admin: schemas.User = Depends(get_current_active_admin)
 ):
@@ -43,7 +39,7 @@ def delete_article(
         raise HTTPException(status_code=404, detail="Article not found")
     return {"message": "Article deleted successfully"}
 
-@router.get("/", response_model=List[schemas.Article])
+@router.get("", response_model=List[schemas.Article])
 def read_articles(
     skip: int = 0, 
     limit: int = 100, 
@@ -51,6 +47,10 @@ def read_articles(
     db: Session = Depends(get_db)
 ):
     return crud.get_articles(db, skip=skip, limit=limit, category=category)
+
+@router.get("/count")
+def get_articles_count(category: Optional[str] = None, db: Session = Depends(get_db)):
+    return {"total": crud.count_articles(db, category=category)}
 
 @router.get("/{article_id}", response_model=schemas.Article)
 def read_article(article_id: int, db: Session = Depends(get_db)):

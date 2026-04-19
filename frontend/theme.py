@@ -47,6 +47,7 @@ def apply_theme():
                             },
                             cream: "hsl(var(--cream))",
                             ink: "hsl(var(--ink))",
+                            jade: "hsl(var(--jade))",
                         },
                         fontFamily: {
                             display: ["Playfair Display", "serif"],
@@ -80,6 +81,10 @@ def apply_theme():
                             reveal: {
                                 "0%": { "clip-path": "inset(0 100% 0 0)" },
                                 "100%": { "clip-path": "inset(0 0 0 0)" },
+                            },
+                            "slow-zoom": {
+                                "0%": { transform: "scale(1)" },
+                                "100%": { transform: "scale(1.1)" },
                             }
                         },
                         animation: {
@@ -88,6 +93,7 @@ def apply_theme():
                             "fade-in-right": "fade-in-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
                             float: "float 4s ease-in-out infinite",
                             reveal: "reveal 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards",
+                            "slow-zoom": "slow-zoom 20s ease-in-out infinite alternate",
                         },
                     },
                 },
@@ -193,6 +199,19 @@ def apply_theme():
                 color: hsl(var(--foreground));
                 font-family: 'Source Sans 3', sans-serif;
                 -webkit-tap-highlight-color: transparent;
+            }
+
+            /* Fix cho ảnh NiceGUI/Quasar */
+            img {
+                max-width: 100%;
+                height: auto;
+                display: block;
+            }
+            .q-img__image {
+                object-fit: cover !important;
+            }
+            .q-img {
+                height: 100%;
             }
 
             /* Nút responsive cho mọi thiết bị */
@@ -343,29 +362,67 @@ def apply_theme():
             /* Thành phần tìm kiếm UI hiện đại */
             .modern-search-card {
                 background: rgba(255, 255, 255, 0.6) !important;
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(180, 120, 60, 0.15) !important;
-                box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
-                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                backdrop-filter: blur(12px) saturate(180%);
+                -webkit-backdrop-filter: blur(12px) saturate(180%);
+                border: 1px solid rgba(180, 120, 60, 0.2) !important;
+                box-shadow: 0 8px 32px 0 rgba(180, 120, 60, 0.1);
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             }
             .modern-search-card:hover {
-                background: rgba(255, 255, 255, 0.9) !important;
-                box-shadow: 0 10px 30px -10px rgba(180, 120, 60, 0.15);
+                background: rgba(255, 255, 255, 0.95) !important;
+                box-shadow: 0 15px 35px -5px rgba(180, 120, 60, 0.25);
+            }
+
+            .glass-card {
+                background: rgba(255, 255, 255, 0.45) !important;
+                backdrop-filter: blur(20px) saturate(180%);
+                -webkit-backdrop-filter: blur(20px) saturate(180%);
+                border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
             }
             
             .modern-input .q-field__control {
-                background: white !important;
-                border-radius: 12px !important;
-                transition: all 0.3s ease;
+                background: rgba(255, 255, 255, 0.5) !important;
+                border: 1px solid rgba(180, 120, 60, 0.2) !important;
+                border-radius: 16px !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                padding: 4px 12px !important;
             }
             .modern-input .q-field--focused .q-field__control {
-                box-shadow: 0 0 0 3px rgba(178, 30, 30, 0.15);
-                border-color: #b21e1e !important;
-            }
-            
-            .modern-select .q-field__control {
                 background: white !important;
-                border-radius: 12px !important;
+                box-shadow: 0 0 0 4px rgba(178, 30, 30, 0.1) !important;
+                border-color: rgba(178, 30, 30, 0.8) !important;
+                transform: translateY(-1px);
+            }
+            .modern-input .q-field__label {
+                color: hsl(var(--muted-foreground)) !important;
+                font-weight: 500;
+            }
+
+            .elevated-btn {
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            }
+            .elevated-btn:hover {
+                transform: translateY(-3px) scale(1.02);
+                box-shadow: 0 10px 20px -10px rgba(178, 30, 30, 0.5) !important;
+            }
+            .elevated-btn:active {
+                transform: translateY(1px) scale(0.98);
+            }
+
+            .cultural-header-line {
+                position: relative;
+                padding-bottom: 0.5rem;
+            }
+            .cultural-header-line::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 40px;
+                height: 3px;
+                background: var(--gradient-gold);
+                border-radius: 2px;
             }
 
             ::-webkit-scrollbar       { width: 8px; }

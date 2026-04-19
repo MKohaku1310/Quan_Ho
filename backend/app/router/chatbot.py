@@ -1,13 +1,19 @@
 import os
-import google.generativeai as genai
+try:
+    import google.generativeai as genai
+    HAS_GENAI = True
+except ImportError:
+    HAS_GENAI = False
+    print("WARNING: google-generativeai not installed. Chatbot AI features will be disabled.")
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app import models
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 import random
 from dotenv import load_dotenv
+from sqlalchemy import or_
 
 # Load environment variables
 load_dotenv()
@@ -16,18 +22,19 @@ router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 
 # Configure Gemini
 api_key = os.getenv("GEMINI_API_KEY")
-if api_key:
+if api_key and HAS_GENAI:
     genai.configure(api_key=api_key)
 
 class ChatMessage(BaseModel):
     message: str
+    history: Optional[List[Dict[str, str]]] = []
 
 def get_context_summary(db: Session):
     """Lấy tóm tắt dữ liệu từ DB để đưa vào prompt cho AI"""
     songs = db.query(models.Melody).limit(10).all()
     events = db.query(models.Event).limit(5).all()
     articles = db.query(models.Article).limit(5).all()
-    villages = db.query(models.Location).filter(models.Location.type == "lang_quan_ho").limit(10).all()
+    villages = db.query(models.Location).filter(models.Location.type == "lang-quan-ho").limit(10).all()
     
     context = "Dữ liệu từ website Quan Họ Bắc Ninh:\n"
     context += "- Bài hát: " + ", ".join([s.name for s in songs]) + "\n"
@@ -36,75 +43,96 @@ def get_context_summary(db: Session):
     context += "- Tin tức: " + ", ".join([a.title for a in articles]) + "\n"
     return context
 
+def get_relevant_context(db: Session, query: str) -> str:
+    q = f"%{query.strip()}%"
+    
+    # Search Melodies
+    songs = db.query(models.Melody).filter(
+        or_(models.Melody.name.ilike(q), models.Melody.lyrics.ilike(q), models.Melody.village.ilike(q))
+    ).limit(3).all()
+    
+    # Search Artists
+    artists = db.query(models.Artist).filter(
+        or_(models.Artist.name.ilike(q), models.Artist.description.ilike(q), models.Artist.biography.ilike(q))
+    ).limit(2).all()
+    
+    # Search Events
+    events = db.query(models.Event).filter(
+        or_(models.Event.title.ilike(q), models.Event.description.ilike(q))
+    ).limit(2).all()
+    
+    # Search Villages/Locations
+    villages = db.query(models.Location).filter(
+        or_(models.Location.name.ilike(q), models.Location.description.ilike(q), models.Location.history.ilike(q))
+    ).limit(2).all()
+
+    chunks = []
+    if songs:
+        chunks.append("### BÀI HÁT LIÊN QUAN:\n" + "\n".join([f"- {s.name}: {s.description[:200]}... (Làng {s.village})" for s in songs]))
+    if artists:
+        chunks.append("### NGHỆ SĨ LIÊN QUAN:\n" + "\n".join([f"- {a.name}: {a.description[:200]}..." for a in artists]))
+    if events:
+        chunks.append("### SỰ KIỆN LIÊN QUAN:\n" + "\n".join([f"- {e.title} ({e.start_date}): {e.description[:200]}..." for e in events]))
+    if villages:
+        chunks.append("### LÀNG/ĐỊA DANH LIÊN QUAN:\n" + "\n".join([f"- {v.name}: {v.description[:200]}..." for v in villages]))
+    
+    return "\n\n".join(chunks)
+
 @router.post("")
 async def ask_chatbot(msg: ChatMessage, db: Session = Depends(get_db)):
     text = msg.message.lower()
     
-    # Nếu có API Key, dùng Gemini
-    if api_key:
+    # 1. AI GENERATION (Primary Path)
+    if api_key and HAS_GENAI:
         try:
             model = genai.GenerativeModel('gemini-1.5-flash')
             context = get_context_summary(db)
+            relevant_context = get_relevant_context(db, msg.message)
             
-            prompt = f"""
-            Bạn là Trợ lý Quan Họ AI, một chuyên gia về văn hóa Quan họ Bắc Ninh.
-            Nhiệm vụ của bạn là trả lời các câu hỏi của người dùng một cách lịch sự, thân thiện và chính xác dựa trên dữ liệu trang web.
+            # Format history for prompt
+            history_str = ""
+            if msg.history:
+                history_str = "\n".join([f"{'Người dùng' if h['role']=='user' else 'Trợ lý'}: {h['text']}" for h in msg.history[-5:]])
+
+            system_instruction = f"""
+Bạn là một "Liền anh" (hoặc "Liền chị") Quan họ Bắc Ninh, là hướng dẫn viên ảo cho hệ thống bảo tồn dân ca Quan họ.
+Phong cách trả lời: 
+- Lịch sự, nhã nhặn, đậm chất Kinh Bắc ("Thưa bạn", "Dạ", "Quý bạn").
+- Sử dụng thuật ngữ chuyên môn: "liền anh", "liền chị", "vang-rền-nền-nảy", "kết chạ", "ngủ bọn".
+- Nếu người dùng buồn, hãy an ủi bằng những câu ca dao hoặc lời bài hát quan họ.
+
+DỮ LIỆU HỆ THỐNG:
+{context}
+
+DỮ LIỆU CHI TIẾT THEO CÂU HỎI:
+{relevant_context or "Không tìm thấy dữ liệu trực tiếp, hãy trả lời dựa trên kiến thức chung về Quan họ."}
+
+LỊCH SỬ TRÒ CHUYỆN GẦN ĐÂY:
+{history_str}
+
+QUY TẮC:
+1. Luôn bám sát dữ liệu hệ thống nếu có.
+2. Nếu hỏi về cách đăng ký: Hướng dẫn vào mục 'Sự kiện', chọn sự kiện và nhấn 'Đăng ký'.
+3. Nếu hỏi về 49 làng: Nhắc đến các làng như Diềm, Bồ Sơn, Khả Lễ... và gợi ý xem Bản đồ.
+4. Trả lời bằng Tiếng Việt, ngắn gọn (dưới 200 từ), giàu cảm xúc.
+"""
             
-            {context}
-            
-            Hướng dẫn trả lời:
-            1. Nếu người dùng hỏi về bài hát, sự kiện hoặc làng đang có trong dữ liệu trên, hãy nhắc đến chúng và gợi ý họ xem chi tiết.
-            2. Trả lời bằng Tiếng Việt, giọng điệu truyền thống nhưng gần gũi (dùng 'vâng', 'dạ', 'người ơi', 'quý khách').
-            3. Trả lời ngắn gọn, súc tích (dưới 100 chữ).
-            
-            Câu hỏi của người dùng: {msg.message}
-            """
+            prompt = f"{system_instruction}\n\nNgười dùng hỏi: {msg.message}\nTrợ lý trả lời:"
             
             response = model.generate_content(prompt)
-            return {"response": response.text}
+            return {"response": response.text.strip()}
         except Exception as e:
             print(f"CHATBOT AI ERROR: {e}")
-            # Fallback to keyword logic below if AI fails
-
-    # --- KEYWORD FALLBACK LOGIC ---
+            # Fallback to keyword matching if AI fails
     
-    # Logic cho Lịch sử và Ý nghĩa
-    if any(k in text for k in ['lịch sử', 'ý nghĩa', 'nguồn gốc', 'tại sao']):
-        articles = db.query(models.Article).filter(models.Article.category == "lich-su").limit(1).all()
-        if articles:
-            return {"response": f"Về lịch sử Quan họ: {articles[0].excerpt or 'Quan họ Bắc Ninh là loại hình dân ca phong phú bậc nhất của Việt Nam.'} Bạn có thể xem thêm tại mục Giới thiệu."}
-        return {"response": "Quan họ Bắc Ninh có lịch sử lâu đời, gắn liền với văn hóa lúa nước vùng Kinh Bắc. Theo truyền thuyết, nó bắt nguồn từ những cuộc giao duyên của các làng kết chạ."}
-
-    # Logic cho Lễ hội và Sự kiện
-    if any(k in text for k in ['lễ hội', 'sự kiện', 'khi nào', 'lịch']):
-        events = db.query(models.Event).filter(models.Event.status == "upcoming").limit(3).all()
-        if events:
-            ev_list = "\n".join([f"- {e.title} (Ngày: {e.start_date})" for e in events])
-            return {"response": f"Các lễ hội và sự kiện sắp tới nè:\n{ev_list}\nBạn nhớ đăng ký tham gia nhé!"}
-        return {"response": "Hiện tại chưa có lịch lễ hội cụ thể gần đây, nhưng Hội Lim thường diễn ra vào ngày 13 tháng Giêng hàng năm bạn nhé."}
-
-    # Logic cho Đăng ký
-    if any(k in text for k in ['đăng ký', 'tham gia', 'làm sao']):
-        return {"response": "Để đăng ký tham gia sự kiện, bạn chỉ cần vào mục 'Sự kiện', chọn sự kiện yêu thích và nhấn nút 'Đăng ký'. Nếu bạn đã đăng nhập, tôi sẽ tự động điền thông tin cho bạn!"}
-
-    # Logic cho Gợi ý bài hát theo tâm trạng
-    mood_map = {
-        "buồn": ["Người ơi người ở đừng về", "Khách đến chơi nhà", "Ngồi tựa mạn thuyền"],
-        "vui": ["Trống cơm", "Lên chùa", "Hội Lim", "Mời nước mời trầu"],
-        "nhớ": ["Tương phùng tương ngộ", "Hoa thơm bướm lượn"],
-        "yêu": ["Gái đảm trai tài", "Đôi ta như thể con ong"]
-    }
+    # 2. KEYWORD MATCHING (Fallback Layer)
+    if any(k in text for k in ['lịch sử', 'ý nghĩa', 'nguồn gốc']):
+        return {"response": "Dạ, Quan họ Bắc Ninh có lịch sử ngàn năm, là di sản văn hóa phi vật thể đại diện của nhân loại. Bạn có thể tìm hiểu thêm ở mục 'Giới thiệu' ạ."}
     
-    for mood, songs in mood_map.items():
-        if mood in text:
-            song = random.choice(songs)
-            return {"response": f"Nghe vẻ bạn đang thấy {mood}. Tôi gợi ý bạn nghe bài '{song}' để cảm nhận rõ hơn cái tình của người Quan họ nhé."}
+    if any(k in text for k in ['đăng ký', 'tham gia']):
+        return {"response": "Thưa bạn, để đăng ký tham gia các sự kiện văn hóa, bạn vui lòng vào mục 'Sự kiện' trên thanh menu, chọn một lễ hội và nhấn nút 'Đăng ký' nhé!"}
+    
+    if any(k in text for k in ['buồn', 'vui', 'nhớ', 'yêu']):
+        return {"response": "Dạ, người Quan họ có câu 'Người ơi người ở đừng về'. Lúc này nghe một vài làn điệu cổ như 'Tương phùng tương ngộ' chắc hẳn lòng sẽ nhẹ nhõm hơn nhiều đó bạn."}
 
-    # 49 Làng Quan Họ
-    if '49 làng' in text or 'danh sách làng' in text:
-        villages = db.query(models.Location).filter(models.Location.type == "lang_quan_ho").limit(5).all()
-        v_names = ", ".join([v.name for v in villages])
-        return {"response": f"Vùng Kinh Bắc có 49 làng Quan họ gốc được công nhận. Một số làng tiêu biểu có thể kể đến như: {v_names}... Bạn có thể xem bản đồ chi tiết tại mục 'Làng Quan họ'."}
-
-    # Mặc định
-    return {"response": "Chào bạn! Tôi có thể giúp bạn tìm hiểu về 49 làng Quan họ gốc, ý nghĩa các làn điệu cổ, hoặc gợi ý bài hát theo tâm trạng của bạn. Bạn muốn bắt đầu từ đâu?"}
+    return {"response": "Dạ, tôi là trợ lý ảo Quan Họ Bắc Ninh. Tôi có thể giúp gì cho bạn trong việc tìm hiểu về các làng quan họ, nghệ sĩ hay các làn điệu cổ không ạ?"}

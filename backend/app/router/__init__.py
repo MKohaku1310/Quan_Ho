@@ -1,1 +1,1 @@
-from . import auth, melodies, artists, articles, locations, events, comments, chatbot
+from . import auth, melodies, artists, articles, locations, events, comments, chatbot, favorites

@@ -2,6 +2,7 @@ from nicegui import app, ui
 import theme
 import components
 from api import api_client
+from translation import t
 import asyncio
 import re
 
@@ -27,21 +28,21 @@ def register_page():
                         with ui.column().classes('items-center w-full gap-1 mb-2'):
                             with ui.element('div').classes('h-16 w-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary mb-1 shadow-inner'):
                                 ui.icon('person_add', size='2.5rem')
-                            ui.label('Khởi tạo hành trình').classes('font-display text-3xl font-bold text-center tracking-tight capitalize')
-                            ui.label('Tham gia cộng đồng yêu dân ca Quan họ').classes('text-muted-foreground text-sm text-center max-w-[280px]')
+                            ui.label(t('register_title')).classes('font-display text-3xl font-bold text-center tracking-tight capitalize')
+                            ui.label(t('register_subtitle')).classes('text-muted-foreground text-sm text-center max-w-[280px]')
 
                         with ui.column().classes('gap-4 w-full'):
-                            name = ui.input('Họ và tên').classes('w-full').props('outlined rounded-xl bg-background shadow-sm')
-                            email = ui.input('Email').classes('w-full').props('outlined rounded-xl type=email bg-background shadow-sm')
-                            password = ui.input('Mật khẩu').classes('w-full').props('outlined rounded-xl type=password bg-background shadow-sm')
-                            confirm_pass = ui.input('Xác nhận mật khẩu').classes('w-full').props('outlined rounded-xl type=password bg-background shadow-sm')
+                            name = ui.input(t('name_required')).classes('w-full modern-input').props('outlined rounded-2xl bg-background shadow-sm')
+                            email = ui.input(t('email_field')).classes('w-full modern-input').props('outlined rounded-2xl type=email bg-background shadow-sm')
+                            password = ui.input(t('password_field')).classes('w-full modern-input').props('outlined rounded-2xl type=password bg-background shadow-sm')
+                            confirm_pass = ui.input(t('confirm_password_field')).classes('w-full modern-input').props('outlined rounded-2xl type=password bg-background shadow-sm')
 
                             async def handle_register():
                                 if not all([name.value, email.value, password.value]):
-                                    ui.notify('Vui lòng điền đủ thông tin', type='warning')
+                                    ui.notify(t('fill_all_fields'), type='warning')
                                     return
                                 if password.value != confirm_pass.value:
-                                    ui.notify('Mật khẩu chưa khớp', type='warning')
+                                    ui.notify(t('password_mismatch'), type='warning')
                                     return
                                 
                                 reg_btn.props('loading')
@@ -49,16 +50,16 @@ def register_page():
                                 reg_btn.props(remove='loading')
                                 
                                 if success:
-                                    ui.notify('Đăng ký thành công! Hãy đăng nhập.', type='positive', position='top')
+                                    ui.notify(t('register_success'), type='positive', position='top')
                                     ui.navigate.to('/dang-nhap')
                                 else:
-                                    ui.notify('Email đã tồn tại hoặc lỗi hệ thống', type='negative')
+                                    ui.notify(t('register_failed'), type='negative')
                                     
-                            reg_btn = ui.button('Tạo tài khoản ngay', on_click=handle_register).props('unelevated rounded-xl').classes('w-full bg-primary text-white font-black py-3 mt-4 shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform text-base uppercase tracking-wider')
+                            reg_btn = ui.button(t('register_now_btn'), on_click=handle_register).props('unelevated rounded-xl').classes('w-full bg-primary text-white font-black py-3 mt-4 shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform text-base uppercase tracking-wider')
                             
                             with ui.row().classes('w-full justify-center gap-1.5 mt-4 text-sm'):
-                                ui.label('Bạn đã có tài khoản?').classes('text-muted-foreground')
-                                ui.link('Đăng nhập tại đây', '/dang-nhap').classes('text-primary font-bold hover:underline')
+                                ui.label(t('already_have_account')).classes('text-muted-foreground')
+                                ui.link(t('login_here_link'), '/dang-nhap').classes('text-primary font-bold hover:underline')
 
 @ui.page('/dang-nhap')
 def login_page():
@@ -76,20 +77,20 @@ def login_page():
                     with ui.column().classes('items-center w-full gap-1'):
                         with ui.element('div').classes('h-16 w-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary mb-1 shadow-inner'):
                             ui.icon('login', size='2.5rem')
-                        ui.label('Chào mừng trở lại').classes('font-display text-3xl font-bold text-center tracking-tight')
-                        ui.label('Tiếp tục khám phá tinh hoa Kinh Bắc').classes('text-muted-foreground text-sm text-center')
+                        ui.label(t('login_title')).classes('font-display text-3xl font-bold text-center tracking-tight')
+                        ui.label(t('login_subtitle')).classes('text-muted-foreground text-sm text-center')
 
                     with ui.column().classes('gap-5 w-full'):
-                        email = ui.input('Email').classes('w-full').props('outlined rounded-xl bg-background shadow-sm icon=alternate_email')
-                        password = ui.input('Mật khẩu').classes('w-full').props('outlined rounded-xl type=password bg-background shadow-sm icon=lock')
+                        email = ui.input(t('email_field')).classes('w-full modern-input').props('outlined rounded-2xl bg-background shadow-sm icon=alternate_email')
+                        password = ui.input(t('password_field')).classes('w-full modern-input').props('outlined rounded-2xl type=password bg-background shadow-sm icon=lock')
                         
                         with ui.row().classes('w-full justify-between items-center -mt-2'):
-                            ui.checkbox('Ghi nhớ đăng nhập').classes('text-sm text-muted-foreground opacity-80')
-                            ui.link('Quên mật khẩu?', '#').classes('text-sm text-primary hover:underline font-medium')
+                            ui.checkbox(t('remember_login')).classes('text-sm text-muted-foreground opacity-80')
+                            ui.link(t('forgot_password_link'), '#').classes('text-sm text-primary hover:underline font-medium')
 
                         async def handle_login():
                             if not email.value or not password.value:
-                                ui.notify('Nhập email và mật khẩu', type='warning')
+                                ui.notify(t('enter_email_password'), type='warning')
                                 return
                             
                             login_btn.props('loading')
@@ -97,15 +98,15 @@ def login_page():
                             login_btn.props(remove='loading')
                             
                             if success:
-                                ui.notify(f"Chào mừng {app.storage.user.get('user_name')}!", type='positive', position='top')
+                                ui.notify(f"{t('login_welcome')} {app.storage.user.get('user_name')}!", type='positive', position='top')
                                 ui.navigate.to('/')
                             else:
-                                ui.notify('Sai email hoặc mật khẩu', type='negative')
+                                ui.notify(t('login_failed'), type='negative')
                                 
-                        login_btn = ui.button('Đăng nhập', on_click=handle_login).props('unelevated rounded-xl').classes('w-full bg-primary text-white font-black py-3 shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform text-base uppercase tracking-wider')
+                        login_btn = ui.button(t('login'), on_click=handle_login).props('unelevated rounded-xl').classes('w-full bg-primary text-white font-black py-3 shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform text-base uppercase tracking-wider')
                         
                         with ui.row().classes('w-full justify-center gap-1.5 mt-2 text-sm'):
-                            ui.label('Chưa có tài khoản?').classes('text-muted-foreground')
-                            ui.link('Đăng ký miễn phí', '/dang-ky').classes('text-primary font-bold hover:underline')
+                            ui.label(t('test_dont_have_account')).classes('text-muted-foreground')
+                            ui.link(t('register_free_link'), '/dang-ky').classes('text-primary font-bold hover:underline')
 
 

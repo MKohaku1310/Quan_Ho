@@ -64,7 +64,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     return user
 
 async def get_current_active_admin(current_user: schemas.User = Depends(get_current_user)):
-    if current_user.role != "admin":
+    role_value = getattr(current_user.role, "value", current_user.role)
+    if role_value != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, 
             detail="The user does not have enough privileges"
@@ -72,13 +73,12 @@ async def get_current_active_admin(current_user: schemas.User = Depends(get_curr
     return current_user
 
 @router.get("/me", response_model=schemas.User)
-
 async def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     return current_user
 
 @router.patch("/me", response_model=schemas.User)
-async def update_users_me(user_update: schemas.UserUpdate, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    updated_user = crud.update_user(db, current_user.id, user_update)
+async def update_users_me(user_update: schemas.UserSelfUpdate, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    updated_user = crud.update_user(db, current_user.id, user_update, allow_role=False)
     return updated_user
 
 @router.post("/me/change-password")
@@ -103,25 +103,49 @@ async def read_users(
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
+@router.get("/users/count")
+async def get_users_count(
+    admin: schemas.User = Depends(get_current_active_admin),
+    db: Session = Depends(get_db)
+):
+    """Lấy tổng số lượng người dùng (chỉ dành cho Admin)"""
+    return {"total": crud.count_users(db)}
+
 @router.delete("/users/{user_id}")
 async def remove_user(
     user_id: int, 
     admin: schemas.User = Depends(get_current_active_admin),
     db: Session = Depends(get_db)
 ):
+    if user_id == admin.id:
+        raise HTTPException(status_code=400, detail="Cannot delete the current admin account")
     success = crud.delete_user(db, user_id=user_id)
     if not success:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted successfully"}
 
-@router.patch("/users/{user_id}/role", response_model=schemas.User)
-async def change_user_role(
+@router.patch("/users/{user_id}", response_model=schemas.User)
+async def update_user_by_admin(
     user_id: int,
-    role_update: schemas.UserUpdate,
+    user_update: schemas.UserAdminUpdate,
     admin: schemas.User = Depends(get_current_active_admin),
     db: Session = Depends(get_db)
 ):
-    updated_user = crud.update_user(db, user_id, role_update)
+    updated_user = crud.update_user(db, user_id, user_update, allow_role=True)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return updated_user
+
+@router.patch("/users/{user_id}/role", response_model=schemas.User)
+async def change_user_role(
+    user_id: int,
+    role_update: schemas.UserRoleUpdate,
+    admin: schemas.User = Depends(get_current_active_admin),
+    db: Session = Depends(get_db)
+):
+    if user_id == admin.id and role_update.role != "admin":
+        raise HTTPException(status_code=400, detail="Cannot downgrade your own admin role")
+    updated_user = crud.update_user(db, user_id, role_update, allow_role=True)
     if not updated_user:
         raise HTTPException(status_code=404, detail="User not found")
     return updated_user

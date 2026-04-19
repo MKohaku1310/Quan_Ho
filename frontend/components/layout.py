@@ -1,41 +1,49 @@
 from nicegui import app, ui
 import theme
+from datetime import datetime
+from translation import t
+from api import api_client
+
 
 def hero_banner():
-    # Adjusted height and object-position to prevent excessive zoom on desktop
-    with ui.element('section').classes('relative flex min-h-[500px] md:min-h-[600px] lg:min-h-[85vh] xl:min-h-[90vh] items-center overflow-visible w-full shadow-2xl').style('padding-top: 56px;'):
-        ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-center scale-100')
-        ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-75 md:opacity-70')
+    # Fixed overflow and height to prevent bleeding into other sections
+    with ui.element('section').classes('relative flex min-h-[400px] md:min-h-[500px] lg:min-h-[65vh] items-center overflow-hidden w-full shadow-2xl'):
+        ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-bottom')
+        ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-80 md:opacity-75')
         
+        # Floating Lanterns (Studio Flourish)
+        for i, pos in enumerate(['left-10 md:left-20 top-32', 'right-10 md:right-32 top-48', 'left-1/4 bottom-32 opacity-30']):
+            ui.icon('light', size='2rem').classes(f'absolute {pos} text-gold-light animate-pulse pointer-events-none z-20')
+            
         with ui.element('div').classes('relative z-10 container mx-auto px-4 pt-4 pb-24 text-center flex flex-col items-center min-h-[400px] justify-center overflow-visible'):
-            ui.label('DI SẢN VĂN HÓA PHI VẬT THỂ UNESCO').classes(
-                'mb-4 text-sm font-medium uppercase tracking-[0.3em] text-gold-light'
-            ).style('animation: fade-in-up 0.8s ease-out')
+            # Silk Ribbon (Studio Banner)
+            with ui.element('div').classes('mb-6 relative'):
+                ui.element('div').classes('absolute inset-0 bg-hero-gradient rotate-[-2deg] transform z-[-1] shadow-lg rounded-sm px-12 py-6 opacity-80')
+                ui.label(t('unesco_badge')).classes(
+                    'text-sm font-black uppercase tracking-[0.5em] text-white drop-shadow-md'
+                ).style('animation: fade-in-up 0.8s ease-out')
             
             with ui.column().classes('gap-2 flex flex-col items-center').style('animation: fade-in-up 1s ease-out 0.2s both'):
-                ui.label('Quan Họ').classes('font-display text-5xl font-bold leading-tight text-white md:text-7xl lg:text-8xl')
-                ui.label('Bắc Ninh').classes('font-display text-5xl font-bold leading-tight text-gradient-gold md:text-7xl lg:text-8xl')
+                ui.label(t('hero_quan_ho')).classes('font-display text-6xl font-black leading-tight text-white md:text-8xl lg:text-9xl tracking-tighter drop-shadow-2xl')
+                ui.label(t('hero_bac_ninh')).classes('font-display text-5xl font-black leading-tight text-gradient-gold md:text-7xl lg:text-8xl tracking-tight')
             
-            ui.label(
-                'Khám phá vẻ đẹp tinh tế của dân ca Quan họ — '
-                'tiếng hát giao duyên ngọt ngào bên dòng sông Cầu xứ Kinh Bắc.'
-            ).classes('mx-auto mt-8 max-w-2xl text-lg text-white/80 leading-relaxed md:text-xl').style('animation: fade-in-up 1s ease-out 0.4s both')
+            ui.label(t('hero_desc')).classes('mx-auto mt-10 max-w-3xl text-lg text-white/90 leading-relaxed md:text-2xl font-light italic').style('animation: fade-in-up 1s ease-out 0.4s both')
             
-            with ui.row().classes('mt-10 flex flex-wrap justify-center gap-4').style('animation: fade-in-up 1s ease-out 0.6s both'):
-                ui.button('Nghe ngay', icon='play_arrow', on_click=lambda: ui.navigate.to('/bai-hat')).props('unelevated rounded-lg').classes(
-                    'bg-accent text-accent-foreground font-bold px-8 py-4 shadow-elevated transform transition-transform hover:scale-105'
+            with ui.row().classes('mt-12 flex flex-wrap justify-center gap-6').style('animation: fade-in-up 1s ease-out 0.6s both'):
+                ui.button(t('hero_listen_now'), icon='play_arrow', on_click=lambda: ui.navigate.to('/bai-hat')).props('unelevated rounded-xl size=lg').classes(
+                    'bg-accent text-accent-foreground font-black px-12 py-5 shadow-elevated transform transition-all hover:scale-105 tracking-widest'
                 )
-                ui.button('Tìm hiểu thêm', on_click=lambda: ui.navigate.to('/gioi-thieu')).props('outline rounded-lg').classes(
-                    'border-white/30 text-white font-bold px-8 py-4 hover:bg-white/10'
+                ui.button(t('hero_learn_more'), on_click=lambda: ui.navigate.to('/gioi-thieu')).props('outline rounded-xl size=lg').classes(
+                    'border-white/40 text-white font-black px-12 py-5 hover:bg-white/10 backdrop-blur-sm tracking-widest'
                 )
         
-        with ui.element('div').classes('absolute z-10 flex flex-col items-center gap-2 cursor-pointer group opacity-80').style(
-            'bottom: 2rem; left: 50%; transform: translateX(-50%); animation: float 2s ease-in-out infinite;'
+        with ui.element('div').classes('absolute z-10 flex flex-col items-center gap-3 cursor-pointer group opacity-90').style(
+            'bottom: 2.5rem; left: 50%; transform: translateX(-50%); animation: bounce 2.4s infinite;'
         ).on('click', lambda: ui.run_javascript(
             'document.getElementById("home-content").scrollIntoView({behavior: "smooth"})'
         )):
-            ui.label('Cuộn xuống').classes('text-white text-xs uppercase tracking-widest font-medium group-hover:opacity-100')
-            ui.icon('keyboard_arrow_down', size='28px').classes('text-white group-hover:opacity-100')
+            ui.label(t('scroll_down')).classes('text-white text-[11px] font-bold uppercase tracking-[0.2em] group-hover:opacity-100 drop-shadow-lg')
+            ui.icon('keyboard_arrow_down', size='36px').classes('text-white group-hover:opacity-100 -mt-2')
 
             
 def hero_stats_section():
@@ -43,26 +51,23 @@ def hero_stats_section():
         with theme.container().classes('grid items-center gap-16 md:grid-cols-2'):
             with ui.column().classes('gap-4'):
                 with ui.element('h2').classes('font-display text-3xl font-bold text-foreground md:text-4xl lg:text-5xl'):
-                    ui.label('Sức sống mãnh liệt của ')
-                    ui.label('Di sản văn hóa').classes('text-primary')
+                    ui.label(t('stats_resilience_title'))
+                    ui.label(t('stats_heritage')).classes('text-primary')
                 
-                ui.label(
-                    'Dân ca Quan họ Bắc Ninh không chỉ là một hình thức ca hát, mà còn là biểu hiện cao nhất '
-                    'của sự thanh lịch, văn minh và nghĩa tình của người dân xứ Bắc.'
-                ).classes('leading-relaxed text-muted-foreground text-lg md:text-xl')
+                ui.label(t('stats_desc')).classes('leading-relaxed text-muted-foreground text-lg md:text-xl')
                 
                 with ui.link(target='/gioi-thieu').classes('mt-4 no-underline'):
-                    with ui.button('Khám phá lịch sử', icon='arrow_forward').props('unelevated rounded-lg').classes(
+                    with ui.button(t('explore_now'), icon='arrow_forward').props('unelevated rounded-lg').classes(
                         'bg-primary text-white font-bold px-8 py-3 shadow-md hover:shadow-lg transition-all transform hover:scale-105'
                     ):
                         pass
             
             with ui.element('div').classes('grid grid-cols-2 gap-4'):
                 stats = [
-                    ('49', 'Làng Quan họ gốc', 'text-primary', 'groups'),
-                    ('300+', 'Làn điệu cổ', 'text-accent', 'music_note'),
-                    ('2009', 'UNESCO công nhận', 'text-terracotta', 'stars'),
-                    ('600+', 'Năm lịch sử', 'text-jade', 'history')
+                    ('49', t('stats_villages_label'), 'text-primary', 'groups'),
+                    ('300+', t('stats_melodies_label'), 'text-accent', 'music_note'),
+                    ('2009', t('stats_unesco_label'), 'text-terracotta', 'stars'),
+                    ('600+', t('stats_history_label'), 'text-jade', 'history')
                 ]
                 for val, label, color_class, icon in stats:
                     with ui.element('div').classes('rounded-xl bg-muted/50 p-6 text-center border border-border/50 shadow-sm transition-all hover:shadow-md'):
@@ -71,21 +76,26 @@ def hero_stats_section():
                         ui.label(label).classes('text-[10px] font-bold text-muted-foreground uppercase tracking-widest')
 
 
-from datetime import datetime
-from api import api_client
-
 def chatbot_persona():
     # Khởi tạo history nếu chưa có
     if 'chat_history' not in app.storage.user:
         app.storage.user['chat_history'] = [
-            {'role': 'bot', 'text': 'Chào bạn! Tôi là Trợ lý Quan Họ AI. Tôi có thể giúp gì cho bạn hôm nay?', 'time': datetime.now().strftime('%H:%M')}
+            {'role': 'bot', 'text': t('chatbot_greet'), 'time': datetime.now().strftime('%H:%M')}
         ]
 
-    # Dùng class để quản lý state đơn giản tránh lỗi tuple của ui.state
+    # Suggestions for users
+    suggestions = [
+        "Quan họ là gì?",
+        "Lễ hội sắp tới",
+        "49 làng Quan họ",
+        "Nghe làn điệu cổ"
+    ]
+
     class ChatState:
         def __init__(self):
             self.is_open = False
             self.is_typing = False
+            self.persona = 'liền anh' # Default
     
     state = ChatState()
 
@@ -93,87 +103,140 @@ def chatbot_persona():
         state.is_open = not state.is_open
         chat_container.refresh()
         if state.is_open:
-            # Cuộn xuống cuối khi mở
-            ui.run_javascript('setTimeout(() => { var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight; }, 100)')
+            # Scroll to bottom after opening
+            ui.run_javascript('setTimeout(() => { var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight; }, 300)')
 
-    async def send_msg(text_input):
-        val = text_input.value
-        if not val: return
-        text_input.value = ''
+    async def send_msg(text_val):
+        if not text_val: return
         
         # Thêm tin nhắn user
         app.storage.user['chat_history'].append({
-            'role': 'user', 'text': val, 'time': datetime.now().strftime('%H:%M')
+            'role': 'user', 'text': text_val, 'time': datetime.now().strftime('%H:%M')
         })
         chat_messages.refresh()
         
         # Hiệu ứng đang gõ
         state.is_typing = True
         chat_messages.refresh()
+        ui.run_javascript('var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight;')
         
-        # Gọi API
-        response = await api_client.ask_chatbot(val)
+        # Gọi API với history
+        history = app.storage.user.get('chat_history', [])
+        response_data = await api_client.ask_chatbot(text_val, history=history)
+        bot_response = response_data.get('response') if response_data else t('chatbot_busy')
         
         # Thêm tin nhắn bot
         app.storage.user['chat_history'].append({
-            'role': 'bot', 'text': response or 'Tôi đang bận một chút, bạn thử lại sau nhé!', 'time': datetime.now().strftime('%H:%M')
+            'role': 'bot', 'text': bot_response, 'time': datetime.now().strftime('%H:%M')
         })
         state.is_typing = False
         chat_messages.refresh()
         # Cuộn xuống
-        ui.run_javascript('var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight;')
+        ui.run_javascript('setTimeout(() => { var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight; }, 100)')
+
+    def clear_chat():
+        app.storage.user['chat_history'] = [
+            {'role': 'bot', 'text': t('chatbot_greet'), 'time': datetime.now().strftime('%H:%M')}
+        ]
+        chat_messages.refresh()
 
     # Container chính của Chatbot
-    with ui.element('div').classes('fixed bottom-6 right-6 z-[1000] flex flex-col items-end gap-4'):
+    with ui.element('div').classes('fixed bottom-6 right-6 z-[1000] flex flex-col items-end gap-4 pointer-events-none'):
         
         # Chat Messages Section
         @ui.refreshable
         def chat_messages():
-            with ui.scroll_area().classes('flex-1 p-4 bg-paper-texture/30').props('id=chat-scroll'):
-                with ui.column().classes('w-full gap-4'):
+            # Height limited to fit nicely
+            with ui.scroll_area().classes('flex-1 p-4 bg-white/20 backdrop-blur-md').props('id=chat-scroll'):
+                with ui.column().classes('w-full gap-5'):
+                    # Welcome Info
+                    with ui.column().classes('items-center w-full mb-4 opacity-40 text-center gap-1'):
+                        ui.icon('info', size='14px')
+                        ui.label('Trò chuyện cùng Liền Anh & Liền Chị ảo').classes('text-[9px] uppercase font-black tracking-widest')
+                        ui.label('Dữ liệu được cập nhật từ Di sản UNESCO').classes('text-[8px]')
+
                     for msg in app.storage.user['chat_history']:
                         sent = msg['role'] == 'user'
                         with ui.row().classes(f'w-full {"justify-end" if sent else "justify-start"}'):
-                            with ui.card().classes(f'max-w-[85%] p-3 rounded-xl shadow-sm border {"bg-primary text-white border-primary" if sent else "bg-white border-border text-foreground"}'):
-                                ui.label(msg['text']).classes('text-sm leading-relaxed')
-                                ui.label(msg['time']).classes(f'text-[9px] mt-1 opacity-60 {"text-right" if sent else "text-left"}')
+                            if not sent:
+                                ui.avatar('account_circle', color='primary').classes('size-8 shadow-sm mr-2 mt-1')
+                            
+                            with ui.element('div').classes(f'max-w-[80%] flex flex-col {"items-end" if sent else "items-start"}'):
+                                with ui.card().classes(
+                                    f'p-4 rounded-2xl shadow-sm border transition-all '
+                                    f'{"bg-primary text-white border-primary rounded-tr-none" if sent else "bg-white border-border text-foreground rounded-tl-none"}'
+                                ):
+                                    if sent:
+                                        ui.label(msg['text']).classes('text-sm leading-relaxed')
+                                    else:
+                                        # Bot response supports Markdown
+                                        ui.markdown(msg['text']).classes('text-sm leading-relaxed prose prose-sm prose-p:my-1')
+                                
+                                ui.label(msg['time']).classes(f'text-[8px] mt-1 opacity-50 px-1 font-black')
                     
                     if state.is_typing:
-                        with ui.row().classes('w-full justify-start'):
-                            ui.label('AI đang nhập...').classes('text-xs text-muted-foreground italic')
+                        with ui.row().classes('w-full justify-start items-center gap-2'):
+                            ui.avatar('account_circle', color='primary').classes('size-6 opacity-50 animate-pulse')
+                            with ui.row().classes('gap-1 items-center p-2 bg-white/40 rounded-full'):
+                                ui.element('div').classes('w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]')
+                                ui.element('div').classes('w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]')
+                                ui.element('div').classes('w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce')
+
+                    # Quick Suggestions (only if history is short or empty)
+                    if len(app.storage.user['chat_history']) <= 2:
+                        with ui.row().classes('flex-wrap gap-2 mt-4 justify-start'):
+                            for s in suggestions:
+                                ui.button(s, on_click=lambda s=s: send_msg(s)).props('outline rounded-full dense size=sm').classes('text-[10px] lowercase px-3 py-1 border-primary/20 text-primary hover:bg-primary/5 transition-colors')
 
         # Tách container ra để refresh phần ẩn hiện
         @ui.refreshable
         def chat_container():
-            with ui.card().classes('w-[350px] sm:w-[400px] h-[500px] flex flex-col p-0 shadow-elevated border border-border overflow-hidden transition-all duration-300 transform origin-bottom-right rounded-2xl bg-background').style(
-                f'transform: scale({"1" if state.is_open else "0"}); opacity: {"1" if state.is_open else "0"}; pointer-events: {"auto" if state.is_open else "none"};'
+            # Main Box
+            with ui.card().classes(
+                'w-[380px] max-w-[90vw] h-[600px] max-h-[80vh] flex flex-col p-0 shadow-elevated border-none overflow-hidden transition-all duration-500 transform origin-bottom-right rounded-[2rem] bg-[#fdfaf5]'
+            ).style(
+                f'transform: scale({"1" if state.is_open else "0"}); opacity: {"1" if state.is_open else "0"}; pointer-events: {"auto" if state.is_open else "none"}; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);'
             ):
-                # Header
-                with ui.row().classes('w-full p-4 bg-primary text-white items-center justify-between shrink-0'):
-                    with ui.row().classes('items-center gap-3'):
-                        ui.image('/static/common/chatbot-avatar.png').classes('w-10 h-10 rounded-full border-2 border-white/20')
+                # Header with Gradient
+                with ui.row().classes('w-full p-6 bg-gradient-to-r from-primary to-[#801414] text-white items-center justify-between shrink-0 relative overflow-hidden'):
+                    # Background pattern
+                    ui.image('/static/common/lotus-pattern.png').classes('absolute -right-4 -top-4 w-24 opacity-10 pointer-events-none rotate-12')
+                    
+                    with ui.row().classes('items-center gap-4 relative z-10'):
+                        with ui.element('div').classes('relative'):
+                            ui.image('/static/common/chatbot-avatar.png').classes('w-12 h-12 rounded-2xl border-2 border-white/30 shadow-lg object-cover')
+                            ui.element('div').classes('absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full')
+                            
                         with ui.column().classes('gap-0'):
-                            ui.label('Trợ lý Quan Họ AI').classes('font-bold text-sm')
-                            ui.label('Trực tuyến').classes('text-[10px] opacity-80 uppercase tracking-wider font-black')
-                    ui.button(icon='close', on_click=toggle_chat).props('flat round color=white size=sm')
+                            ui.label(t('chatbot_title')).classes('font-display font-black text-lg leading-tight')
+                            ui.label(t('chatbot_online')).classes('text-[10px] opacity-70 uppercase tracking-[0.2em] font-black')
+                    
+                    with ui.row().classes('items-center gap-1'):
+                        ui.button(icon='refresh', on_click=clear_chat).props('flat round color=white size=sm').tooltip('Xóa hội thoại')
+                        ui.button(icon='close', on_click=toggle_chat).props('flat round color=white size=sm')
 
                 chat_messages()
 
                 # Footer/Input
-                ui.separator()
-                with ui.row().classes('w-full p-3 bg-white items-center gap-2 shrink-0'):
-                    ti = ui.input(placeholder='Hỏi gì đó...').props('rounded outlined dense').classes('flex-1 text-sm')
-                    ui.button(icon='send', on_click=lambda: send_msg(ti)).props('round unelevated color=primary').classes('shadow-md')
-                    ti.on('keydown.enter', lambda: send_msg(ti))
+                ui.separator().classes('opacity-10')
+                with ui.row().classes('w-full p-4 bg-white/80 backdrop-blur-md items-center gap-3 shrink-0'):
+                    ti = ui.input(placeholder=t('chatbot_placeholder')).props('rounded outlined borderless bg-muted/20').classes('flex-1 modern-input h-12 px-4')
+                    with ti.add_slot('append'):
+                         ui.button(icon='send', on_click=lambda: send_msg(ti.value) or setattr(ti, 'value', '')).props('flat round color=primary').classes('mr-1 hover:scale-110 transition-transform')
+                    ti.on('keydown.enter', lambda: send_msg(ti.value) or setattr(ti, 'value', ''))
 
         chat_container()
 
         # Nút bong bóng (Bubble Button)
-        with ui.button(on_click=toggle_chat).props('round').classes('w-16 h-16 shadow-elevated bg-white border-4 border-primary hover:scale-110 transition-transform p-0 overflow-hidden'):
-            ui.image('/static/common/chatbot-avatar.png').classes('w-full h-full object-cover')
-            # Chấm xanh online
-            with ui.element('div').classes('absolute top-1 right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white'):
-                pass
+        with ui.button(on_click=toggle_chat).props('round unelevated').classes(
+            'w-18 h-18 shadow-2xl bg-white border-4 border-primary hover:rotate-6 transition-all duration-500 p-0 overflow-hidden pointer-events-auto relative group'
+        ):
+            ui.image('/static/common/chatbot-avatar.png').classes('w-full h-full object-cover transition-transform group-hover:scale-110')
+            # Pulse Effect
+            ui.element('div').classes('absolute inset-0 border-4 border-primary/30 rounded-full animate-ping')
+            # Chat Icon Overlay
+            with ui.element('div').classes('absolute bottom-0 right-0 bg-primary p-1.5 rounded-tl-xl shadow-lg'):
+                ui.icon('chat', size='16px', color='white')
 
 
 def costume_block(title, desc, image_url, items=None, reverse=False):
@@ -195,13 +258,13 @@ def costume_block(title, desc, image_url, items=None, reverse=False):
                 img.on('error', lambda: img.set_source('https://images.unsplash.com/photo-1599908608021-b5d929aa054e?auto=format&fit=crop&q=80&w=800'))
                 ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-60')
                 with ui.element('div').classes('absolute bottom-4 left-4 bg-primary/90 text-white px-3 py-1 rounded-full backdrop-blur-sm z-20'):
-                    ui.label('TRUYỀN THỐNG').classes('text-[10px] font-black tracking-widest')
+                    ui.label(t('costume_tradition')).classes('text-[10px] font-black tracking-widest')
 
             with ui.column().classes('md:w-7/12 p-8 md:p-12 justify-center gap-6 z-10'):
                 with ui.column().classes('gap-2'):
                     with ui.row().classes('items-center gap-2 mb-2'):
                         ui.element('div').classes('h-px w-6 bg-primary/40')
-                        ui.label('DI SẢN KINH BẮC').classes('text-[10px] font-bold tracking-[0.3em] text-primary/70 uppercase')
+                        ui.label(t('heritage_kinh_bac')).classes('text-[10px] font-bold tracking-[0.3em] text-primary/70 uppercase')
                     ui.label(title).classes('font-display text-4xl font-black text-foreground leading-tight')
                 
                 ui.label(desc).classes('text-base text-muted-foreground leading-relaxed font-light')
@@ -210,7 +273,7 @@ def costume_block(title, desc, image_url, items=None, reverse=False):
                     with ui.column().classes('w-full mt-2'):
                         with ui.row().classes('items-center gap-2 mb-4'):
                             ui.icon('auto_awesome', size='14px').classes('text-primary/60')
-                            ui.label('Đặc trưng nghệ thuật:').classes('text-[10px] font-bold text-primary/70 uppercase tracking-widest')
+                            ui.label(t('artistic_features')).classes('text-[10px] font-bold text-primary/70 uppercase tracking-widest')
                         with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 gap-3 w-full'):
                             for item in items:
                                 with ui.card().classes('p-3 bg-white/50 border border-border/40 rounded-xl shadow-sm hover:border-primary/30 transition-all'):
@@ -249,8 +312,8 @@ def _timeline_card(year: str, text: str):
                     ui.label(bottom_text).classes(f'{bottom_size} font-black text-white leading-none tracking-tighter mt-1 whitespace-nowrap overflow-hidden')
                     ui.element('div').classes('absolute inset-1.5 border border-white/20')
                 with ui.column().classes('gap-0'):
-                    ui.label('KỶ NGUYÊN').classes('text-[8px] font-black tracking-[0.4em] text-primary/50 uppercase')
-                    ui.label('KINH BẮC').classes('text-[10px] font-bold text-primary/70 tracking-widest')
+                    ui.label(t('era_label')).classes('text-[8px] font-black tracking-[0.4em] text-primary/50 uppercase')
+                    ui.label(t('era_kinh_bac')).classes('text-[10px] font-bold text-primary/70 tracking-widest')
             ui.label(year).classes(
                 'font-display text-3xl font-bold text-foreground mb-1 '
                 'group-hover/card:text-primary transition-colors italic'
@@ -341,4 +404,4 @@ def unesco_quote(text: str, subtitle: str = None):
             ui.label('"').classes('absolute bottom-0 right-0 text-7xl text-primary/10 font-serif leading-none')
         with ui.row().classes('mt-4 items-center gap-3 opacity-70'):
             ui.element('div').classes('h-px w-10 bg-primary/30')
-            ui.label('Nguồn: UNESCO, 2009').classes('text-xs font-semibold tracking-wider text-primary')
+            ui.label(t('source_unesco')).classes('text-xs font-semibold tracking-wider text-primary')

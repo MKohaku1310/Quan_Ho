@@ -1,59 +1,75 @@
-# Quan Ho Bac Ninh - He Thong Quan Ly Va Gioi Thieu Di San Van Hoa
+# 🌸 Hệ thống Thông tin Quan Họ Bắc Ninh 🌸
 
-Day la du an tam huyet nham so hoa va bao ton nhung gia tri van hoa phi vat the cua Dan ca Quan ho Bac Ninh. Ung dung khong chi la mot trang thong tin ma con la mot cong cu quan ly du lieu chuyen nghiep va tuong tac thong minh voi cong nghe AI.
+![Quan Ho Heritage](https://images.unsplash.com/photo-1599908608021-b5d929aa054e?auto=format&fit=crop&q=80&w=1200)
 
-## Muc Tieu Du An
-- Luu tru va phat huy gia tri cua 49 lang Quan ho goc.
-- Cung cap thu vien am nhac truc tuyen voi loi bai hat va video chat luong.
-- Tao moi truong giao luu giua nguoi ham mo va cac nghe nhan thong qua he thong binh luan.
-- Ho tro tra cuu thong tin nhanh chong bang tri tue nhan tao.
+Chào mừng bạn đến với hệ thống bảo tồn và giới thiệu **Dân ca Quan họ Bắc Ninh** — Di sản Văn hóa Phi vật thể đại diện của Nhân loại (UNESCO 2009). Đây là một nền tảng hiện đại được thiết kế với phong cách **"Studio Aesthetic"**, kết hợp giữa nét truyền thống Kinh Bắc và trải nghiệm người dùng cao cấp.
 
-## Cac Phan He Chinh
+---
 
-### 1. Giao Dien Nguoi Dung (Frontend)
-- Trang Chu: Hien thi tin tuc moi nhat va cac thong so thong ke noi bat.
-- Thu Vien Bai Hat: Cho phep nghe, xem loi va binh luan ve cac lan dieu.
-- Nghe Nhan: Danh sach chi tiet ve cac 'cay da cay de' trong lang Quan ho.
-- Lang Quan Ho: Ban do tuong tac su dung Leaflet JS de dinh vi cac lang quan ho kieu mau.
-- Chatbot: Tro ly AI duoc huan luyen de tra loi cac cau hoi chuyen sau ve van hoa Kinh Bac.
+## 🌟 Tính năng nổi bật
 
-### 2. Quan Tri He Thong (Admin Dashboard)
-- Quan ly noi dung: Them, sua, xoa bai hat, nghe nhan va tin tuc.
-- Quan ly nguoi dung: Kiem soat quyen han va thong tin thanh vien.
-- He thong xac thuc: Dang nhap, dang ky bao mat de bao ve du lieu quan tri.
+- **Trải nghiệm Premium:** Giao diện Glassmorphism mượt mà, đậm chất văn hóa.
+- **Thư viện Làn điệu:** Tra cứu hàng trăm bài hát Quan họ cổ và mới.
+- **Danh nhân & Địa danh:** Khám phá 49 làng Quan họ gốc và các nghệ nhân tiêu biểu.
+- **Trợ lý Ảo (Chatbot):** Tương tác cùng "Liền Anh/Liền Chị" ảo để tìm hiểu về di sản.
+- **Hệ thống Quản trị:** Quản lý nội dung, sự kiện và tài khoản dễ dàng.
 
-### 3. He Thong Backend (API Server)
-- Xay dung tren FastAPI dam bao toc do xu ly nhanh va tai lieu API tu dong.
-- Co so du lieu SQLite on dinh, de dang trien khai va sao luu.
+---
 
-## Danh Muc Thu Muc
-- /frontend: Chua toan bo ma nguon giao dien NiceGUI.
-- /backend: Chua logic xu ly, ket noi database va API.
-- /static: Luu tru hinh anh, css va cac file tinh cua du an.
+## 🛠️ Hướng dẫn cài đặt & Khởi chạy (100% Chạy được)
 
-## Huong Dan Cai Dat Chi Tiet
+Dự án này được thiết kế để có thể chạy ngay lập tức sau khi tải về. Hãy làm theo các bước sau:
 
-### Buoc 1: Chuan bi moi truong
-Yeu cau may tinh da cai san Python 3.10 tro len.
+### 1. Yêu cầu hệ thống
+- **Python 3.10+** (Khuyến nghị 3.11)
+- Windows OS (Để chạy file `.bat`)
+
+### 2. Thiết lập môi trường
+Mở terminal (CMD/PowerShell) tại thư mục gốc và chạy:
 ```bash
-python --version
-```
-
-### Buoc 2: Khoi tao moi truong ao va cai dat thu vien
-```bash
+# Tạo môi trường ảo
 python -m venv venv
+
+# Kích hoạt và cài đặt thư viện
 call venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Buoc 3: Chay ung dung
-Su dung file kich ban da duoc toi uu:
-- Chay file: run.bat
+### 3. Cấu hình AI (Tùy chọn cho Chatbot)
+Sao chép file `.env.example` trong thư mục `backend` thành `.env` và điền **GEMINI_API_KEY** của bạn để kích hoạt Chatbot AI.
 
-## Luu Y Khi Su Dung
-- Mac dinh Frontend chay tai cong 8080.
-- Mac dinh Backend chay tai cong 8000.
-- De dang nhap quyen Admin, vui long lien he voi nguoi quan ly de cap tai khoan xac thuc.
+### 4. Khởi chạy hệ thống
+Bạn chỉ cần nhấp đúp vào file:
+👉 **`run.bat`**
+
+Hệ thống sẽ tự động khởi động cả Backend (FastAPI) và Frontend (NiceGUI).
+- **Trang chủ:** `http://localhost:8080`
+- **API Docs:** `http://localhost:8000/docs`
 
 ---
-Du an duoc thuc hien boi nhom phat trien Quan Ho Team voi hy vong mang den mot cach tiep can moi cho di san van hoa dan toc.
+
+## 📂 Cấu trúc thư mục
+
+```text
+Quan_Ho/
+├── backend/            # API Server (FastAPI + SQLAlchemy)
+│   ├── app/            # Logic xử lý chính
+│   └── quan_ho.db      # Cơ sở dữ liệu đã pre-seeded
+├── frontend/           # Giao diện người dùng (NiceGUI)
+│   ├── components/     # Các thành phần giao diện Studio
+│   └── pages/          # Các trang nội dung
+├── run.bat             # File khởi chạy nhanh
+└── requirements.txt    # Danh sách thư viện
+```
+
+---
+
+## 👤 Tài khoản thử nghiệm (Admin)
+- **Email:** `admin@example.com`
+- **Mật khẩu:** `admin123`
+
+---
+
+## 📝 Giấy phép & Bản quyền
+Dự án được phát triển nhằm mục đích giáo dục và bảo tồn văn hóa. 
+**© 2024 Quan Họ Bắc Ninh Heritage.**

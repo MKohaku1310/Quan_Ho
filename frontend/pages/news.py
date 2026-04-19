@@ -4,7 +4,7 @@ import components
 from api import api_client
 import asyncio
 from datetime import datetime
-from translation import t
+from translation import t, tc
 
 def _show_registration_dialog(event_item, button_ref):
     event_id = event_item.get('id')
@@ -25,25 +25,27 @@ def _show_registration_dialog(event_item, button_ref):
         user_name = app.storage.user.get('user_name', '')
         email_val = app.storage.user.get('email', '')
 
-        with ui.dialog() as dialog, ui.card().classes('p-6 sm:p-8 w-[450px] max-w-[95vw] rounded-2xl shadow-elevated border border-border bg-card'):
-            with ui.row().classes('items-center gap-3 mb-6 w-full'):
-                with ui.element('div').classes('flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary'):
-                    ui.icon('how_to_reg', size='1.5rem')
-                with ui.column().classes('gap-0 flex-1 min-w-0'):
-                    ui.label(t('register_event')).classes('text-sm text-muted-foreground font-medium')
-                    ui.label(title).classes('text-lg font-bold font-display text-foreground line-clamp-1')
+        with ui.dialog() as dialog, ui.card().classes('p-0 w-[500px] max-w-[95vw] rounded-3xl overflow-hidden glass-card shadow-elevated border-none'):
+            # Decorative Header with Pattern
+            with ui.element('div').classes('w-full h-32 bg-hero-gradient relative overflow-hidden flex items-center px-8'):
+                with ui.element('div').classes('absolute -right-4 -top-4 opacity-10'):
+                    ui.icon('lotus', size='10rem', color='white')
+                with ui.column().classes('gap-0 z-10'):
+                    ui.label(t('register_event')).classes('text-white/70 text-sm font-bold uppercase tracking-widest')
+                    ui.label(title).classes('text-white text-2xl font-bold font-display line-clamp-1 mt-1')
             
-            with ui.column().classes('w-full gap-4'):
-                name_input = ui.input(t('name_required')).classes('w-full').props('outlined dense')
-                name_input.value = user_name
+            with ui.column().classes('w-full p-8 gap-6 bg-white/40'):
+                with ui.column().classes('w-full gap-4'):
+                    name_input = ui.input(t('name_required')).classes('w-full modern-input').props('outlined rounded-2xl')
+                    name_input.value = user_name
+                    
+                    email_input = ui.input(t('email_field')).classes('w-full modern-input').props('outlined rounded-2xl')
+                    email_input.value = email_val
+                    
+                    phone_input = ui.input(t('phone_required')).classes('w-full modern-input').props('outlined rounded-2xl')
+                    note_input = ui.textarea(t('note_field')).classes('w-full modern-input').props('outlined rounded-2xl auto-grow')
                 
-                email_input = ui.input(t('email_field')).classes('w-full').props('outlined dense')
-                email_input.value = email_val
-                
-                phone_input = ui.input(t('phone_required')).classes('w-full').props('outlined dense')
-                note_input = ui.textarea(t('note_field')).classes('w-full').props('outlined auto-grow')
-                
-                status_label = ui.label("").classes("text-negative text-sm font-medium hidden bg-negative/10 px-3 py-2 rounded-lg w-full text-center")
+                status_label = ui.label("").classes("text-negative text-sm font-medium hidden bg-negative/5 px-4 py-3 rounded-xl w-full text-center border border-negative/10")
                 
                 async def submit():
                     if not phone_input.value or not name_input.value:
@@ -70,9 +72,9 @@ def _show_registration_dialog(event_item, button_ref):
                         status_label.text = t('register_failed')
                         status_label.classes(remove='hidden')
 
-                with ui.row().classes('w-full justify-end gap-3 mt-2'):
-                    ui.button(t('cancel'), on_click=dialog.close).props('flat color="grey"').classes('px-4 rounded-lg font-medium')
-                    sub_btn = ui.button(t('confirm_register'), on_click=submit).props('color="primary" unelevated').classes('px-6 rounded-lg font-bold shadow-sm')
+                with ui.row().classes('w-full justify-between items-center mt-4'):
+                    ui.button(t('cancel'), on_click=dialog.close).props('flat color="grey"').classes('px-6 rounded-xl font-bold lowercase')
+                    sub_btn = ui.button(t('confirm_register'), on_click=submit).props('color="primary" unelevated').classes('px-10 py-3 rounded-2xl font-bold elevated-btn shadow-lg')
         dialog.open()
 
 @ui.page('/tin-tuc', response_timeout=60.0)
@@ -82,123 +84,111 @@ async def news_page():
         
         # Shared state
         class NewsState:
-            def __init__(self, news, events):
-                self.all_news = news
-                self.all_events = events
-                self.filtered_news = news
-                self.filtered_events = events
-                
+            def __init__(self):
                 self.search_query = ''
-                self.month_filter = 'Tất cả'
-                self.year_filter = 'Tất cả'
+                self.month_filter = t('all_categories')
+                self.year_filter = t('all_categories')
                 
                 self.news_page = 1
                 self.events_page = 1
                 self.items_per_page = 8
 
-        # Fetch data
-        news_data = await api_client.get_articles(article_type='tin-tuc')
-        event_data = await api_client.get_events()
+                self.news_count = 0
+                self.news_items = []
+                self.events_count = 0
+                self.events_items = []
 
-        state = NewsState(news_data, event_data)
-
-        def apply_filters():
-            q = state.search_query.lower()
-            m = state.month_filter
-            y = state.year_filter
-            
-            def match(item, date_key):
-                date_val = item.get(date_key, '')
-                if not date_val: return False
-                try:
-                    dt = datetime.fromisoformat(date_val.replace('Z', '+00:00'))
-                    match_m = (m == 'Tất cả' or dt.month == int(m))
-                    match_y = (y == 'Tất cả' or dt.year == int(y))
-                    return match_m and match_y
-                except: return True # Fallback for malformed
-            
-            state.filtered_news = [
-                n for n in state.all_news 
-                if (q in n.get('title','').lower() or q in n.get('excerpt','').lower()) and match(n, 'created_at')
-            ]
-            state.filtered_events = [
-                e for e in state.all_events 
-                if (q in e.get('title','').lower() or q in e.get('description','').lower()) and match(e, 'start_date')
-            ]
-            
-            state.news_page = 1
-            state.events_page = 1
-            content_area.refresh()
+        state = NewsState()
 
         @ui.refreshable
-        def content_area():
+        async def content_area():
+            # Load News
+            state.news_count = await api_client.get_articles_count(article_type='tin-tuc')
+            news_skip = (state.news_page - 1) * state.items_per_page
+            state.news_items = await api_client.get_articles(article_type='tin-tuc', skip=news_skip, limit=state.items_per_page)
+
+            # Load Events
+            state.events_count = await api_client.get_events_count()
+            events_skip = (state.events_page - 1) * state.items_per_page
+            state.events_items = await api_client.get_events(skip=events_skip, limit=state.items_per_page)
+
             with ui.tabs().classes('w-full border-b border-border bg-card/30 rounded-t-2xl shadow-sm') as tabs:
                 news_tab = ui.tab(t('news_tab'), icon='article').classes('font-bold px-4 sm:px-8 py-4')
                 event_tab = ui.tab(t('events_tab'), icon='event').classes('font-bold px-4 sm:px-8 py-4')
 
             with ui.tab_panels(tabs, value=news_tab).classes('w-full bg-transparent p-0 mt-8'):
                 with ui.tab_panel(news_tab).classes('p-0 w-full'):
-                    # News Grid
-                    start = (state.news_page - 1) * state.items_per_page
-                    end = start + state.items_per_page
-                    page_items = state.filtered_news[start:end]
-                    
-                    if not page_items:
-                        components.empty_state('Không tìm thấy tin tức nào.')
+                    if not state.news_items:
+                        components.empty_state(t('no_news'))
                     else:
                         with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full'):
-                            for item in page_items:
+                            for item in state.news_items:
                                 components.news_grid_card(item)
                         
-                        # Pagination UI
-                        total_pages = (len(state.filtered_news) + state.items_per_page - 1) // state.items_per_page
-                        if total_pages > 1:
-                            with ui.row().classes('w-full justify-center mt-12 gap-2'):
-                                ui.button(icon='chevron_left', on_click=lambda: (setattr(state, 'news_page', max(1, state.news_page-1)), content_area.refresh())).props('flat round dense').classes('text-primary')
-                                for p in range(1, total_pages + 1):
-                                    ui.button(str(p), on_click=lambda p=p: (setattr(state, 'news_page', p), content_area.refresh())).props(f'flat round dense {"color=primary shadow-md bg-primary/10" if p == state.news_page else "color=grey"}').classes('font-bold text-sm')
-                                ui.button(icon='chevron_right', on_click=lambda: (setattr(state, 'news_page', min(total_pages, state.news_page+1)), content_area.refresh())).props('flat round dense').classes('text-primary')
+                        # Pagination UI for News
+                        class NewsPageState:
+                            def __init__(self, page, ipp):
+                                self.page = page
+                                self.items_per_page = ipp
+                            def __setattr__(self, name, value):
+                                super().__setattr__(name, value)
+                                if name == 'page': setattr(state, 'news_page', value)
+                        
+                        news_pagination_state = NewsPageState(state.news_page, state.items_per_page)
+                        components.pagination_controls(news_pagination_state, state.news_count, content_area)
 
                 with ui.tab_panel(event_tab).classes('p-0 w-full'):
-                    # Events Grid
-                    start = (state.events_page - 1) * state.items_per_page
-                    end = start + state.items_per_page
-                    page_items = state.filtered_events[start:end]
-                    
-                    if not page_items:
-                        components.empty_state('Không tìm thấy sự kiện nào.')
+                    if not state.events_items:
+                        components.empty_state(t('no_news'))
                     else:
                         with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full'):
-                            for item in page_items:
+                            for item in state.events_items:
                                 components.event_grid_card(item, on_register=_show_registration_dialog)
                         
-                        total_pages = (len(state.filtered_events) + state.items_per_page - 1) // state.items_per_page
-                        if total_pages > 1:
-                            with ui.row().classes('w-full justify-center mt-12 gap-2'):
-                                ui.button(icon='chevron_left', on_click=lambda: (setattr(state, 'events_page', max(1, state.events_page-1)), content_area.refresh())).props('flat round dense').classes('text-primary')
-                                for p in range(1, total_pages + 1):
-                                    ui.button(str(p), on_click=lambda p=p: (setattr(state, 'events_page', p), content_area.refresh())).props(f'flat round dense {"color=primary shadow-md bg-primary/10" if p == state.events_page else "color=grey"}').classes('font-bold text-sm')
-                                ui.button(icon='chevron_right', on_click=lambda: (setattr(state, 'events_page', min(total_pages, state.events_page+1)), content_area.refresh())).props('flat round dense').classes('text-primary')
+                        # Pagination UI for Events
+                        class EventPageState:
+                            def __init__(self, page, ipp):
+                                self.page = page
+                                self.items_per_page = ipp
+                            def __setattr__(self, name, value):
+                                super().__setattr__(name, value)
+                                if name == 'page': setattr(state, 'events_page', value)
+                        
+                        event_pagination_state = EventPageState(state.events_page, state.items_per_page)
+                        components.pagination_controls(event_pagination_state, state.events_count, content_area)
 
         with ui.element('section').classes('pt-6 pb-16 bg-background min-h-screen'):
             with theme.container():
-                # Modern Filter Bar (Single Row)
-                with ui.element('div').classes('modern-search-card mb-6 w-full p-2 sm:p-3 rounded-xl flex items-center gap-2 sm:gap-4'):
-                    search = ui.input(placeholder='Tìm kiếm bài viết, sự kiện...').classes('modern-input flex-1 bg-background rounded-lg').props('outlined dense clearable debounce=500 icon=search')
-                    search.on('update:model-value', lambda e: (setattr(state, 'search_query', e or ''), apply_filters()))
+                # Modern Filter Bar (Flexible layout)
+                with ui.element('div').classes('modern-search-card mb-6 w-full p-3 rounded-xl flex flex-col sm:flex-row items-center gap-3 relative z-50'):
+                    search = ui.input(
+                        placeholder=t('chatbot_placeholder'),
+                        on_change=lambda e: (setattr(state, 'search_query', e.value or ''), setattr(state, 'news_page', 1), setattr(state, 'events_page', 1), content_area.refresh())
+                    ).classes('modern-input flex-1 w-full bg-background rounded-lg').props('outlined dense clearable debounce=500 icon=search')
                     
-                    months = ['Tất cả'] + [str(i) for i in range(1, 13)]
-                    month_sel = ui.select(months, value='Tất cả').classes('modern-select w-20 sm:w-28 bg-background').props('outlined dense rounded-lg options-dense prefix="Tháng:"')
-                    month_sel.on('update:model-value', lambda e: (setattr(state, 'month_filter', e or 'Tất cả'), apply_filters()))
-                    
-                    years = ['Tất cả', '2024', '2025', '2026']
-                    year_sel = ui.select(years, value='Tất cả').classes('modern-select w-20 sm:w-28 bg-background').props('outlined dense rounded-lg options-dense prefix="Năm:"')
-                    year_sel.on('update:model-value', lambda e: (setattr(state, 'year_filter', e or 'Tất cả'), apply_filters()))
-                    
-                    if app.storage.user.get('role') == 'admin':
-                        ui.button(icon='add_circle', on_click=lambda: ui.navigate.to('/admin/edit/news/0')).props('unelevated round size=md').classes('bg-primary text-white shadow-md hover:scale-110 transition-transform shrink-0')
+                    with ui.row().classes('flex-1 w-full sm:w-auto items-center justify-between sm:justify-end gap-3'):
+                        months = [t('all_categories')] + [str(i) for i in range(1, 13)]
+                        month_sel = ui.select(
+                            months, 
+                            value=t('all_categories'),
+                            label=t('news_tab'),
+                            on_change=lambda e: (setattr(state, 'month_filter', e.value or t('all_categories')), setattr(state, 'news_page', 1), setattr(state, 'events_page', 1), content_area.refresh())
+                        ).classes('modern-select w-28 sm:w-36 bg-background').props('outlined dense rounded-lg options-dense')
+                        
+                        years = [t('all_categories'), '2024', '2025', '2026']
+                        year_sel = ui.select(
+                            years, 
+                            value=t('all_categories'),
+                            label='Năm',
+                            on_change=lambda e: (setattr(state, 'year_filter', e.value or t('all_categories')), setattr(state, 'news_page', 1), setattr(state, 'events_page', 1), content_area.refresh())
+                        ).classes('modern-select w-28 sm:w-36 bg-background').props('outlined dense rounded-lg options-dense')
+                        
+                        if app.storage.user.get('role') == 'admin':
+                            with ui.row().classes('gap-2 shrink-0'):
+                                ui.button(icon='add_circle', on_click=lambda: ui.navigate.to('/admin/edit/news/0')).props('unelevated round size=md').classes('bg-primary text-white shadow-md hover:scale-110 transition-transform cursor-pointer pointer-events-auto')
+                                ui.button(icon='event', on_click=lambda: ui.navigate.to('/admin/edit/event/0')).props('unelevated round size=md color=secondary').classes('shadow-md hover:scale-110 transition-transform cursor-pointer pointer-events-auto')
 
-                content_area()
+                await content_area()
 
 @ui.page('/tin-tuc/{id}')
 async def article_detail_page(id: int):
@@ -227,106 +217,161 @@ async def event_detail_page(id: int):
         await _render_detail_view(event_data, is_event=True, related_news=related)
 
 async def _render_detail_view(data, is_event=False, related_news=None):
-    with ui.element('section').classes('w-full bg-background pb-20'):
-        # Hero Image Header
-        with ui.element('div').classes('relative h-[400px] md:h-[500px] w-full mb-12'):
-            ui.image(data.get('image_url') or 'https://images.unsplash.com/photo-1526462981764-f6cf0f4ea260').classes('w-full h-full object-cover')
-            with ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-background to-transparent'):
-                with theme.container().classes('h-full flex flex-col justify-end pb-12'):
-                    ui.label(data.get('category' if not is_event else 'location', 'Văn hóa' if not is_event else 'Sự kiện')).classes('bg-primary text-white text-xs font-bold px-3 py-1 rounded-full w-fit mb-4 uppercase tracking-widest')
-                    ui.label(data.get('title')).classes('font-display text-4xl md:text-5xl font-bold text-foreground mb-4 drop-shadow-sm')
-                    with ui.row().classes('items-center gap-4 text-muted-foreground'):
-                        with ui.row().classes('items-center gap-1'):
-                            ui.icon('schedule', size='18px')
-                            date_val = data.get('created_at' if not is_event else 'start_date', '')
-                            ui.label(date_val[:10] if date_val else '--/--/----')
-                        ui.label('|')
-                        ui.label(f'Loại: {"Sự kiện" if is_event else "Tin tức"}')
+    if not data:
+        components.empty_state(t('updating'))
+        return
 
-        with theme.container().classes('grid grid-cols-1 lg:grid-cols-3 gap-12'):
-            # Main Content
-            with ui.column().classes('lg:col-span-2 gap-8'):
-                if is_event:
-                    with ui.card().classes('w-full p-6 bg-primary/5 border border-primary/20 rounded-2xl mb-6 shadow-sm'):
+    with ui.element('section').classes('relative w-full bg-background bg-paper-texture pb-24 overflow-hidden'):
+        # Cultural decoration
+        ui.image('/static/common/lotus-pattern.png').classes('absolute -right-20 -top-20 w-80 opacity-5 pointer-events-none rotate-12')
+        ui.image('/static/common/lotus-pattern.png').classes('absolute -left-20 bottom-20 w-64 opacity-5 pointer-events-none -rotate-12')
+
+        # Elegant Header with Masking
+        with ui.element('div').classes('relative w-full h-[450px] md:h-[550px] mb-[-100px] z-0 overflow-hidden'):
+            with ui.image(data.get('image_url') or 'https://images.unsplash.com/photo-1526462981764-f6cf0f4ea260').classes('w-full h-full object-cover transition-transform duration-1000 hover:scale-105'):
+                with ui.element('div').classes('absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-background/90'):
+                    with theme.container().classes('h-full flex flex-col justify-center pt-20'):
+                        # Breadcrumbs
+                        with ui.row().classes('items-center gap-2 mb-6 text-xs font-black tracking-widest uppercase text-white/80'):
+                            ui.link(t('nav_home'), '/').classes('hover:text-primary transition-colors no-underline text-white')
+                            ui.label('/')
+                            ui.link(t('news_title'), '/tin-tuc').classes('hover:text-primary transition-colors no-underline text-white')
+                            ui.label('/')
+                            ui.label(t('event_label') if is_event else t('news_label')).classes('text-white')
+
+                        ui.label(tc(data, 'title')).classes('font-display text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 drop-shadow-2xl max-w-4xl tracking-tight')
+                        
+                        with ui.row().classes('items-center gap-6 text-white/90'):
+                            with ui.row().classes('items-center gap-2'):
+                                ui.icon('schedule', size='20px').classes('text-white/60')
+                                date_val = data.get('created_at' if not is_event else 'start_date', '')
+                                ui.label(date_val[:10] if date_val else '--/--/----').classes('text-lg font-bold')
+                            ui.element('div').classes('h-4 w-[1px] bg-white/30')
+                            ui.label(tc(data, 'category') or (t('event_label') if is_event else t('news_label'))).classes('text-sm font-black uppercase tracking-wider')
+
+        with theme.container().classes('relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12'):
+            # Main Content Column
+            with ui.column().classes('lg:col-span-8 gap-8'):
+                with ui.card().classes('w-full p-8 md:p-14 rounded-[32px] border border-border bg-white shadow-elevated').style('box-shadow: 0 20px 50px -10px rgba(0,0,0,0.05)'):
+                    if is_event:
+                        with ui.element('div').classes('flex flex-wrap items-center gap-6 p-6 bg-primary/5 rounded-2xl mb-10 border border-primary/10'):
+                            with ui.row().classes('items-center gap-3'):
+                                ui.icon('place', color='primary', size='24px')
+                                with ui.column().classes('gap-0'):
+                                    ui.label(t('village_location_title')).classes('text-[10px] text-primary font-black uppercase tracking-tight')
+                                    ui.label(tc(data, 'location') or t('hero_bac_ninh')).classes('text-base font-bold')
+                            
+                            with ui.row().classes('items-center gap-3'):
+                                ui.icon('how_to_reg', color='primary', size='24px')
+                                with ui.column().classes('gap-0'):
+                                    ui.label(t('status_label')).classes('text-[10px] text-primary font-black uppercase tracking-tight')
+                                    ui.label(t('status_upcoming')).classes('text-base font-bold')
+
+                    # Article Content
+                    ui.label(tc(data, 'content') or tc(data, 'description') or t('updating')).classes('text-xl leading-[2.2] text-foreground/90 text-justify whitespace-pre-line font-medium')
+                    
+                    if is_event:
+                        with ui.row().classes('w-full justify-center mt-16 pt-8 border-t border-border/40'):
+                            btn = ui.button(t('register_event')).props('color="primary" unelevated size="lg" icon="how_to_reg"').classes('px-12 py-4 rounded-2xl font-black shadow-xl shadow-primary/20 hover:scale-105 transition-transform uppercase tracking-widest')
+                            btn.on('click', lambda: _show_registration_dialog(data, btn))
+                    
+                    # Social Interaction Row
+                    with ui.row().classes('w-full items-center justify-between py-10 border-t border-border/40 mt-16'):
                         with ui.row().classes('items-center gap-4'):
-                            ui.icon('place', color='primary', size='2rem')
-                            with ui.column().classes('gap-0'):
-                                ui.label('Địa điểm tổ chức').classes('text-xs text-primary font-bold uppercase tracking-wider')
-                                ui.label(data.get('location', 'Bắc Ninh')).classes('text-lg font-bold')
-                
-                content_html = data.get('content') or data.get('description', 'Chưa có thông tin chi tiết.')
-                ui.html(content_html).classes('text-lg leading-relaxed text-foreground/90 text-justify w-full')
-                
-                if is_event:
-                    with ui.row().classes('w-full justify-center mt-12'):
-                        btn = ui.button('Đăng ký tham gia ngay').props('color="primary" unelevated size="lg" icon="how_to_reg"').classes('px-10 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform')
-                        btn.on('click', lambda: _show_registration_dialog(data, btn))
+                            ui.label(f"{t('footer_connect')}:").classes('font-black text-xs uppercase text-muted-foreground tracking-widest')
+                            ui.button(icon='facebook').props('flat round color="primary"').classes('bg-primary/5')
+                            ui.button(icon='share').props('flat round color="primary"').classes('bg-primary/5')
+                        
+                        ui.button(t('back_to_library'), on_click=lambda: ui.navigate.to('/tin-tuc')).props('flat icon="arrow_back"').classes('font-black text-xs uppercase tracking-widest text-primary')
 
-                # Share buttons
-                with ui.row().classes('w-full items-center gap-4 py-8 border-y border-border mt-12'):
-                    ui.label('Chia sẻ:').classes('font-bold text-sm uppercase text-muted-foreground')
-                    ui.button(icon='facebook').props('flat round color="primary"')
-                    ui.button(icon='share').props('flat round color="primary"')
-
-                # Comment Section
-                with ui.column().classes('w-full mt-16 gap-6'):
-                    ui.label('Bình luận cộng đồng').classes('text-2xl font-bold font-display border-l-4 border-primary pl-4')
+                # Comment Section (Studio Integrated)
+                with ui.column().classes('w-full mt-8 gap-8'):
+                    ui.label(t('comments_title')).classes('text-3xl font-display font-black border-l-8 border-primary pl-6 py-2 tracking-tight')
                     
                     @ui.refreshable
                     async def render_news_comments():
                         comments = await api_client.get_comments(article_id=data['id'])
                         if not comments:
-                            ui.label('Chưa có thảo luận nào cho bài viết này. Hãy là người đầu tiên!').classes('text-muted-foreground italic py-4')
+                            with ui.card().classes('w-full p-12 flex flex-col items-center justify-center border border-dashed border-border bg-card/40 opacity-60'):
+                                ui.icon('chat_bubble_outline', size='3rem').classes('text-muted-foreground/30 mb-4')
+                                ui.label(t('no_comments')).classes('text-sm italic font-medium')
                         else:
-                            with ui.column().classes('gap-6 w-full'):
+                            with ui.column().classes('gap-8 w-full'):
                                 for c in comments:
-                                    with ui.row().classes('gap-4 items-start w-full'):
-                                        ui.avatar(icon='account_circle', color='muted').classes('shrink-0 shadow-sm')
-                                        with ui.column().classes('flex-1 gap-1'):
-                                            with ui.row().classes('items-baseline gap-2'):
-                                                ui.label(c.get('user', {}).get('name', 'Thành viên')).classes('font-bold text-sm text-foreground')
-                                                ui.label(c.get('created_at', '')[:10]).classes('text-[10px] text-muted-foreground font-black')
-                                            ui.label(c.get('content')).classes('text-sm text-foreground bg-card p-4 rounded-2xl border border-border/50 shadow-sm')
+                                    with ui.row().classes('gap-6 items-start w-full group'):
+                                        with ui.column().classes('shrink-0'):
+                                            ui.avatar(icon='account_circle', color='muted-foreground').classes('shadow-lg border-2 border-white size-12')
+                                        
+                                        with ui.column().classes('flex-1 gap-2'):
+                                            with ui.row().classes('items-center justify-between w-full'):
+                                                with ui.row().classes('items-center gap-3'):
+                                                    ui.label((c.get('user') or {}).get('name', t('anonymous'))).classes('font-bold text-base text-foreground')
+                                                    ui.label(c.get('created_at', '')[:10]).classes('text-[10px] text-muted-foreground font-black tracking-widest uppercase')
+                                                
+                                                if app.storage.user.get('role') == 'admin':
+                                                    async def del_com(c_id=c['id']):
+                                                        if await api_client.delete_comment(c_id):
+                                                            ui.notify(t('deleted_comment'), type='positive')
+                                                            render_news_comments.refresh()
+                                                    ui.button(icon='delete', on_click=del_com).props('flat round dense size=sm color=negative').classes('opacity-0 group-hover:opacity-100 transition-opacity bg-negative/5')
+                                            
+                                            with ui.card().classes('w-full p-5 rounded-2xl rounded-tl-none border border-border/50 bg-white/80 backdrop-blur-sm shadow-sm'):
+                                                ui.label(c.get('content')).classes('text-base text-foreground/80 leading-relaxed')
                     
                     await render_news_comments()
 
                     if app.storage.user.get('is_authenticated'):
-                        with ui.element('div').classes('w-full mt-6 p-0 sm:p-2'):
-                            with ui.row().classes('w-full items-start gap-3 sm:gap-4 no-wrap'):
-                                # User Avatar
-                                ui.avatar(icon='account_circle', color='primary', text_color='white').classes('shadow-sm hover:scale-110 transition-transform cursor-pointer shrink-0')
-                                
-                                # Modern Input Card
-                                with ui.card().classes('flex-1 p-0 bg-white/40 backdrop-blur-md border border-border/50 rounded-2xl shadow-sm hover:shadow-md transition-all group'):
-                                    with ui.column().classes('w-full p-4 gap-2'):
-                                        comment_input = ui.textarea(placeholder='Viết cảm nghĩ của bạn về bài viết này...').classes('flex-1 w-full bg-transparent border-none text-base').props('borderless autogrow counter maxLength=500 dense')
-                                        
-                                        with ui.row().classes('w-full justify-end items-center mt-1'):
-                                            async def post_news_comment(e=None):
-                                                if not comment_input.value.strip(): return
-                                                res = await api_client.create_comment(content=comment_input.value, article_id=data['id'])
-                                                if res:
-                                                    comment_input.value = ''
-                                                    ui.notify('Đã gửi phản hồi! Đang cập nhật trang...', icon='check_circle', color='positive')
-                                                    await asyncio.sleep(1.0)
-                                                    ui.navigate.reload()
-                                            
-                                            ui.button('GỬI', icon='send', on_click=post_news_comment).props('unelevated rounded-lg').classes('bg-primary text-white font-bold px-6 py-2 shadow-sm hover:scale-105 transition-all')
+                        with ui.card().classes('w-full p-6 md:p-8 bg-white border border-border rounded-3xl shadow-sm mt-4'):
+                            with ui.row().classes('w-full items-start gap-4'):
+                                ui.avatar(icon='person', color='primary').classes('shadow-md size-12')
+                                with ui.column().classes('flex-1 gap-4'):
+                                    comment_input = ui.textarea(placeholder=t('comment_placeholder')).props('outlined rounded-2xl autogrow counter maxLength=500').classes('w-full modern-input bg-white/80 text-base')
+                                    async def post_news_comment():
+                                        if not comment_input.value.strip(): return
+                                        res = await api_client.create_comment(content=comment_input.value, article_id=data['id'])
+                                        if res:
+                                            comment_input.value = ''
+                                            ui.notify(t('comment_sent'), icon='check_circle', color='positive')
+                                            render_news_comments.refresh()
+                                    ui.button(t('post_comment'), icon='send', on_click=post_news_comment).props('unelevated rounded-xl size=lg').classes('bg-primary text-white font-black px-10 self-end shadow-lg shadow-primary/20')
                     else:
-                        with ui.card().classes('w-full p-6 border border-dashed border-border bg-muted/5 flex flex-col items-center gap-3 opacity-80 mt-4'):
-                            ui.label('Bạn cần đăng nhập để tham gia thảo luận.').classes('text-sm italic text-muted-foreground')
-                            ui.button('ĐĂNG NHẬP', on_click=lambda: ui.navigate.to('/dang-nhap')).props('flat rounded color=primary').classes('font-bold')
+                        with ui.card().classes('w-full p-10 border border-dashed border-border bg-card/30 flex flex-col items-center gap-4 text-center'):
+                            ui.label(t('comment_login_hint')).classes('text-base font-medium text-muted-foreground')
+                            ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('unelevated rounded-full color=primary').classes('px-10 font-bold')
 
-            # Sidebar
-            with ui.column().classes('gap-8'):
-                ui.label('Khám phá thêm').classes('text-2xl font-bold font-display border-l-4 border-primary pl-4 mb-2')
-                # Simple back button
-                ui.button('Quay lại danh sách', on_click=lambda: ui.navigate.to('/tin-tuc')).props('flat icon="arrow_back" color="primary"').classes('font-bold')
-                # Related content (Show real articles if possible, but for now fix the link logic)
-                related_news = related_news or []
-                for art in related_news:
-                    with ui.row().classes('gap-4 group cursor-pointer pb-4 border-b border-border/50').on('click', lambda a=art: ui.navigate.to(f'/tin-tuc/{a["id"]}')):
-                        ui.image(art.get('image_url') or 'https://picsum.photos/seed/quanho/100/100').classes('w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform')
-                        with ui.column().classes('gap-0 flex-1'):
-                            ui.label(art.get('title')).classes('text-sm font-bold group-hover:text-primary transition-colors line-clamp-1')
-                            ui.label('Xem chi tiết').classes('text-[10px] text-muted-foreground')
+            # Sidebar (Related / Meta)
+            with ui.column().classes('lg:col-span-4 gap-8'):
+                if is_event and app.storage.user.get('role') == 'admin':
+                    regs = await api_client.get_event_registrations(data.get('id'))
+                    with ui.card().classes('w-full p-6 bg-card border border-border rounded-[24px] shadow-sm'):
+                        ui.label(t('registration_list')).classes('text-lg font-black uppercase tracking-widest text-primary mb-6 border-b border-primary/10 pb-2')
+                        if not regs:
+                            ui.label(t('no_registrations')).classes('text-muted-foreground italic text-sm')
+                        else:
+                            with ui.column().classes('gap-4 w-full'):
+                                for r in regs:
+                                    with ui.row().classes('w-full justify-between items-center bg-white p-3 rounded-xl border border-border/30'):
+                                        ui.label(r.get('name') or (r.get('user') or {}).get('name', 'N/A')).classes('font-bold text-sm')
+                                        ui.label(r.get('phone') or 'N/A').classes('text-[10px] font-black opacity-60 bg-muted px-2 py-0.5 rounded')
+
+                # Sidebar Widget: Related News
+                with ui.card().classes('w-full p-8 border border-white/40 bg-white/40 backdrop-blur-xl rounded-[32px] sticky top-24'):
+                    ui.label(t('footer_explore')).classes('text-sm font-black uppercase tracking-[0.3em] text-primary mb-8 border-b-2 border-primary/20 pb-3')
+                    
+                    related_news = related_news or []
+                    if not related_news:
+                        ui.label(t('updating')).classes('text-xs italic text-muted-foreground')
+                    else:
+                        with ui.column().classes('gap-8 w-full'):
+                            for art in related_news:
+                                target = f'/su-kien/{art["id"]}' if is_event else f'/tin-tuc/{art["id"]}'
+                                with ui.row().classes('gap-4 group cursor-pointer items-center').on('click', lambda a=target: ui.navigate.to(a)):
+                                    with ui.element('div').classes('shrink-0 w-20 h-20 rounded-2xl overflow-hidden shadow-md'):
+                                        ui.image(art.get('image_url') or 'https://picsum.photos/seed/quanho/100/100').classes('w-full h-full object-cover transition-transform group-hover:scale-110 duration-500')
+                                    with ui.column().classes('gap-1 flex-1'):
+                                        ui.label(art.get('title')).classes('text-sm font-bold group-hover:text-primary transition-colors line-clamp-2 leading-tight')
+                                        ui.label(t('card_view_detail')).classes('text-[9px] font-black uppercase tracking-widest text-muted-foreground/60')
+
+                # Sidebar Decorative
+                with ui.element('div').classes('w-full p-8 flex justify-center opacity-30 mt-4'):
+                    ui.image('/static/common/lotus-pattern.png').classes('w-20')

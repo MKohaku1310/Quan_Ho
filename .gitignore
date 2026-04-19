@@ -33,20 +33,15 @@ ENV/
 virtualenv/
 
 # Database
-*.db
+# Removed *.db to allow pushing the pre-seeded database for easy setup
+# *.db
 *.sqlite3
 
-# Backend specific
-backend/.env
-backend/quan_ho.db
-
-# Frontend / Node
-node_modules/
-frontend/dist/
-frontend/node_modules/
-.eslintcache
-.stylelintcache
-*.log
+# AI & Cache
+brain/
+.gemini/
+.nicegui/
+scratch/
 
 # IDEs
 .vscode/
@@ -55,5 +50,17 @@ frontend/node_modules/
 *.swo
 .DS_Store
 Thumbs.db
-.nicegui/
-scratch/
+
+# Logs
+*.log
+
+# Backend specific
+backend/.env
+# backend/quan_ho.db (Included for 100% runnability)
+
+# Frontend / Node
+node_modules/
+frontend/dist/
+frontend/node_modules/
+.eslintcache
+.stylelintcache
