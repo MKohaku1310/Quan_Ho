@@ -1,35 +1,35 @@
-# He thong thong tin Quan Ho Bac Ninh
+# Hệ thống thông tin Quan Họ Bắc Ninh
 
-Day la du an quan ly va gioi thieu di san van hoa phi vat the Quan ho Bac Ninh. Ung dung duoc xay dung voi giao dien hien dai, ho tro tra cuu lan dieu, nghe nhan, lang nghe va chatbot ho tro.
+Đây là dự án quản lý và giới thiệu di sản văn hóa phi vật thể Quan họ Bắc Ninh. Ứng dụng được xây dựng với giao diện hiện đại, hỗ trợ tra cứu làn điệu, nghệ nhân, làng nghề và trợ lý ảo chatbot.
 
-## Cac thanh phan chinh
+## Các thành phần chính
 - Backend: FastAPI (Python)
 - Frontend: NiceGUI (Python)
-- Database: SQLite (Da co san du lieu)
+- Cơ sở dữ liệu: SQLite (Đã có sẵn dữ liệu đi kèm)
 
-## Huong dan cai dat va chay (Cho may moi)
+## Hướng dẫn cài đặt và khởi chạy (Dành cho máy mới)
 
-1. Yeu cau: May can cai san Python (phien ban 3.10 tro len).
+1. Yêu cầu: Máy tính cần cài đặt sẵn Python (phiên bản 3.10 trở lên).
 
-2. Cach chay nhanh nhat:
-   - Ban chi can click dup vao file `run.bat`.
-   - File nay se tu dong kiem tra, neu may ban chua co moi truong ao (venv), no se tu tao vao tu tai cac thu vien can thiet (mat khoang 1-2 phut cho lan dau).
+2. Cách chạy nhanh nhất:
+   - Bạn chỉ cần nhấp đúp chuột vào file `run.bat`.
+   - File này sẽ tự động kiểm tra, nếu máy bạn chưa có môi trường ảo (venv), nó sẽ tự động tạo và tải các thư viện cần thiết (mất khoảng 1-2 phút cho lần đầu tiên).
 
-3. Cach chay thu cong (Neu khong muon dung file .bat):
-   - Mo terminal tai thu muc du an.
-   - Tao venv: `python -m venv venv`
-   - Kich hoat venv: `venv\Scripts\activate`
-   - Cai thu vien: `pip install -r requirements.txt`
-   - Chay backend: `cd backend && python -m uvicorn app.main:app --port 8000`
-   - Chay frontend: `cd frontend && python main.py`
+3. Cách chạy thủ công (Nếu không muốn dùng file .bat):
+   - Mở cửa sổ lệnh (Terminal/CMD) tại thư mục dự án.
+   - Tạo môi trường ảo: `python -m venv venv`
+   - Kích hoạt môi trường: `venv\Scripts\activate`
+   - Cài đặt thư viện: `pip install -r requirements.txt`
+   - Chạy backend: `cd backend && python -m uvicorn app.main:app --port 8000`
+   - Chạy frontend: `cd frontend && python main.py`
 
-## Thong tin truy cap
-- Dia chi web: http://localhost:8080
-- Trang quan tri: http://localhost:8080/admin
-- Tai lieu API: http://localhost:8000/docs
+## Thông tin truy cập
+- Địa chỉ trang web: http://localhost:8080
+- Trang quản trị: http://localhost:8080/admin
+- Tài liệu API: http://localhost:8000/docs
 
-## Tai khoan Admin mac dinh
+## Tài khoản Admin mặc định
 - Email: admin@example.com
-- Mat khau: admin123
+- Mật khẩu: admin123
 
-Luu y: De su dung tinh nang Chatbot AI, ban can dien GEMINI_API_KEY vao file .env trong thu muc backend (copy tu .env.example).
+Lưu ý: Để sử dụng tính năng Chatbot AI, bạn cần điền GEMINI_API_KEY vào file .env trong thư mục backend (sao chép từ .env.example).
