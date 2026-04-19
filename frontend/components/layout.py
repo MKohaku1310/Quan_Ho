@@ -5,45 +5,52 @@ from translation import t
 from api import api_client
 
 def hero_banner():
-    # Banner chinh cua trang chu
-    with ui.element('section').classes('relative flex min-h-[400px] md:min-h-[500px] lg:min-h-[65vh] items-center overflow-hidden w-full shadow-2xl'):
-        ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-bottom')
-        ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-80 md:opacity-75')
+    # Banner chinh cua trang chu - Refined to better match Image 1
+    with ui.element('section').classes('relative flex min-h-[600px] lg:min-h-[85vh] items-center overflow-hidden w-full shadow-2xl'):
+        # Dual-layer background to show ENTIRE content of square images on wide screens
+        # Layer 1: Blurred fill to handle aspect ratio mismatch
+        ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full').style('object-fit: cover; filter: blur(30px); opacity: 0.3;')
         
-        # Den long trang tri
-        for i, pos in enumerate(['left-10 md:left-20 top-32', 'right-10 md:right-32 top-48', 'left-1/4 bottom-32 opacity-30']):
-            ui.icon('light', size='2rem').classes(f'absolute {pos} text-gold-light animate-pulse pointer-events-none z-20')
+        # Layer 2: Actual image with 'contain' to ensure 100% visibility without cropping
+        ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full').style('object-fit: contain; object-position: center;')
+        
+        # Premium Heritage Overlay (Warm Ink/Charcoal tone)
+        ui.element('div').classes('absolute inset-0 bg-[#0c0502]/65 z-0') 
+        ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-[#1a0c05] via-transparent to-black/40 z-0')
+        
+        with ui.element('div').classes('relative z-20 container mx-auto px-4 text-center flex flex-col items-center justify-center py-20'):
+            # UNESCO Label - Elegant and spaced
+            ui.label(t('unesco_badge')).classes(
+                'text-[10px] md:text-xs font-bold uppercase tracking-[0.5em] text-white/70 mb-10'
+            ).style('animation: fade-in-up 0.8s ease-out')
             
-        with ui.element('div').classes('relative z-10 container mx-auto px-4 pt-4 pb-24 text-center flex flex-col items-center min-h-[400px] justify-center overflow-visible'):
-            # Huy hieu UNESCO
-            with ui.element('div').classes('mb-6 relative'):
-                ui.element('div').classes('absolute inset-0 bg-hero-gradient rotate-[-2deg] transform z-[-1] shadow-lg rounded-sm px-12 py-6 opacity-80')
-                ui.label(t('unesco_badge')).classes(
-                    'text-sm font-black uppercase tracking-[0.5em] text-white drop-shadow-md'
-                ).style('animation: fade-in-up 0.8s ease-out')
+            # Main Title - Playfair Display with better scaling
+            with ui.column().classes('gap-0 flex flex-col items-center mb-6').style('animation: fade-in-up 1s ease-out 0.2s both'):
+                ui.label(t('hero_quan_ho')).classes('font-display text-6xl md:text-8xl lg:text-9xl font-black leading-tight text-white drop-shadow-2xl')
+                ui.label(t('hero_bac_ninh')).classes('font-display text-5xl md:text-7xl lg:text-8xl font-black leading-[0.9] text-[#d68e33] tracking-tight')
             
-            with ui.column().classes('gap-2 flex flex-col items-center').style('animation: fade-in-up 1s ease-out 0.2s both'):
-                ui.label(t('hero_quan_ho')).classes('font-display text-6xl font-black leading-tight text-white md:text-8xl lg:text-9xl tracking-tighter drop-shadow-2xl')
-                ui.label(t('hero_bac_ninh')).classes('font-display text-5xl font-black leading-tight text-gradient-gold md:text-7xl lg:text-8xl tracking-tight')
+            # Description - More compact and readable
+            ui.label(t('hero_desc')).classes(
+                'mx-auto mt-6 max-w-2xl text-sm md:text-lg text-white/90 leading-relaxed font-light italic text-center'
+            ).style('animation: fade-in-up 1s ease-out 0.4s both')
             
-            ui.label(t('hero_desc')).classes('mx-auto mt-10 max-w-3xl text-lg text-white/90 leading-relaxed md:text-2xl font-light italic').style('animation: fade-in-up 1s ease-out 0.4s both')
-            
+            # Action Buttons - Warm gold and outline
             with ui.row().classes('mt-12 flex flex-wrap justify-center gap-6').style('animation: fade-in-up 1s ease-out 0.6s both'):
-                ui.button(t('hero_listen_now'), icon='play_arrow', on_click=lambda: ui.navigate.to('/bai-hat')).props('unelevated rounded-xl size=lg').classes(
-                    'bg-accent text-accent-foreground font-black px-12 py-5 shadow-elevated transform transition-all hover:scale-105 tracking-widest'
+                ui.button(t('hero_listen_now'), on_click=lambda: ui.navigate.to('/bai-hat')).props('unelevated rounded-sm').classes(
+                    'bg-[#d68e33] text-white font-bold px-10 py-4 h-auto text-sm hover:bg-[#b2762a] transition-all transform hover:scale-105 shadow-xl uppercase tracking-widest'
                 )
-                ui.button(t('hero_learn_more'), on_click=lambda: ui.navigate.to('/gioi-thieu')).props('outline rounded-xl size=lg').classes(
-                    'border-white/40 text-white font-black px-12 py-5 hover:bg-white/10 backdrop-blur-sm tracking-widest'
+                ui.button(t('hero_learn_more'), on_click=lambda: ui.navigate.to('/gioi-thieu')).props('outline rounded-sm').classes(
+                    'border-white/60 text-white font-bold px-10 py-4 h-auto text-sm hover:bg-white/10 backdrop-blur-sm transition-all transform hover:scale-105 uppercase tracking-widest'
                 )
         
-        # Nut cuon xuong
-        with ui.element('div').classes('absolute z-10 flex flex-col items-center gap-3 cursor-pointer group opacity-90').style(
-            'bottom: 2.5rem; left: 50%; transform: translateX(-50%); animation: bounce 2.4s infinite;'
+        # Scroll Down Indicator - Positioned at the very bottom
+        with ui.element('div').classes('absolute z-20 flex flex-col items-center gap-2 cursor-pointer group').style(
+            'bottom: 1.5rem; left: 50%; transform: translateX(-50%); animation: bounce 3s infinite;'
         ).on('click', lambda: ui.run_javascript(
             'document.getElementById("home-content").scrollIntoView({behavior: "smooth"})'
         )):
-            ui.label(t('scroll_down')).classes('text-white text-[11px] font-bold uppercase tracking-[0.2em] group-hover:opacity-100 drop-shadow-lg')
-            ui.icon('keyboard_arrow_down', size='36px').classes('text-white group-hover:opacity-100 -mt-2')
+            ui.label(t('scroll_down')).classes('text-white/60 text-[9px] font-bold uppercase tracking-[0.2em]')
+            ui.icon('keyboard_arrow_down', size='28px').classes('text-white/60 -mt-2')
 
             
 def hero_stats_section():
@@ -78,11 +85,17 @@ def hero_stats_section():
 
 
 def chatbot_persona():
-    # Khoi tao lich su chat
+    # Khoi tao lich su chat va trang thai neu chua co
     if 'chat_history' not in app.storage.user:
         app.storage.user['chat_history'] = [
             {'role': 'bot', 'text': t('chatbot_greet'), 'time': datetime.now().strftime('%H:%M')}
         ]
+    if 'chat_open' not in app.storage.user:
+        app.storage.user['chat_open'] = False
+    if 'chat_is_typing' not in app.storage.user:
+        app.storage.user['chat_is_typing'] = False
+    if 'chat_input' not in app.storage.user:
+        app.storage.user['chat_input'] = ''
 
     # Goi y cau hoi
     suggestions = [
@@ -92,50 +105,63 @@ def chatbot_persona():
         "Nghe làn điệu cổ"
     ]
 
-    class ChatState:
-        def __init__(self):
-            self.is_open = False
-            self.is_typing = False
-            self.persona = 'liền anh'
-    
-    state = ChatState()
-
     def toggle_chat():
-        state.is_open = not state.is_open
+        app.storage.user['chat_open'] = not app.storage.user['chat_open']
         chat_container.refresh()
-        if state.is_open:
-            ui.run_javascript('setTimeout(() => { var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight; }, 300)')
+        if app.storage.user['chat_open']:
+            ui.timer(0.3, lambda: chat_scroll.scroll_to(percent=1.0), once=True)
 
     async def send_msg(text_val):
-        if not text_val: return
+        if not text_val or not text_val.strip(): return
+        
+        # Clear input immediately for UX
+        input_text = text_val.strip()
+        app.storage.user['chat_input'] = ''
         
         # Luu tin nhan nguoi dung
         app.storage.user['chat_history'].append({
-            'role': 'user', 'text': text_val, 'time': datetime.now().strftime('%H:%M')
+            'role': 'user', 'text': input_text, 'time': datetime.now().strftime('%H:%M')
         })
-        chat_messages.refresh()
+        app.storage.user['chat_is_typing'] = True
         
-        state.is_typing = True
         chat_messages.refresh()
-        ui.run_javascript('var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight;')
+        chat_container.refresh()
+        
+        ui.timer(0.1, lambda: chat_scroll.scroll_to(percent=1.0), once=True)
         
         # Goi API chatbot
-        history = app.storage.user.get('chat_history', [])
-        response_data = await api_client.ask_chatbot(text_val, history=history)
-        bot_response = response_data.get('response') if response_data else t('chatbot_busy')
+        try:
+            history = app.storage.user.get('chat_history', [])
+            bot_response = await api_client.ask_chatbot(input_text, history=history)
+            
+            # Neu bot khong tra loi hoac tra loi qua ngan/rong
+            if not bot_response or len(bot_response.strip()) < 2:
+                lang = app.storage.user.get('language', 'vi')
+                if any(greet in input_text.lower() for greet in ['halo', 'chào', 'hi']):
+                    if lang == 'vi':
+                        bot_response = "Dạ, em Liền chị xin chào Quý khách ạ! Chúc Quý khách một ngày mới thật nhiều niềm vui và luôn yêu mến những làn điệu Quan họ quê em."
+                    else:
+                        bot_response = "Greetings! I am Lien Chi, your cultural guide. I wish you a wonderful day exploring the beautiful Quan ho folk songs of our homeland."
+                else:
+                    bot_response = t('chatbot_busy')
+        except Exception as e:
+            print(f"Chatbot API Error: {e}")
+            bot_response = t('chatbot_error')
         
         # Luu tin nhan bot
         app.storage.user['chat_history'].append({
             'role': 'bot', 'text': bot_response, 'time': datetime.now().strftime('%H:%M')
         })
-        state.is_typing = False
+        app.storage.user['chat_is_typing'] = False
         chat_messages.refresh()
-        ui.run_javascript('setTimeout(() => { var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight; }, 100)')
+        chat_container.refresh()
+        ui.timer(0.2, lambda: chat_scroll.scroll_to(percent=1.0), once=True)
 
     def clear_chat():
         app.storage.user['chat_history'] = [
             {'role': 'bot', 'text': t('chatbot_greet'), 'time': datetime.now().strftime('%H:%M')}
         ]
+        app.storage.user['chat_is_typing'] = False
         chat_messages.refresh()
 
     # Giao dien Chatbot
@@ -143,88 +169,105 @@ def chatbot_persona():
         
         @ui.refreshable
         def chat_messages():
-            with ui.scroll_area().classes('flex-1 p-4 bg-white/20 backdrop-blur-md').props('id=chat-scroll'):
-                with ui.column().classes('w-full gap-5'):
-                    with ui.column().classes('items-center w-full mb-4 opacity-40 text-center gap-1'):
-                        ui.icon('info', size='14px')
-                        ui.label('Trò chuyện cùng Liền Anh & Liền Chị ảo').classes('text-[9px] uppercase font-black tracking-widest')
-                        ui.label('Dữ liệu được cập nhật từ Di sản UNESCO').classes('text-[8px]')
+            global chat_scroll
+            with ui.scroll_area().classes('flex-1 p-6 bg-white/10 backdrop-blur-sm') as chat_scroll:
+                with ui.column().classes('w-full gap-6'):
+                    # Guide Text
+                    with ui.column().classes('items-center w-full mb-6 opacity-30 text-center gap-1'):
+                        ui.icon('auto_awesome', size='20px', color='primary')
+                        ui.label('Di sản văn hóa Quan họ Bắc Ninh').classes('text-[10px] uppercase font-black tracking-[0.3em]')
+                        ui.label('Virtual Assistant • UNESCO Heritage Guide').classes('text-[8px] font-bold')
 
                     for msg in app.storage.user['chat_history']:
                         sent = msg['role'] == 'user'
-                        with ui.row().classes(f'w-full {"justify-end" if sent else "justify-start"}'):
+                        with ui.row().classes(f'w-full {"justify-end" if sent else "justify-start"} items-start gap-3'):
                             if not sent:
-                                ui.avatar('account_circle', color='primary').classes('size-8 shadow-sm mr-2 mt-1')
+                                with ui.element('div').classes('shrink-0 mt-1'):
+                                    ui.image('/static/common/chatbot-avatar.png').classes('w-10 h-10 rounded-2xl shadow-lg border-2 border-white object-cover')
                             
-                            with ui.element('div').classes(f'max-w-[80%] flex flex-col {"items-end" if sent else "items-start"}'):
+                            with ui.element('div').classes(f'max-w-[75%] flex flex-col {"items-end" if sent else "items-start"}'):
+                                # Bubble
                                 with ui.card().classes(
-                                    f'p-4 rounded-2xl shadow-sm border transition-all '
-                                    f'{"bg-primary text-white border-primary rounded-tr-none" if sent else "bg-white border-border text-foreground rounded-tl-none"}'
-                                ):
+                                    f'p-4 rounded-[1.5rem] shadow-sm border-none transition-all '
+                                    f'{"bg-[#8b0000] text-white rounded-tr-none" if sent else "bg-white/90 text-[#2c1810] rounded-tl-none"}'
+                                ).style('box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);'):
                                     if sent:
-                                        ui.label(msg['text']).classes('text-sm leading-relaxed')
+                                        ui.label(msg['text']).classes('text-sm leading-relaxed font-semibold')
                                     else:
-                                        ui.markdown(msg['text']).classes('text-sm leading-relaxed prose prose-sm prose-p:my-1')
+                                        ui.markdown(msg['text']).classes('text-sm leading-relaxed prose prose-sm prose-p:my-1 prose-headings:text-primary prose-headings:font-black')
                                 
-                                ui.label(msg['time']).classes(f'text-[8px] mt-1 opacity-50 px-1 font-black')
+                                # Timestamp
+                                ui.label(msg['time']).classes(f'text-[9px] mt-1.5 opacity-40 px-1 font-bold tracking-widest')
+                            
+                            if sent:
+                                with ui.element('div').classes('shrink-0 mt-1'):
+                                    ui.avatar('person', color='primary').classes('size-10 shadow-lg border-2 border-white text-white')
                     
-                    if state.is_typing:
-                        with ui.row().classes('w-full justify-start items-center gap-2'):
-                            ui.avatar('account_circle', color='primary').classes('size-6 opacity-50 animate-pulse')
-                            with ui.row().classes('gap-1 items-center p-2 bg-white/40 rounded-full'):
-                                ui.element('div').classes('w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]')
-                                ui.element('div').classes('w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]')
-                                ui.element('div').classes('w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce')
+                    if app.storage.user.get('chat_is_typing'):
+                        with ui.row().classes('w-full justify-start items-center gap-4'):
+                            ui.image('/static/common/chatbot-avatar.png').classes('w-10 h-10 rounded-2xl shadow-lg opacity-40 animate-pulse object-cover')
+                            with ui.row().classes('gap-1.5 items-center p-3 bg-white/60 rounded-full shadow-inner'):
+                                ui.element('div').classes('w-2 h-2 bg-primary/30 rounded-full animate-bounce [animation-delay:-0.3s]')
+                                ui.element('div').classes('w-2 h-2 bg-primary/30 rounded-full animate-bounce [animation-delay:-0.15s]')
+                                ui.element('div').classes('w-2 h-2 bg-primary/30 rounded-full animate-bounce')
 
                     if len(app.storage.user['chat_history']) <= 2:
-                        with ui.row().classes('flex-wrap gap-2 mt-4 justify-start'):
+                        with ui.row().classes('flex-wrap gap-2.5 mt-6 justify-center'):
                             for s in suggestions:
-                                ui.button(s, on_click=lambda s=s: send_msg(s)).props('outline rounded-full dense size=sm').classes('text-[10px] lowercase px-3 py-1 border-primary/20 text-primary hover:bg-primary/5 transition-colors')
+                                with ui.button(on_click=lambda s=s: send_msg(s)).props('unelevated rounded-full size=sm').classes('bg-white/80 text-primary border border-primary/10 hover:bg-primary hover:text-white transition-all transform hover:scale-105 shadow-sm px-4'):
+                                    ui.label(s).classes('text-[11px] font-bold lowercase')
 
         @ui.refreshable
         def chat_container():
             with ui.card().classes(
-                'w-[380px] max-w-[90vw] h-[600px] max-h-[80vh] flex flex-col p-0 shadow-elevated border-none overflow-hidden transition-all duration-500 transform origin-bottom-right rounded-[2rem] bg-[#fdfaf5]'
+                'w-[400px] max-w-[95vw] h-[580px] max-h-[80vh] flex flex-col p-0 shadow-2xl border-none overflow-hidden transition-all duration-700 transform origin-bottom-right rounded-[2.5rem] bg-[#fdfaf5]'
             ).style(
-                f'transform: scale({"1" if state.is_open else "0"}); opacity: {"1" if state.is_open else "0"}; pointer-events: {"auto" if state.is_open else "none"}; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);'
+                f'transform: scale({"1" if app.storage.user.get("chat_open") else "0"}); opacity: {"1" if app.storage.user.get("chat_open") else "0"}; pointer-events: {"auto" if app.storage.user.get("chat_open") else "none"};'
+                f'background-color: #fdfaf5; background-image: radial-gradient(#d4af37 0.5px, transparent 0.5px); background-size: 20px 20px; background-attachment: fixed; opacity: 1;'
             ):
                 # Header
-                with ui.row().classes('w-full p-6 bg-gradient-to-r from-primary to-[#801414] text-white items-center justify-between shrink-0 relative overflow-hidden'):
-                    ui.image('/static/common/lotus-pattern.png').classes('absolute -right-4 -top-4 w-24 opacity-10 pointer-events-none rotate-12')
+                with ui.element('div').classes('w-full p-6 bg-gradient-to-br from-[#8b0000] to-[#5a0000] text-white shrink-0 relative overflow-hidden'):
+                    ui.image('/static/common/lotus-pattern.png').classes('absolute -right-6 -top-6 w-32 opacity-15 pointer-events-none rotate-12')
                     
-                    with ui.row().classes('items-center gap-4 relative z-10'):
-                        with ui.element('div').classes('relative'):
-                            ui.image('/static/common/chatbot-avatar.png').classes('w-12 h-12 rounded-2xl border-2 border-white/30 shadow-lg object-cover')
-                            ui.element('div').classes('absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full')
+                    # Action Buttons (Absolute Top Right)
+                    with ui.row().classes('absolute top-4 right-4 items-center gap-1 z-20'):
+                        ui.button(icon='refresh', on_click=clear_chat).props('flat round color=white size=sm').classes('hover:bg-white/10 opacity-60 hover:opacity-100 transition-opacity').tooltip('Xóa hội thoại')
+                        ui.button(icon='close', on_click=toggle_chat).props('flat round color=white size=sm').classes('hover:bg-white/10 opacity-60 hover:opacity-100 transition-opacity')
+
+                    # Branding (Left)
+                    with ui.row().classes('items-center gap-4 relative z-10 pr-16'):
+                        with ui.element('div').classes('relative group'):
+                            ui.image('/static/common/chatbot-avatar.png').classes('w-12 h-12 rounded-2xl border-2 border-white/40 shadow-xl object-cover transition-transform group-hover:scale-105')
+                            ui.element('div').classes('absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-[3px] border-white rounded-full animate-pulse')
                             
                         with ui.column().classes('gap-0'):
-                            ui.label(t('chatbot_title')).classes('font-display font-black text-lg leading-tight')
-                            ui.label(t('chatbot_online')).classes('text-[10px] opacity-70 uppercase tracking-[0.2em] font-black')
-                    
-                    with ui.row().classes('items-center gap-1'):
-                        ui.button(icon='refresh', on_click=clear_chat).props('flat round color=white size=sm').tooltip('Xóa hội thoại')
-                        ui.button(icon='close', on_click=toggle_chat).props('flat round color=white size=sm')
+                            ui.label(t('chatbot_title')).classes('font-display font-black text-lg leading-tight tracking-tight')
+                            with ui.row().classes('items-center gap-1.5 opacity-80'):
+                                ui.element('div').classes('w-1.5 h-1.5 bg-green-400 rounded-full')
+                                ui.label(t('chatbot_online')).classes('text-[8px] uppercase font-black tracking-[0.2em]')
 
                 chat_messages()
 
-                # Nhap tin nhan
-                ui.separator().classes('opacity-10')
-                with ui.row().classes('w-full p-4 bg-white/80 backdrop-blur-md items-center gap-3 shrink-0'):
-                    ti = ui.input(placeholder=t('chatbot_placeholder')).props('rounded outlined borderless bg-muted/20').classes('flex-1 modern-input h-12 px-4')
+                # Input Area
+                ui.separator().classes('opacity-5')
+                with ui.row().classes('w-full p-6 bg-white/95 backdrop-blur-xl items-center gap-4 shrink-0 border-t border-primary/10 shadow-[0_-8px_30px_rgba(0,0,0,0.04)]'):
+                    ti = ui.input(placeholder=t('chatbot_placeholder')).props('rounded border-none borderless').classes('flex-1 h-12 bg-[#f5f5f0] px-6 rounded-2xl transition-all focus:ring-2 focus:ring-primary/20 text-sm font-medium border-none shadow-inner flex items-center').bind_value(app.storage.user, 'chat_input')
                     with ti.add_slot('append'):
-                         ui.button(icon='send', on_click=lambda: send_msg(ti.value) or setattr(ti, 'value', '')).props('flat round color=primary').classes('mr-1 hover:scale-110 transition-transform')
-                    ti.on('keydown.enter', lambda: send_msg(ti.value) or setattr(ti, 'value', ''))
+                         ui.button(icon='send', on_click=lambda: send_msg(ti.value)).props('unelevated round color=primary size=lg').classes('hover:scale-110 active:scale-90 transition-all shadow-xl -mr-2')
+                    ti.on('keydown.enter', lambda: send_msg(ti.value))
 
         chat_container()
 
         # Nut mo chat
         with ui.button(on_click=toggle_chat).props('round unelevated').classes(
-            'w-18 h-18 shadow-2xl bg-white border-4 border-primary hover:rotate-6 transition-all duration-500 p-0 overflow-hidden pointer-events-auto relative group'
+            'w-20 h-20 shadow-2xl bg-white border-4 border-primary hover:rotate-3 transition-all duration-500 p-0 overflow-hidden pointer-events-auto relative group scale-100 hover:scale-105'
         ):
             ui.image('/static/common/chatbot-avatar.png').classes('w-full h-full object-cover transition-transform group-hover:scale-110')
-            ui.element('div').classes('absolute inset-0 border-4 border-primary/30 rounded-full animate-ping')
-            with ui.element('div').classes('absolute bottom-0 right-0 bg-primary p-1.5 rounded-tl-xl shadow-lg'):
-                ui.icon('chat', size='16px', color='white')
+            # Hieu ung song am
+            ui.element('div').classes('absolute inset-0 border-4 border-primary/40 rounded-full animate-ping opacity-30')
+            # Badge chat
+            with ui.element('div').classes('absolute bottom-0 right-0 bg-[#8b0000] p-2 rounded-tl-2xl shadow-lg border-l-2 border-t-2 border-white/20'):
+                ui.icon('chat', size='24px', color='white').classes('animate-bounce [animation-iteration-count:3]')
 
 
 def costume_block(title, desc, image_url, items=None, reverse=False):

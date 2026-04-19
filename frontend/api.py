@@ -213,7 +213,8 @@ class APIClient:
 
     async def ask_chatbot(self, message: str, history: Optional[List[Dict[str, str]]] = None) -> Optional[str]:
         # Hoi chatbot
-        data = {"message": message}
+        lang = app.storage.user.get('language', 'vi')
+        data = {"message": message, "language": lang}
         if history:
             data["history"] = history
         res = await self._post("chatbot", data)

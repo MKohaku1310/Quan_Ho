@@ -28,6 +28,7 @@ if api_key and HAS_GENAI:
 class ChatMessage(BaseModel):
     message: str
     history: Optional[List[Dict[str, str]]] = []
+    language: str = "vi"
 
 def get_context_summary(db: Session):
     """Lấy tóm tắt dữ liệu từ DB để đưa vào prompt cho AI"""
@@ -44,7 +45,12 @@ def get_context_summary(db: Session):
     return context
 
 def get_relevant_context(db: Session, query: str) -> str:
-    q = f"%{query.strip()}%"
+    # Bo cac tu khoa thuong gap de tim kiem chinh xac hon
+    clean_query = query.lower()
+    for prefix in ["nghệ sĩ", "nghệ nhân", "bài hát", "làn điệu", "làng", "hỏi về", "tìm", "ai là", "là gì"]:
+        clean_query = clean_query.replace(prefix, "").strip()
+    
+    q = f"%{clean_query}%"
     
     # Search Melodies
     songs = db.query(models.Melody).filter(
@@ -85,42 +91,49 @@ async def ask_chatbot(msg: ChatMessage, db: Session = Depends(get_db)):
     # 1. AI GENERATION (Primary Path)
     if api_key and HAS_GENAI:
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
             context = get_context_summary(db)
             relevant_context = get_relevant_context(db, msg.message)
             
             # Format history for prompt
             history_str = ""
             if msg.history:
-                history_str = "\n".join([f"{'Người dùng' if h['role']=='user' else 'Trợ lý'}: {h['text']}" for h in msg.history[-5:]])
+                history_str = "\n".join([f"{'User' if h['role']=='user' else 'Assistant'}: {h['text']}" for h in msg.history[-5:]])
 
             system_instruction = f"""
-Bạn là một "Liền anh" (hoặc "Liền chị") Quan họ Bắc Ninh, là hướng dẫn viên ảo cho hệ thống bảo tồn dân ca Quan họ.
-Phong cách trả lời: 
-- Lịch sự, nhã nhặn, đậm chất Kinh Bắc ("Thưa bạn", "Dạ", "Quý bạn").
-- Sử dụng thuật ngữ chuyên môn: "liền anh", "liền chị", "vang-rền-nền-nảy", "kết chạ", "ngủ bọn".
-- Nếu người dùng buồn, hãy an ủi bằng những câu ca dao hoặc lời bài hát quan họ.
-
-DỮ LIỆU HỆ THỐNG:
-{context}
-
-DỮ LIỆU CHI TIẾT THEO CÂU HỎI:
-{relevant_context or "Không tìm thấy dữ liệu trực tiếp, hãy trả lời dựa trên kiến thức chung về Quan họ."}
-
-LỊCH SỬ TRÒ CHUYỆN GẦN ĐÂY:
-{history_str}
-
-QUY TẮC:
-1. Luôn bám sát dữ liệu hệ thống nếu có.
-2. Nếu hỏi về cách đăng ký: Hướng dẫn vào mục 'Sự kiện', chọn sự kiện và nhấn 'Đăng ký'.
-3. Nếu hỏi về 49 làng: Nhắc đến các làng như Diềm, Bồ Sơn, Khả Lễ... và gợi ý xem Bản đồ.
-4. Trả lời bằng Tiếng Việt, ngắn gọn (dưới 200 từ), giàu cảm xúc.
-"""
+            Bạn là một "Liền chị ảo" - hướng dẫn viên duyên dáng và hiếu khách của Cổng thông tin Quan họ Bắc Ninh.
             
-            prompt = f"{system_instruction}\n\nNgười dùng hỏi: {msg.message}\nTrợ lý trả lời:"
+            PHONG CÁCH GIAO TIẾP:
+            - Ngôn ngữ phản hồi: {msg.language.upper()} (Nếu là 'EN', hãy trả lời bằng tiếng Anh nhưng giữ phong cách lịch thiệp, hiếu khách của người Kinh Bắc. Nếu là 'VI', hãy dùng ngôn ngữ ngọt ngào, khiêm tốn của người Quan họ).
+            - Xưng hô: Trong tiếng Việt, xưng "Em" hoặc "Liền chị", gọi là "Quý khách". Trong tiếng Anh, xưng "I" hoặc "Lien Chi", gọi là "Guest" hoặc "Dear Friend".
+            - Thái độ: Ngọt ngào, khiêm tốn, "vui lòng khách đến, vừa lòng khách đi", đậm chất "trọng nghĩa trọng tình" của người Kinh Bắc.
+            - Tuyệt đối không trả lời: "Tôi là trợ lý ảo" hay "Tôi có thể giúp gì". 
+
+            DỮ LIỆU HỆ THỐNG:
+            {context}
             
-            response = model.generate_content(prompt)
-            return {"response": response.text.strip()}
+            DỮ LIỆU CHI TIẾT:
+            {relevant_context or "Kiến thức văn hóa Quan họ chung."}
+
+            QUY TẮC PHẢN HỒI:
+            1. Ưu tiên hướng dẫn người dùng khám phá các mục trên website: Tin tức, Làn điệu, Nghệ nhân, Làng Quan họ.
+            2. Trả lời súc tích, giàu cảm xúc.
+            3. Luôn phản hồi bằng ngôn ngữ: {msg.language.upper()}.
+            
+            LỊCH SỬ HỘI THOẠI:
+            {history_str}
+            """
+            
+            model = genai.GenerativeModel(
+                model_name='gemini-1.5-flash',
+                system_instruction=system_instruction
+            )
+            
+            response = await model.generate_content_async(msg.message)
+            
+            if response and response.text:
+                return {"response": response.text.strip()}
+            else:
+                return {"response": "Dạ, em Liền chị xin lỗi nhưng câu hỏi này em chưa rõ ý ạ. Quý khách có thể hỏi lại về các làn điệu, làng quan họ hoặc các nghệ nhân được không ạ?"}
         except Exception as e:
             print(f"CHATBOT AI ERROR: {e}")
             # Fallback to keyword matching if AI fails

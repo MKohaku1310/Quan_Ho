@@ -69,7 +69,11 @@ def _show_registration_dialog(event_item, button_ref):
                         button_ref.text = t('already_registered')
                         button_ref.props('color="grey" disable icon="check_circle"')
                     else:
-                        status_label.text = t('register_failed')
+                        error_msg = api_client.get_last_error()
+                        if error_msg and "Already registered" in error_msg:
+                            status_label.text = t('already_registered')
+                        else:
+                            status_label.text = t('register_failed')
                         status_label.classes(remove='hidden')
 
                 with ui.row().classes('w-full justify-between items-center mt-4'):
@@ -227,7 +231,7 @@ async def _render_detail_view(data, is_event=False, related_news=None):
         ui.image('/static/common/lotus-pattern.png').classes('absolute -left-20 bottom-20 w-64 opacity-5 pointer-events-none -rotate-12')
 
         # Elegant Header with Masking
-        with ui.element('div').classes('relative w-full h-[450px] md:h-[550px] mb-[-100px] z-0 overflow-hidden'):
+        with ui.element('div').classes('relative w-full h-[450px] md:h-[550px] mb-[-60px] z-0 overflow-hidden'):
             with ui.image(data.get('image_url') or 'https://images.unsplash.com/photo-1526462981764-f6cf0f4ea260').classes('w-full h-full object-cover transition-transform duration-1000 hover:scale-105'):
                 with ui.element('div').classes('absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-background/90'):
                     with theme.container().classes('h-full flex flex-col justify-center pt-20'):
@@ -239,7 +243,7 @@ async def _render_detail_view(data, is_event=False, related_news=None):
                             ui.label('/')
                             ui.label(t('event_label') if is_event else t('news_label')).classes('text-white')
 
-                        ui.label(tc(data, 'title')).classes('font-display text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 drop-shadow-2xl max-w-4xl tracking-tight')
+                        ui.label(tc(data, 'title')).classes('font-display text-3xl md:text-5xl lg:text-6xl font-black text-white mb-4 drop-shadow-2xl max-w-4xl tracking-tight leading-tight')
                         
                         with ui.row().classes('items-center gap-6 text-white/90'):
                             with ui.row().classes('items-center gap-2'):
@@ -267,13 +271,18 @@ async def _render_detail_view(data, is_event=False, related_news=None):
                                     ui.label(t('status_label')).classes('text-[10px] text-primary font-black uppercase tracking-tight')
                                     ui.label(t('status_upcoming')).classes('text-base font-bold')
 
-                    # Article Content
-                    ui.label(tc(data, 'content') or tc(data, 'description') or t('updating')).classes('text-xl leading-[2.2] text-foreground/90 text-justify whitespace-pre-line font-medium')
+                    # Article Content - Rendered as HTML to support rich text from database
+                    ui.html(tc(data, 'content') or tc(data, 'description') or t('updating')).classes('text-xl leading-[2.2] text-foreground/90 text-justify font-medium')
                     
                     if is_event:
                         with ui.row().classes('w-full justify-center mt-16 pt-8 border-t border-border/40'):
-                            btn = ui.button(t('register_event')).props('color="primary" unelevated size="lg" icon="how_to_reg"').classes('px-12 py-4 rounded-2xl font-black shadow-xl shadow-primary/20 hover:scale-105 transition-transform uppercase tracking-widest')
-                            btn.on('click', lambda: _show_registration_dialog(data, btn))
+                            is_reg = data.get('is_registered', False)
+                            btn_text = t('already_registered') if is_reg else t('register_event')
+                            btn_props = 'color="grey" disable icon="check_circle"' if is_reg else 'color="primary" unelevated size="lg" icon="how_to_reg"'
+                            
+                            btn = ui.button(btn_text).props(btn_props).classes('px-12 py-4 rounded-2xl font-black shadow-xl shadow-primary/20 hover:scale-105 transition-transform uppercase tracking-widest')
+                            if not is_reg:
+                                btn.on('click', lambda: _show_registration_dialog(data, btn))
                     
                     # Social Interaction Row
                     with ui.row().classes('w-full items-center justify-between py-10 border-t border-border/40 mt-16'):

@@ -171,11 +171,11 @@ async def artist_detail_page(id: int):
                     with ui.column().classes('md:col-span-4 gap-6'):
                         with ui.card().classes('p-6 rounded-3xl border border-border bg-card/60 backdrop-blur-md shadow-sm'):
                             ui.label(t('contributions_title')).classes('text-sm font-black uppercase tracking-widest text-primary mb-4 border-b border-primary/10 pb-2')
-                            ui.label(tc(artist_data, 'contributions') or t('contributions_updating')).classes('text-sm leading-relaxed text-muted-foreground italic')
+                            ui.html(tc(artist_data, 'contributions') or t('contributions_updating')).classes('text-sm leading-relaxed text-muted-foreground italic')
 
                         with ui.card().classes('p-6 rounded-3xl border border-border bg-card/60 backdrop-blur-md shadow-sm'):
                             ui.label(t('achievements_title')).classes('text-sm font-black uppercase tracking-widest text-primary mb-4 border-b border-primary/10 pb-2')
-                            ui.label(tc(artist_data, 'achievements') or t('achievements_updating')).classes('text-sm leading-relaxed text-muted-foreground')
+                            ui.html(tc(artist_data, 'achievements') or t('achievements_updating')).classes('text-sm leading-relaxed text-muted-foreground')
 
                     # Main Biography
                     with ui.column().classes('md:col-span-8'):
@@ -187,7 +187,7 @@ async def artist_detail_page(id: int):
                             
                             # Content text with improved readability
                             with ui.element('div').classes('prose prose-primary max-w-none'):
-                                ui.label(tc(artist_data, 'biography') or t('updating')).classes('text-lg leading-[2] text-foreground/80 whitespace-pre-line text-justify')
+                                ui.html(tc(artist_data, 'biography') or t('updating')).classes('text-lg leading-[2] text-foreground/80 text-justify')
                                 
                             # Signature divider
                             with ui.row().classes('w-full justify-center mt-12 opacity-20'):

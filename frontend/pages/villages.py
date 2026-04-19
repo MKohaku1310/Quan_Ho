@@ -140,7 +140,7 @@ async def village_detail_page(id: int):
                                     ui.element('div').classes('h-10 w-1 bg-primary rounded-full')
                                     ui.label(t('village_intro_title')).classes('text-4xl font-display font-black text-foreground tracking-tight')
                                 
-                                ui.label(tc(village, 'description')).classes('text-xl leading-[1.8] text-foreground/80 text-justify font-light')
+                                ui.html(tc(village, 'description')).classes('text-xl leading-[1.8] text-foreground/80 text-justify font-light')
                             
                             # Detail Cards Grid
                             with ui.row().classes('grid grid-cols-1 md:grid-cols-2 gap-8 w-full'):
@@ -151,7 +151,7 @@ async def village_detail_page(id: int):
                                     with ui.row().classes('items-center gap-3 mb-4'):
                                         ui.icon('history_edu', size='32px', color='primary').classes('drop-shadow-sm')
                                         ui.label(t('village_history_title')).classes('text-2xl font-bold font-display tracking-tight')
-                                    ui.label(tc(village, 'history') or t('updating')).classes('text-muted-foreground leading-relaxed text-base font-medium')
+                                    ui.html(tc(village, 'history') or t('updating')).classes('text-muted-foreground leading-relaxed text-base font-medium')
                                 
                                 # Culture Card
                                 with ui.card().classes('p-8 rounded-3xl glass-card border-none shadow-elevated group relative overflow-hidden'):
@@ -160,7 +160,7 @@ async def village_detail_page(id: int):
                                     with ui.row().classes('items-center gap-3 mb-4'):
                                         ui.icon('auto_awesome', size='32px', color='primary').classes('drop-shadow-sm')
                                         ui.label(t('village_culture_title')).classes('text-2xl font-bold font-display tracking-tight')
-                                    ui.label(tc(village, 'culture') or t('updating')).classes('text-muted-foreground leading-relaxed text-base font-medium')
+                                    ui.html(tc(village, 'culture') or t('updating')).classes('text-muted-foreground leading-relaxed text-base font-medium')
 
                             # Featured Melodies Segment
                             with ui.column().classes('w-full p-10 rounded-[2.5rem] bg-white/40 backdrop-blur-sm border border-primary/10 shadow-inner relative overflow-hidden'):

@@ -6,6 +6,7 @@ import asyncio
 def apply_theme():
     ui.add_head_html('''
         <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
         <script>
             tailwind.config = {
                 theme: {

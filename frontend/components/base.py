@@ -113,75 +113,79 @@ def footer():
         with ui.element('div').classes('mx-auto max-w-7xl px-6 py-20 relative z-0'):
             ui.image('/static/common/lotus-pattern.png').classes('absolute -right-20 -bottom-20 w-80 opacity-[0.04] pointer-events-none brightness-0 invert')
 
-            with ui.element('div').classes('grid grid-cols-1 gap-16 lg:grid-cols-12'):
+            with ui.element('div').classes('grid grid-cols-1 gap-y-12 gap-x-8 lg:grid-cols-12'):
                 # Thong tin thuong hieu
                 with ui.column().classes('lg:col-span-4 gap-6'):
-                    with ui.row().classes('items-center gap-3'):
-                        ui.image('/static/common/lotus-ornament.png').classes('h-10 w-10 brightness-0 invert opacity-90')
+                    with ui.row().classes('items-center gap-4'):
+                        ui.image('/static/common/lotus-ornament.png').classes('h-12 w-12 brightness-0 invert opacity-90')
                         with ui.column().classes('gap-0'):
-                            ui.label('Quan Họ Bắc Ninh').classes('font-display text-2xl font-black text-[#f5f5f0] tracking-tight')
-                            ui.label('KINH BẮC HERITAGE').classes('text-[10px] font-black tracking-[0.4em] text-[#d68e33]')
+                            ui.label(t('hero_quan_ho') + ' ' + t('hero_bac_ninh')).classes('font-display text-3xl font-black text-[#f5f5f0] tracking-tight')
+                            ui.label(t('heritage_kinh_bac')).classes('text-[10px] font-black tracking-[0.4em] text-[#d68e33]')
                     
-                    ui.label(t('footer_brand_desc')).classes('text-sm leading-relaxed opacity-80 max-w-sm text-[#f5f5f0]')
+                    ui.label(t('footer_brand_desc')).classes('text-sm leading-relaxed opacity-70 max-w-sm text-[#f5f5f0] font-light italic')
                     
-                    with ui.row().classes('items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 mt-2'):
-                        ui.icon('verified', color='secondary', size='24px')
+                    with ui.row().classes('items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 mt-2 shadow-inner'):
+                        ui.icon('verified', color='secondary', size='28px')
                         with ui.column().classes('gap-0'):
-                            ui.label('UNESCO 2009').classes('text-xs font-black text-white')
-                            ui.label(t('intro_quote_sub')).classes('text-[9px] opacity-60 uppercase tracking-widest')
+                            ui.label('UNESCO 2009').classes('text-xs font-black text-white tracking-wider')
+                            ui.label(t('unesco_badge')).classes('text-[9px] opacity-60 uppercase tracking-[0.2em] font-bold')
 
                 # Kham pha
-                with ui.column().classes('lg:col-span-2 gap-6'):
-                    ui.label(t('footer_explore')).classes('font-display text-xs font-black text-[#d68e33] tracking-[0.3em] uppercase')
-                    with ui.column().classes('gap-3'):
+                with ui.column().classes('lg:col-span-2 gap-8'):
+                    ui.label(t('footer_explore')).classes('font-display text-[10px] font-black text-[#d68e33] tracking-[0.4em] uppercase opacity-80')
+                    with ui.column().classes('gap-4'):
                         for key, path in [
+                            ('home',       '/'),
                             ('intro',   '/gioi-thieu'),
                             ('songs',      '/bai-hat'),
                             ('artists',    '/nghe-nhan'),
                             ('villages', '/lang-quan-ho'),
                         ]:
-                            ui.link(t(key), target=path).classes('text-sm text-[#f5f5f0]/80 hover:text-[#d68e33] no-underline transition-all hover:translate-x-1')
+                            ui.link(t(key), target=path).classes('text-sm text-[#f5f5f0]/70 hover:text-white no-underline transition-all hover:translate-x-1 font-medium')
 
                 # Lien he
-                with ui.column().classes('lg:col-span-3 gap-6'):
-                    ui.label(t('footer_contact')).classes('font-display text-xs font-black text-[#d68e33] tracking-[0.3em] uppercase')
-                    with ui.column().classes('gap-5'):
-                        with ui.row().classes('items-start gap-3'):
-                            ui.icon('place', size='20px', color='secondary')
-                            ui.label(t('footer_address')).classes('text-sm leading-relaxed text-[#f5f5f0]/80')
+                with ui.column().classes('lg:col-span-3 gap-8'):
+                    ui.label(t('footer_contact')).classes('font-display text-[10px] font-black text-[#d68e33] tracking-[0.4em] uppercase opacity-80')
+                    with ui.column().classes('gap-6'):
+                        with ui.row().classes('items-start gap-4 group cursor-pointer'):
+                            ui.icon('place', size='22px', color='secondary').classes('group-hover:scale-110 transition-transform')
+                            ui.label(t('footer_address')).classes('text-sm leading-relaxed text-[#f5f5f0]/70 group-hover:text-white transition-colors')
                         
-                        with ui.row().classes('items-start gap-3'):
-                            ui.icon('mail', size='20px', color='secondary')
-                            ui.label('quanho@bacninh.gov.vn').classes('text-sm text-[#f5f5f0]/80')
+                        with ui.row().classes('items-start gap-4 group cursor-pointer'):
+                            ui.icon('mail', size='22px', color='secondary').classes('group-hover:scale-110 transition-transform')
+                            ui.label('quanho@bacninh.gov.vn').classes('text-sm text-[#f5f5f0]/70 group-hover:text-white transition-colors')
 
                 # Dang ky tin
-                with ui.column().classes('lg:col-span-3 gap-6'):
-                    ui.label(t('footer_newsletter_title')).classes('font-display text-xs font-black text-[#d68e33] tracking-[0.3em] uppercase')
-                    ui.label(t('footer_newsletter_desc')).classes('text-xs leading-relaxed opacity-60 text-[#f5f5f0]')
+                with ui.column().classes('lg:col-span-3 gap-8'):
+                    ui.label(t('footer_newsletter_title')).classes('font-display text-[10px] font-black text-[#d68e33] tracking-[0.4em] uppercase opacity-80')
+                    ui.label(t('footer_newsletter_desc')).classes('text-xs leading-relaxed opacity-50 text-[#f5f5f0] font-light')
                     
-                    with ui.element('div').classes('w-full relative'):
-                        newsletter_input = ui.input(placeholder='Email...').props('dark dense borderless').classes('w-full bg-white/5 rounded-full px-6 py-2 text-sm border border-white/10 focus:border-[#d68e33]/50 transition-colors h-12 text-white')
+                    with ui.element('div').classes('w-full relative group'):
+                        newsletter_input = ui.input(placeholder=t('email_field') + '...').props('dark dense borderless').classes('w-full bg-white/5 rounded-full px-6 py-3 text-sm border border-white/10 focus:border-[#d68e33]/50 transition-all h-12 text-white')
                         with newsletter_input.add_slot('append'):
-                            ui.button(icon='send', on_click=lambda: ui.notify('Thank you!')).props('flat round dense color=secondary').classes('mr-2')
+                            ui.button(icon='send', on_click=lambda: ui.notify(t('save_success'))).props('flat round dense color=secondary').classes('mr-2 hover:scale-125 transition-transform')
 
             # Thanh ban quyen
             ui.separator().classes('my-12 opacity-5 bg-white')
-            with ui.row().classes('w-full justify-between items-center gap-8 flex-wrap'):
-                with ui.row().classes('items-center gap-6'):
-                    ui.label('© 2024 Quan Họ Bắc Ninh.').classes('text-xs font-bold text-[#f5f5f0]/40')
-                    with ui.row().classes('gap-6 hidden sm:flex'):
+            with ui.row().classes('w-full justify-between items-center gap-10 flex-wrap'):
+                from datetime import datetime
+                current_year = datetime.now().year
+                with ui.row().classes('items-center gap-8'):
+                    ui.label(f'© {current_year} ' + t('hero_quan_ho') + ' ' + t('hero_bac_ninh') + '.').classes('text-xs font-bold text-[#f5f5f0]/30 tracking-wide')
+                    with ui.row().classes('gap-8 hidden sm:flex'):
                         for link_key in ['footer_terms', 'footer_privacy', 'footer_contact_link']:
-                            ui.link(t(link_key), '#').classes('text-[10px] uppercase tracking-widest font-black text-[#f5f5f0]/30 hover:text-[#d68e33] no-underline transition-colors')
+                            ui.link(t(link_key), '#').classes('text-[10px] uppercase tracking-[0.2em] font-black text-[#f5f5f0]/20 hover:text-[#d68e33] no-underline transition-colors')
                 
-                with ui.row().classes('gap-3'):
+                with ui.row().classes('gap-4'):
                     socials = [
-                        ('facebook', 'https://facebook.com'),
-                        ('youtube', 'https://youtube.com'),
-                        ('instagram', 'https://instagram.com')
+                        ('mdi-facebook', 'https://facebook.com'),
+                        ('mdi-youtube', 'https://youtube.com'),
+                        ('mdi-instagram', 'https://instagram.com'),
+                        ('mdi-twitter', 'https://twitter.com')
                     ]
                     for icon, link in socials:
-                        with ui.element('a').classes('h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-[#d68e33] transition-all group').props(f'href="{link}" target="_blank"'):
-                            ui.icon(icon, color='white', size='20px').classes('group-hover:scale-110 transition-transform')
+                        with ui.element('a').classes('h-11 w-11 flex items-center justify-center rounded-xl bg-white/5 hover:bg-[#d68e33] hover:rotate-6 transition-all duration-300 group shadow-lg border border-white/5').props(f'href="{link}" target="_blank"'):
+                            ui.icon(icon, color='white', size='22px').classes('group-hover:scale-110 transition-transform opacity-70 group-hover:opacity-100')
 
 def section_title(title, subtitle=None):
     # Tieu de trang

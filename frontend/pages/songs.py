@@ -165,7 +165,7 @@ async def song_detail_page(id: int):
                                 ui.label(t('lyrics_title')).classes('text-2xl font-display font-black tracking-tight')
                             
                             lyrics_text = tc(song_data, 'lyrics') or t('updating')
-                            ui.label(lyrics_text).classes('text-lg leading-[2] text-foreground/80 whitespace-pre-line italic font-light')
+                            ui.html(lyrics_text).classes('text-lg leading-[2] text-foreground/80 italic font-light')
 
                     # RIGHT: SIDEBAR (4 Cols)
                     with ui.column().classes('lg:col-span-4 gap-8'):
