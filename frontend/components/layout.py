@@ -4,19 +4,18 @@ from datetime import datetime
 from translation import t
 from api import api_client
 
-
 def hero_banner():
-    # Fixed overflow and height to prevent bleeding into other sections
+    # Banner chinh cua trang chu
     with ui.element('section').classes('relative flex min-h-[400px] md:min-h-[500px] lg:min-h-[65vh] items-center overflow-hidden w-full shadow-2xl'):
         ui.image('/static/home/hero-banner.jpg').classes('absolute inset-0 h-full w-full object-cover object-bottom')
         ui.element('div').classes('absolute inset-0 bg-hero-gradient opacity-80 md:opacity-75')
         
-        # Floating Lanterns (Studio Flourish)
+        # Den long trang tri
         for i, pos in enumerate(['left-10 md:left-20 top-32', 'right-10 md:right-32 top-48', 'left-1/4 bottom-32 opacity-30']):
             ui.icon('light', size='2rem').classes(f'absolute {pos} text-gold-light animate-pulse pointer-events-none z-20')
             
         with ui.element('div').classes('relative z-10 container mx-auto px-4 pt-4 pb-24 text-center flex flex-col items-center min-h-[400px] justify-center overflow-visible'):
-            # Silk Ribbon (Studio Banner)
+            # Huy hieu UNESCO
             with ui.element('div').classes('mb-6 relative'):
                 ui.element('div').classes('absolute inset-0 bg-hero-gradient rotate-[-2deg] transform z-[-1] shadow-lg rounded-sm px-12 py-6 opacity-80')
                 ui.label(t('unesco_badge')).classes(
@@ -37,6 +36,7 @@ def hero_banner():
                     'border-white/40 text-white font-black px-12 py-5 hover:bg-white/10 backdrop-blur-sm tracking-widest'
                 )
         
+        # Nut cuon xuong
         with ui.element('div').classes('absolute z-10 flex flex-col items-center gap-3 cursor-pointer group opacity-90').style(
             'bottom: 2.5rem; left: 50%; transform: translateX(-50%); animation: bounce 2.4s infinite;'
         ).on('click', lambda: ui.run_javascript(
@@ -47,6 +47,7 @@ def hero_banner():
 
             
 def hero_stats_section():
+    # Phan thong ke so lieu
     with ui.element('section').classes('bg-card py-20 border-y border-border w-full'):
         with theme.container().classes('grid items-center gap-16 md:grid-cols-2'):
             with ui.column().classes('gap-4'):
@@ -77,13 +78,13 @@ def hero_stats_section():
 
 
 def chatbot_persona():
-    # Khởi tạo history nếu chưa có
+    # Khoi tao lich su chat
     if 'chat_history' not in app.storage.user:
         app.storage.user['chat_history'] = [
             {'role': 'bot', 'text': t('chatbot_greet'), 'time': datetime.now().strftime('%H:%M')}
         ]
 
-    # Suggestions for users
+    # Goi y cau hoi
     suggestions = [
         "Quan họ là gì?",
         "Lễ hội sắp tới",
@@ -95,7 +96,7 @@ def chatbot_persona():
         def __init__(self):
             self.is_open = False
             self.is_typing = False
-            self.persona = 'liền anh' # Default
+            self.persona = 'liền anh'
     
     state = ChatState()
 
@@ -103,35 +104,32 @@ def chatbot_persona():
         state.is_open = not state.is_open
         chat_container.refresh()
         if state.is_open:
-            # Scroll to bottom after opening
             ui.run_javascript('setTimeout(() => { var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight; }, 300)')
 
     async def send_msg(text_val):
         if not text_val: return
         
-        # Thêm tin nhắn user
+        # Luu tin nhan nguoi dung
         app.storage.user['chat_history'].append({
             'role': 'user', 'text': text_val, 'time': datetime.now().strftime('%H:%M')
         })
         chat_messages.refresh()
         
-        # Hiệu ứng đang gõ
         state.is_typing = True
         chat_messages.refresh()
         ui.run_javascript('var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight;')
         
-        # Gọi API với history
+        # Goi API chatbot
         history = app.storage.user.get('chat_history', [])
         response_data = await api_client.ask_chatbot(text_val, history=history)
         bot_response = response_data.get('response') if response_data else t('chatbot_busy')
         
-        # Thêm tin nhắn bot
+        # Luu tin nhan bot
         app.storage.user['chat_history'].append({
             'role': 'bot', 'text': bot_response, 'time': datetime.now().strftime('%H:%M')
         })
         state.is_typing = False
         chat_messages.refresh()
-        # Cuộn xuống
         ui.run_javascript('setTimeout(() => { var el = document.getElementById("chat-scroll"); if(el) el.scrollTop = el.scrollHeight; }, 100)')
 
     def clear_chat():
@@ -140,16 +138,13 @@ def chatbot_persona():
         ]
         chat_messages.refresh()
 
-    # Container chính của Chatbot
+    # Giao dien Chatbot
     with ui.element('div').classes('fixed bottom-6 right-6 z-[1000] flex flex-col items-end gap-4 pointer-events-none'):
         
-        # Chat Messages Section
         @ui.refreshable
         def chat_messages():
-            # Height limited to fit nicely
             with ui.scroll_area().classes('flex-1 p-4 bg-white/20 backdrop-blur-md').props('id=chat-scroll'):
                 with ui.column().classes('w-full gap-5'):
-                    # Welcome Info
                     with ui.column().classes('items-center w-full mb-4 opacity-40 text-center gap-1'):
                         ui.icon('info', size='14px')
                         ui.label('Trò chuyện cùng Liền Anh & Liền Chị ảo').classes('text-[9px] uppercase font-black tracking-widest')
@@ -169,7 +164,6 @@ def chatbot_persona():
                                     if sent:
                                         ui.label(msg['text']).classes('text-sm leading-relaxed')
                                     else:
-                                        # Bot response supports Markdown
                                         ui.markdown(msg['text']).classes('text-sm leading-relaxed prose prose-sm prose-p:my-1')
                                 
                                 ui.label(msg['time']).classes(f'text-[8px] mt-1 opacity-50 px-1 font-black')
@@ -182,24 +176,20 @@ def chatbot_persona():
                                 ui.element('div').classes('w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]')
                                 ui.element('div').classes('w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce')
 
-                    # Quick Suggestions (only if history is short or empty)
                     if len(app.storage.user['chat_history']) <= 2:
                         with ui.row().classes('flex-wrap gap-2 mt-4 justify-start'):
                             for s in suggestions:
                                 ui.button(s, on_click=lambda s=s: send_msg(s)).props('outline rounded-full dense size=sm').classes('text-[10px] lowercase px-3 py-1 border-primary/20 text-primary hover:bg-primary/5 transition-colors')
 
-        # Tách container ra để refresh phần ẩn hiện
         @ui.refreshable
         def chat_container():
-            # Main Box
             with ui.card().classes(
                 'w-[380px] max-w-[90vw] h-[600px] max-h-[80vh] flex flex-col p-0 shadow-elevated border-none overflow-hidden transition-all duration-500 transform origin-bottom-right rounded-[2rem] bg-[#fdfaf5]'
             ).style(
                 f'transform: scale({"1" if state.is_open else "0"}); opacity: {"1" if state.is_open else "0"}; pointer-events: {"auto" if state.is_open else "none"}; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);'
             ):
-                # Header with Gradient
+                # Header
                 with ui.row().classes('w-full p-6 bg-gradient-to-r from-primary to-[#801414] text-white items-center justify-between shrink-0 relative overflow-hidden'):
-                    # Background pattern
                     ui.image('/static/common/lotus-pattern.png').classes('absolute -right-4 -top-4 w-24 opacity-10 pointer-events-none rotate-12')
                     
                     with ui.row().classes('items-center gap-4 relative z-10'):
@@ -217,7 +207,7 @@ def chatbot_persona():
 
                 chat_messages()
 
-                # Footer/Input
+                # Nhap tin nhan
                 ui.separator().classes('opacity-10')
                 with ui.row().classes('w-full p-4 bg-white/80 backdrop-blur-md items-center gap-3 shrink-0'):
                     ti = ui.input(placeholder=t('chatbot_placeholder')).props('rounded outlined borderless bg-muted/20').classes('flex-1 modern-input h-12 px-4')
@@ -227,19 +217,18 @@ def chatbot_persona():
 
         chat_container()
 
-        # Nút bong bóng (Bubble Button)
+        # Nut mo chat
         with ui.button(on_click=toggle_chat).props('round unelevated').classes(
             'w-18 h-18 shadow-2xl bg-white border-4 border-primary hover:rotate-6 transition-all duration-500 p-0 overflow-hidden pointer-events-auto relative group'
         ):
             ui.image('/static/common/chatbot-avatar.png').classes('w-full h-full object-cover transition-transform group-hover:scale-110')
-            # Pulse Effect
             ui.element('div').classes('absolute inset-0 border-4 border-primary/30 rounded-full animate-ping')
-            # Chat Icon Overlay
             with ui.element('div').classes('absolute bottom-0 right-0 bg-primary p-1.5 rounded-tl-xl shadow-lg'):
                 ui.icon('chat', size='16px', color='white')
 
 
 def costume_block(title, desc, image_url, items=None, reverse=False):
+    # Khoi gioi thieu trang phuc
     alignment = 'self-start' if not reverse else 'self-end'
     
     with ui.card().classes(
@@ -282,10 +271,8 @@ def costume_block(title, desc, image_url, items=None, reverse=False):
                                         ui.label(item).classes('text-xs font-bold text-foreground truncate')
 
 
-# ─── Timeline helpers ────────────────────────────────────────────────────────
-
 def _timeline_card(year: str, text: str):
-    """Thẻ cuộn giấy dùng chung cho cả trái lẫn phải."""
+    # The hien thi moc thoi gian
     parts = year.rsplit(' ', 1)
     top_text, bottom_text = (parts[0], parts[1]) if len(parts) > 1 else (year[:2], year[2:])
     bottom_size = 'text-xl' if len(bottom_text) <= 5 else 'text-base'
@@ -323,7 +310,7 @@ def _timeline_card(year: str, text: str):
 
 
 def _timeline_dot():
-    """Nút dấu đỏ ở giữa, căn chỉnh với thẻ."""
+    # Nut tron tren timeline
     with ui.element('div').classes(
         'relative h-12 w-12 flex-shrink-0 flex items-center justify-center '
         'bg-primary border-2 border-[#d4af37]/60 shadow-elevated '
@@ -335,7 +322,7 @@ def _timeline_dot():
 
 
 def _timeline_ornament(flip: bool = False):
-    """Hình trang trí ở phía trống."""
+    # Trang tri hoa sen
     rotate = '-rotate-12' if not flip else 'rotate-45'
     padding = 'pr-10' if not flip else 'pl-10'
     with ui.element('div').classes(
@@ -346,27 +333,19 @@ def _timeline_ornament(flip: bool = False):
 
 
 def timeline_item(year: str, text: str, index: int = 0, total: int = 4):
-    """
-    Layout 3 cột: [45% nội dung/trống] [10% nút đỏ] [45% trống/nội dung]
-    Chẵn → thẻ bên TRÁI, lẻ → thẻ bên PHẢI.
-    Nút đỏ luôn ở giữa, thẳng hàng với thẻ nhờ items-center trên row.
-    """
+    # Cac thanh phan timeline
     is_even = index % 2 == 0
 
     with ui.element('div').classes('relative flex flex-row flex-nowrap items-center w-full my-8'):
-
-        # ── Cột TRÁI (45%) ──────────────────────────────────────────────────
         with ui.element('div').classes('w-[45%] flex flex-col items-end pr-4 md:pr-12'):
             if is_even:
                 _timeline_card(year, text)
             else:
                 _timeline_ornament(flip=False)
 
-        # ── Cột GIỮA (10%) — nút đỏ ─────────────────────────────────────────
         with ui.element('div').classes('w-[10%] flex justify-center items-center shrink-0'):
             _timeline_dot()
 
-        # ── Cột PHẢI (45%) ──────────────────────────────────────────────────
         with ui.element('div').classes('w-[45%] flex flex-col items-start pl-4 md:pl-12'):
             if not is_even:
                 _timeline_card(year, text)
@@ -375,6 +354,7 @@ def timeline_item(year: str, text: str, index: int = 0, total: int = 4):
 
 
 def section_title(title: str, subtitle: str = None):
+    # Tieu de cua cac phan
     with ui.column().classes('items-center text-center gap-2 mb-10 w-full'):
         ui.label(title).classes('font-display text-3xl md:text-4xl font-black text-foreground')
         if subtitle:
@@ -383,6 +363,7 @@ def section_title(title: str, subtitle: str = None):
 
 
 def intro_feature_card(icon: str, title: str, desc: str):
+    # The tinh nang gioi thieu
     with ui.card().classes(
         'flex flex-col items-center text-center gap-4 p-8 rounded-2xl '
         'border border-border/50 bg-card/60 shadow-sm hover:shadow-md '
@@ -395,6 +376,7 @@ def intro_feature_card(icon: str, title: str, desc: str):
 
 
 def unesco_quote(text: str, subtitle: str = None):
+    # Trich dan UNESCO
     with ui.column().classes('items-center w-full py-2'):
         if subtitle:
             ui.label(subtitle).classes('text-primary font-bold tracking-[0.3em] text-[10px] mb-4 opacity-80')

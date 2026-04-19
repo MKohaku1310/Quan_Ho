@@ -3,7 +3,7 @@ from typing import List, Dict, Any, Optional, Union
 from nicegui import app, ui
 import os
 
-# Use environment variable for API URL, default to localhost
+# Lay URL API tu bien moi truong, mac dinh la localhost
 API_BASE_URL = os.getenv("API_URL", "http://localhost:8000/api")
 if API_BASE_URL.endswith('/'):
     API_BASE_URL = API_BASE_URL[:-1]
@@ -28,34 +28,21 @@ class APIClient:
             headers = {}
             if use_token:
                 token = app.storage.user.get('access_token')
-                print(f"DEBUG FRONTEND: Endpoint {endpoint}, token in storage: {'Yes' if token else 'No'}")
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
-                    print(f"DEBUG FRONTEND: Auth header set for {endpoint}")
-                else:
-                    print(f"DEBUG FRONTEND: WARNING - use_token=True but no token found in storage for {endpoint}")
 
             async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
-                # Some FastAPI routes handle slashes strictly, some don't.
-                # Standardizing to NO forced trailing slash here, as httpx handles it better.
                 url = f"{API_BASE_URL}/{endpoint}"
                 response = await client.get(url, params=params, headers=headers)
-                print(f"DEBUG FRONTEND: GET {url} returned {response.status_code}")
                 if response.status_code == 200:
                     return response.json()
                 elif response.status_code == 401:
-                    print(f"DEBUG FRONTEND: 401 Unauthorized for {url}, logging out...")
                     await self.logout()
                     return []
                 else:
                     self._set_error(f"{response.status_code}: {response.text[:300]}")
-                    print(f"GET error {response.status_code} for {url}: {response.text}")
-        except httpx.ConnectError:
-            self._set_error("Cannot connect to backend service")
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}. Ensure backend is running.")
         except Exception as e:
             self._set_error(str(e))
-            print(f"Error fetching from {API_BASE_URL}/{endpoint}: {e}")
         return []
 
 
@@ -67,28 +54,19 @@ class APIClient:
                 token = app.storage.user.get('access_token')
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
-                else:
-                    print(f"DEBUG API: _post {endpoint} - NO TOKEN in storage!")
 
             async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 url = f"{API_BASE_URL}/{endpoint}"
                 response = await client.post(url, json=data, headers=headers)
-                print(f"DEBUG API: POST {url} -> {response.status_code}")
                 if response.status_code in [200, 201]:
                     return response.json()
                 elif response.status_code == 401:
-                    print(f"DEBUG FRONTEND: 401 Unauthorized for {url}, logging out...")
                     await self.logout()
                     return None
                 else:
                     self._set_error(f"{response.status_code}: {response.text[:300]}")
-                    print(f"POST ERROR {response.status_code}: {response.text[:300]}")
-        except httpx.ConnectError:
-            self._set_error("Cannot connect to backend service")
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             self._set_error(str(e))
-            print(f"Error posting to {API_BASE_URL}/{endpoint}: {e}")
         return None
 
     async def _patch(self, endpoint: str, data: Dict[str, Any], use_token: bool = True) -> Optional[Dict[str, Any]]:
@@ -99,25 +77,19 @@ class APIClient:
                 token = app.storage.user.get('access_token')
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
-                else:
-                    print(f"DEBUG API: _patch {endpoint} - NO TOKEN in storage!")
 
             async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 url = f"{API_BASE_URL}/{endpoint}"
                 response = await client.patch(url, json=data, headers=headers)
-                print(f"DEBUG API: PATCH {url} -> {response.status_code}")
                 if response.status_code == 200:
                     return response.json()
                 elif response.status_code == 401:
-                    print(f"DEBUG FRONTEND: 401 Unauthorized for {url}, logging out...")
                     await self.logout()
                     return None
                 else:
                     self._set_error(f"{response.status_code}: {response.text[:300]}")
-                    print(f"PATCH ERROR {response.status_code}: {response.text[:300]}")
         except Exception as e:
             self._set_error(str(e))
-            print(f"Error patching to {API_BASE_URL}/{endpoint}: {e}")
         return None
 
     async def _put(self, endpoint: str, data: Dict[str, Any], use_token: bool = True) -> Optional[Dict[str, Any]]:
@@ -128,30 +100,21 @@ class APIClient:
                 token = app.storage.user.get('access_token')
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
-                else:
-                    print(f"DEBUG API: _put {endpoint} - NO TOKEN in storage!")
 
             async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 url = f"{API_BASE_URL}/{endpoint}"
                 response = await client.put(url, json=data, headers=headers)
-                print(f"DEBUG API: PUT {url} -> {response.status_code}")
                 if response.status_code in [200, 204]:
                     if response.status_code == 204:
                         return {"status": "ok"}
                     return response.json()
                 elif response.status_code == 401:
-                    print(f"DEBUG FRONTEND: 401 Unauthorized for {url}, logging out...")
                     await self.logout()
                     return None
                 else:
                     self._set_error(f"{response.status_code}: {response.text[:300]}")
-                    print(f"PUT ERROR {response.status_code}: {response.text[:300]}")
-        except httpx.ConnectError:
-            self._set_error("Cannot connect to backend service")
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             self._set_error(str(e))
-            print(f"Error putting to {API_BASE_URL}/{endpoint}: {e}")
         return None
 
     async def _delete(self, endpoint: str, use_token: bool = True) -> Optional[Dict[str, Any]]:
@@ -162,31 +125,23 @@ class APIClient:
                 token = app.storage.user.get('access_token')
                 if token:
                     headers["Authorization"] = f"Bearer {token}"
-                else:
-                    print(f"DEBUG API: _delete {endpoint} - NO TOKEN in storage!")
 
             async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 url = f"{API_BASE_URL}/{endpoint}"
                 response = await client.delete(url, headers=headers)
-                print(f"DEBUG API: DELETE {url} -> {response.status_code}")
                 if response.status_code in [200, 204]:
                     return {"message": "Deleted successfully"}
                 elif response.status_code == 401:
-                    print(f"DEBUG FRONTEND: 401 Unauthorized for {url}, logging out...")
                     await self.logout()
                     return None
                 else:
                     self._set_error(f"{response.status_code}: {response.text[:300]}")
-                    print(f"DELETE ERROR {response.status_code}: {response.text[:300]}")
-        except httpx.ConnectError:
-            self._set_error("Cannot connect to backend service")
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             self._set_error(str(e))
-            print(f"Error deleting to {API_BASE_URL}/{endpoint}: {e}")
         return None
 
     async def login(self, username: str, password: str) -> bool:
+        # Dang nhap
         try:
             async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 response = await client.post(
@@ -203,24 +158,26 @@ class APIClient:
                     app.storage.user['email'] = data.get('email', '')
                     app.storage.user['user_id'] = data.get('id')
                     return True
-        except httpx.ConnectError:
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Login error: {e}")
         return False
 
     async def register(self, name: str, email: str, password: str) -> Optional[Dict[str, Any]]:
+        # Dang ky
         return await self._post("auth/register", {"name": name, "email": email, "password": password})
 
     async def logout(self):
+        # Dang xuat
         app.storage.user.clear()
         app.storage.user.update({'access_token': None, 'is_authenticated': False, 'role': None, 'user_name': None})
         ui.navigate.to('/')
 
     async def get_me(self) -> Optional[Dict[str, Any]]:
+        # Lay thong tin ca nhan
         return await self._get("auth/me", use_token=True)
 
     async def update_profile(self, data: Dict[str, Any]) -> bool:
+        # Cap nhat thong tin ca nhan
         res = await self._patch("auth/me", data, use_token=True)
         if res:
             app.storage.user['user_name'] = res.get('name', app.storage.user.get('user_name'))
@@ -228,22 +185,18 @@ class APIClient:
         return False
 
     async def change_password(self, old_p: str, new_p: str) -> bool:
+        # Doi mat khau
         res = await self._post("auth/me/change-password", {"old_password": old_p, "new_password": new_p}, use_token=True)
         return res is not None
 
     async def get_activities(self) -> List[Dict[str, Any]]:
+        # Lay lich su hoat dong
         return await self._get("auth/me/activities", use_token=True)
 
-    # Administrative APIs
+    # API Quan tri
     async def get_users(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
         params = {"skip": skip, "limit": limit}
         res = await self._get("auth/users", params=params, use_token=True)
-        if res is None:
-            print("DEBUG API: get_users returned None (likely 401/403 or server error)")
-            return []
-        if isinstance(res, dict) and "detail" in res:
-            print(f"DEBUG API: get_users error detail: {res['detail']}")
-            return []
         return res if isinstance(res, list) else []
 
     async def get_users_count(self) -> int:
@@ -256,18 +209,15 @@ class APIClient:
 
     async def update_user_admin(self, user_id: int, data: Dict[str, Any]) -> bool:
         res = await self._patch(f"auth/users/{user_id}", data, use_token=True)
-        if res is None:
-            # Backward compatibility with older backend route naming.
-            res = await self._patch(f"auth/users/{user_id}/role", data, use_token=True)
         return res is not None
 
     async def ask_chatbot(self, message: str, history: Optional[List[Dict[str, str]]] = None) -> Optional[str]:
+        # Hoi chatbot
         data = {"message": message}
         if history:
             data["history"] = history
         res = await self._post("chatbot", data)
         return res.get('response') if res else None
-
 
 
     async def get_melodies(self, skip: int = 0, limit: int = 100, category: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -306,7 +256,6 @@ class APIClient:
         return await self._get("locations", params=params)
 
     async def get_village(self, village_id: int) -> Optional[Dict[str, Any]]:
-        # Ensure we always treat village_id as an integer and fetch directly
         return await self._get(f"locations/{int(village_id)}", use_token=False)
 
     async def get_articles(self, article_type: Optional[str] = None, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
@@ -344,8 +293,6 @@ class APIClient:
         return res.get('total', 0) if isinstance(res, dict) else 0
 
     async def register_event(self, event_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        # The endpoint argument for _post will have unexpected / injected if we append query params directly 
-        # so we rely on _post ensuring the URL looks like /events/{event_id}/register
         return await self._post(f"events/{event_id}/register", data, use_token=True)
 
     async def search_melodies(self, query: str) -> List[Dict[str, Any]]:
@@ -356,8 +303,6 @@ class APIClient:
                 response = await client.get(f"{API_BASE_URL}/melodies/search", params={"search": query})
                 if response.status_code == 200:
                     return response.json()
-        except httpx.ConnectError:
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Error searching melodies: {e}")
         return []
@@ -419,8 +364,6 @@ class APIClient:
                 response = await client.get(f"{API_BASE_URL}/melodies/{melody_id}/")
                 if response.status_code == 200:
                     return response.json()
-        except httpx.ConnectError:
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             print(f"Error fetching melody {melody_id}: {e}")
         return None
@@ -457,12 +400,8 @@ class APIClient:
                 if response.status_code == 200:
                     return response.json()
                 self._set_error(f"{response.status_code}: {response.text[:300]}")
-        except httpx.ConnectError:
-            self._set_error("Cannot connect to backend service")
-            print(f"CRITICAL: Could not connect to backend at {API_BASE_URL}")
         except Exception as e:
             self._set_error(str(e))
-            print(f"Error fetching event {event_id}: {e}")
         return None
 
     async def get_comments(self, melody_id: Optional[int] = None, article_id: Optional[int] = None, skip: int = 0, limit: int = 50) -> List[Dict[str, Any]]:

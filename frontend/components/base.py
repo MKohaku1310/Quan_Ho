@@ -4,10 +4,10 @@ from api import api_client
 from translation import t, toggle_language
 
 def navbar():
-    # Detect current path for active state
+    # Xac dinh duong dan hien tai
     current_path = ui.context.client.page.path if hasattr(ui.context, 'client') and hasattr(ui.context.client, 'page') else '/'
     
-    # Navigation items for both desktop and mobile
+    # Danh sach menu
     nav_items = [
         ('/', 'home', t('home')),
         ('/gioi-thieu', 'intro', t('intro')),
@@ -17,10 +17,10 @@ def navbar():
         ('/tin-tuc', 'news', t('news')),
     ]
 
-    # Glassmorphism navbar (Styled in theme.py via .qh-navbar)
+    # Thanh dieu huong
     with ui.header().classes('qh-navbar w-full').props('elevated=false'):
         with theme.container().classes('flex h-14 items-center px-4'):
-            # 1. Left: Logo
+            # Logo
             with ui.element('div').classes('flex-1 flex justify-start items-center'):
                 with ui.link(target='/').classes('flex items-center gap-2 no-underline transition-opacity hover:opacity-80 shrink-0'):
                     ui.image('/static/common/lotus-ornament.png').classes('h-7 w-7')
@@ -28,7 +28,7 @@ def navbar():
                         ui.label('Quan Họ').classes('font-display text-lg font-bold text-primary whitespace-nowrap')
                         ui.label('Bắc Ninh').classes('font-display text-lg font-bold text-[#d4af37] whitespace-nowrap')
 
-            # 2. Center: Nav Items (Desktop only)
+            # Menu cho may tinh
             with ui.element('div').classes('flex max-md:hidden items-center justify-center gap-1 whitespace-nowrap px-2'):
                 for path, key, label in nav_items:
                     is_active = (current_path == path)
@@ -37,13 +37,13 @@ def navbar():
                         f'{"text-primary bg-primary/5 shadow-sm" if is_active else "text-muted-foreground"}'
                     )
 
-            # 3. Right: Actions
+            # Cac nut chuc nang
             with ui.element('div').classes('flex-1 flex justify-end items-center gap-1 sm:gap-2 flex-nowrap'):
-                # Language Toggle
+                # Nut chuyen ngon ngu
                 lang_label = t('language_toggle')
                 ui.button(lang_label, on_click=lambda: (toggle_language(), ui.navigate.reload())).props('flat rounded size=md').classes('text-muted-foreground font-bold border border-border/50 px-2 min-w-0 h-9 shrink-0')
 
-                # Auth buttons - Hidden on mobile, visible on desktop
+                # Nut dang nhap / dang ky
                 with ui.element('div').classes('flex max-md:hidden items-center gap-2'):
                     if app.storage.user.get('is_authenticated'):
                         if app.storage.user.get('role') == 'admin':
@@ -55,16 +55,15 @@ def navbar():
                         ui.button(t('login'), on_click=lambda: ui.navigate.to('/dang-nhap')).props('flat rounded size=md').classes('text-muted-foreground font-medium px-4 h-10 transition-all hover:bg-muted shrink-0')
                         ui.button(t('register'), on_click=lambda: ui.navigate.to('/dang-ky')).props('unelevated rounded size=md').classes('bg-primary text-white font-semibold px-6 h-10 shadow-md hover:brightness-110 shrink-0')
                 
-                # Mobile Menu Button (Visible on < md)
+                # Menu cho dien thoai
                 mobile_btn = ui.button(icon='menu', on_click=lambda: drawer.open()).props('flat round size=md').classes('md:hidden text-primary bg-primary/5 ml-1 shrink-0')
                 
                 with ui.dialog() as drawer:
                     with ui.card().classes('w-screen max-w-[320px] h-full p-0 overflow-hidden flex flex-col bg-background'):
-                        # Drawer Header
                         with ui.element('div').classes('p-6 bg-primary text-white flex flex-col gap-4'):
                             with ui.row().classes('justify-between items-center'):
                                 ui.label(t('drawer_category')).classes('font-black tracking-[0.2em] text-sm opacity-80')
-                                ui.button(icon='close', on_click=drawer.close).props('flat round color=white size=md')
+                                ui.button(icon='close', on_click=drawer.close).props('flat round color=white size=sm')
                             
                             if app.storage.user.get('is_authenticated'):
                                 with ui.row().classes('items-center gap-3 mt-4'):
@@ -75,7 +74,6 @@ def navbar():
                             else:
                                 ui.label(t('drawer_guest')).classes('text-xl font-display font-bold')
 
-                        # Drawer Links
                         with ui.scroll_area().classes('flex-1'):
                             with ui.column().classes('p-6 gap-2 w-full'):
                                 for path, key, label in nav_items:
@@ -92,7 +90,6 @@ def navbar():
                                             ui.icon(icon_map.get(key, 'circle'), size='24px')
                                             ui.label(label).classes('font-bold text-base')
 
-                                # Auth section for Mobile
                                 ui.separator().classes('my-4 opacity-50')
                                 if app.storage.user.get('is_authenticated'):
                                     with ui.link(target='/ho-so').classes('w-full no-underline').on('click', drawer.close):
@@ -105,22 +102,19 @@ def navbar():
                                         ui.button(t('login'), icon='login', on_click=lambda: (ui.navigate.to('/dang-nhap'), drawer.close())).props('outline rounded size=lg').classes('w-full text-primary font-bold h-14')
                                         ui.button(t('register'), icon='person_add', on_click=lambda: (ui.navigate.to('/dang-ky'), drawer.close())).props('unelevated rounded size=lg').classes('w-full bg-primary text-white font-bold h-14 shadow-md')
 
-                pass # mobile_btn handles open
 
 def footer():
-    # Warm Earthy Brown (Nâu Vàng) Palette
+    # Phan chan trang
     with ui.element('footer').classes('w-full bg-[#2d1a12] text-[#f5f5f0]/70 mt-auto shrink-0 relative overflow-hidden'):
-        # Top Decorative Bar (Gold Gradient)
         ui.element('div').classes('w-full h-[2px] bg-gradient-to-r from-transparent via-[#d68e33] to-transparent opacity-60')
         with ui.element('div').classes('absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 h-12 w-12 bg-[#2d1a12] rounded-full flex items-center justify-center border border-[#d68e33]/30 shadow-xl z-10'):
             ui.image('/static/common/lotus-ornament.png').classes('h-6 w-6 animate-spin-slow opacity-80')
 
         with ui.element('div').classes('mx-auto max-w-7xl px-6 py-20 relative z-0'):
-            # Background decoration (Subtle Lotus)
             ui.image('/static/common/lotus-pattern.png').classes('absolute -right-20 -bottom-20 w-80 opacity-[0.04] pointer-events-none brightness-0 invert')
 
             with ui.element('div').classes('grid grid-cols-1 gap-16 lg:grid-cols-12'):
-                # Column 1: Brand (4 cols)
+                # Thong tin thuong hieu
                 with ui.column().classes('lg:col-span-4 gap-6'):
                     with ui.row().classes('items-center gap-3'):
                         ui.image('/static/common/lotus-ornament.png').classes('h-10 w-10 brightness-0 invert opacity-90')
@@ -136,7 +130,7 @@ def footer():
                             ui.label('UNESCO 2009').classes('text-xs font-black text-white')
                             ui.label(t('intro_quote_sub')).classes('text-[9px] opacity-60 uppercase tracking-widest')
 
-                # Column 2: Explore (2 cols)
+                # Kham pha
                 with ui.column().classes('lg:col-span-2 gap-6'):
                     ui.label(t('footer_explore')).classes('font-display text-xs font-black text-[#d68e33] tracking-[0.3em] uppercase')
                     with ui.column().classes('gap-3'):
@@ -148,7 +142,7 @@ def footer():
                         ]:
                             ui.link(t(key), target=path).classes('text-sm text-[#f5f5f0]/80 hover:text-[#d68e33] no-underline transition-all hover:translate-x-1')
 
-                # Column 3: Contact (3 cols)
+                # Lien he
                 with ui.column().classes('lg:col-span-3 gap-6'):
                     ui.label(t('footer_contact')).classes('font-display text-xs font-black text-[#d68e33] tracking-[0.3em] uppercase')
                     with ui.column().classes('gap-5'):
@@ -160,7 +154,7 @@ def footer():
                             ui.icon('mail', size='20px', color='secondary')
                             ui.label('quanho@bacninh.gov.vn').classes('text-sm text-[#f5f5f0]/80')
 
-                # Column 4: Newsletter (3 cols)
+                # Dang ky tin
                 with ui.column().classes('lg:col-span-3 gap-6'):
                     ui.label(t('footer_newsletter_title')).classes('font-display text-xs font-black text-[#d68e33] tracking-[0.3em] uppercase')
                     ui.label(t('footer_newsletter_desc')).classes('text-xs leading-relaxed opacity-60 text-[#f5f5f0]')
@@ -170,7 +164,7 @@ def footer():
                         with newsletter_input.add_slot('append'):
                             ui.button(icon='send', on_click=lambda: ui.notify('Thank you!')).props('flat round dense color=secondary').classes('mr-2')
 
-            # Bottom Bar
+            # Thanh ban quyen
             ui.separator().classes('my-12 opacity-5 bg-white')
             with ui.row().classes('w-full justify-between items-center gap-8 flex-wrap'):
                 with ui.row().classes('items-center gap-6'):
@@ -190,6 +184,7 @@ def footer():
                             ui.icon(icon, color='white', size='20px').classes('group-hover:scale-110 transition-transform')
 
 def section_title(title, subtitle=None):
+    # Tieu de trang
     with ui.column().classes('mb-8 text-center w-full items-center gap-2'):
         ui.image('/static/common/lotus-ornament.png').classes('mx-auto mb-2 h-10 w-10 opacity-70')
         ui.label(title).classes('font-display text-3xl font-bold text-foreground md:text-4xl')
@@ -197,6 +192,7 @@ def section_title(title, subtitle=None):
             ui.label(subtitle).classes('mx-auto max-w-2xl text-muted-foreground text-sm')
 
 def filter_pills(options, active_option, on_change):
+    # Bo loc
     with ui.row().classes('gap-3 mb-12'):
         for opt in options:
             is_active = opt == active_option
@@ -206,12 +202,13 @@ def filter_pills(options, active_option, on_change):
             )
 
 def empty_state(message, icon='search_off'):
+    # Trang thai trong
     with ui.column().classes('items-center justify-center py-32 w-full opacity-60 gap-4'):
         ui.icon(icon, size='64px').classes('text-muted-foreground/30')
         ui.label(message).classes('text-xl italic font-light tracking-wide')
 
 def page_header(title, subtitle):
-    # Account for fixed navbar height (56px) - Reduced for compact look
+    # Dau trang
     with ui.element('section').classes('bg-card/30 pt-16 pb-8 border-b border-border w-full flex justify-center').style('padding-top: 80px;'):
         with theme.container().classes('text-center'):
             ui.image('/static/common/lotus-ornament.png').classes('mb-6 h-12 w-12 mx-auto')
@@ -219,21 +216,15 @@ def page_header(title, subtitle):
             ui.label(subtitle).classes('max-w-2xl mx-auto text-lg text-muted-foreground font-light leading-relaxed')
 
 def pagination_controls(state, total_count, on_change):
-    """
-    State must have 'page' and 'items_per_page'
-    on_change is the refreshable function to call
-    """
+    # Dieu khien phan trang
     total_pages = (total_count + state.items_per_page - 1) // state.items_per_page
     if total_pages <= 1:
         return
         
     with ui.row().classes('w-full justify-center mt-12 gap-2 items-center'):
-        # Previous Button
         ui.button(icon='chevron_left', on_click=lambda: (setattr(state, 'page', max(1, state.page-1)), on_change.refresh())) \
             .props('flat round dense').classes('text-primary').tooltip(t('prev_page'))
         
-        # Page Numbers
-        # Logic to show a limited number of page buttons around current page
         max_btns = 5
         start_p = max(1, state.page - 2)
         end_p = min(total_pages, start_p + max_btns - 1)
@@ -256,6 +247,5 @@ def pagination_controls(state, total_count, on_change):
                 ui.label('...').classes('text-muted-foreground')
             ui.button(str(total_pages), on_click=lambda: (setattr(state, 'page', total_pages), on_change.refresh())).props('flat round dense color=grey')
 
-        # Next Button
         ui.button(icon='chevron_right', on_click=lambda: (setattr(state, 'page', min(total_pages, state.page+1)), on_change.refresh())) \
             .props('flat round dense').classes('text-primary').tooltip(t('next_page'))
