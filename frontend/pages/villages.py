@@ -46,14 +46,14 @@ async def villages_page():
                             search_input = ui.input(
                                 placeholder=t('search_village'),
                                 on_change=lambda e: (setattr(state, 'search_query', e.value or ''), setattr(state, 'page', 1), village_list.refresh())
-                            ).classes('modern-input flex-1 bg-background rounded-lg').props('outlined dense clearable debounce=500 icon=search')
+                            ).classes('modern-input flex-1 bg-background rounded-lg').props('outlined clearable debounce=500 icon=search')
                             
-                            districts = [t('all_categories'), 'Tiên Du', 'Từ Sơn', 'Yên Phong', 'TP Bắc Ninh']
+                            districts = ['All', 'Tiên Du', 'Từ Sơn', 'Yên Phong', 'TP Bắc Ninh']
                             ui.select(
-                                districts, 
-                                value=t('all_categories'),
-                                on_change=lambda e: (setattr(state, 'district_filter', e.value or t('all_categories')), setattr(state, 'page', 1), village_list.refresh())
-                            ).classes('modern-select w-44 bg-background').props('outlined dense rounded-lg options-dense')
+                                {d: (t('all_categories') if d == 'All' else d) for d in districts}, 
+                                value='All',
+                                on_change=lambda e: (setattr(state, 'district_filter', e.value if e.value != 'All' else ''), setattr(state, 'page', 1), village_list.refresh())
+                            ).classes('modern-select w-44 bg-background').props('outlined rounded-lg options-dense')
                         
                         if app.storage.user.get('role') == 'admin':
                             ui.button(t('add_village'), icon='add_location').on('click.stop', lambda: ui.navigate.to('/admin/edit/village/0')).props('unelevated rounded color=primary').classes('font-bold shadow-md shadow-primary/20 whitespace-nowrap px-6 cursor-pointer pointer-events-auto z-50')

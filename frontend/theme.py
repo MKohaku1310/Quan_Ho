@@ -387,7 +387,6 @@ def apply_theme():
                 border: 1px solid rgba(180, 120, 60, 0.2) !important;
                 border-radius: 16px !important;
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-                padding: 4px 12px !important;
             }
             .modern-input .q-field--focused .q-field__control {
                 background: white !important;

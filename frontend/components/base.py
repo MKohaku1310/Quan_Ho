@@ -161,7 +161,7 @@ def footer():
                     ui.label(t('footer_newsletter_desc')).classes('text-xs leading-relaxed opacity-50 text-[#f5f5f0] font-light')
                     
                     with ui.element('div').classes('w-full relative group'):
-                        newsletter_input = ui.input(placeholder=t('email_field') + '...').props('dark dense borderless').classes('w-full bg-white/5 rounded-full px-6 py-3 text-sm border border-white/10 focus:border-[#d68e33]/50 transition-all h-12 text-white')
+                        newsletter_input = ui.input(placeholder=t('email_field') + '...').props('dark borderless').classes('w-full bg-white/5 rounded-full px-6 text-sm border border-white/10 focus:border-[#d68e33]/50 transition-all h-12 text-white flex items-center')
                         with newsletter_input.add_slot('append'):
                             ui.button(icon='send', on_click=lambda: ui.notify(t('save_success'))).props('flat round dense color=secondary').classes('mr-2 hover:scale-125 transition-transform')
 

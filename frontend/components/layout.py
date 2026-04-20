@@ -18,7 +18,7 @@ def hero_banner():
         ui.element('div').classes('absolute inset-0 bg-[#0c0502]/65 z-0') 
         ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-[#1a0c05] via-transparent to-black/40 z-0')
         
-        with ui.element('div').classes('relative z-20 container mx-auto px-4 text-center flex flex-col items-center justify-center py-20'):
+        with ui.element('div').classes('relative z-20 w-full px-4 text-center flex flex-col items-center justify-center py-20 min-h-screen'):
             # UNESCO Label - Elegant and spaced
             ui.label(t('unesco_badge')).classes(
                 'text-[10px] md:text-xs font-bold uppercase tracking-[0.5em] text-white/70 mb-10'
@@ -35,22 +35,26 @@ def hero_banner():
             ).style('animation: fade-in-up 1s ease-out 0.4s both')
             
             # Action Buttons - Warm gold and outline
-            with ui.row().classes('mt-12 flex flex-wrap justify-center gap-6').style('animation: fade-in-up 1s ease-out 0.6s both'):
+            # Hero Buttons
+            with ui.row().classes('mt-12 flex flex-wrap justify-center items-center gap-6 w-full').style('animation: fade-in-up 1s ease-out 0.6s both'):
                 ui.button(t('hero_listen_now'), on_click=lambda: ui.navigate.to('/bai-hat')).props('unelevated rounded-sm').classes(
-                    'bg-[#d68e33] text-white font-bold px-10 py-4 h-auto text-sm hover:bg-[#b2762a] transition-all transform hover:scale-105 shadow-xl uppercase tracking-widest'
+                    'bg-primary text-white font-bold h-14 text-sm hover:bg-primary/90 transition-all transform hover:scale-105 shadow-xl uppercase tracking-widest flex items-center justify-center min-w-[200px]'
                 )
                 ui.button(t('hero_learn_more'), on_click=lambda: ui.navigate.to('/gioi-thieu')).props('outline rounded-sm').classes(
-                    'border-white/60 text-white font-bold px-10 py-4 h-auto text-sm hover:bg-white/10 backdrop-blur-sm transition-all transform hover:scale-105 uppercase tracking-widest'
+                    'border-2 border-white/60 text-white font-bold h-14 text-sm hover:bg-white/10 backdrop-blur-sm transition-all transform hover:scale-105 uppercase tracking-widest flex items-center justify-center min-w-[200px]'
                 )
         
-        # Scroll Down Indicator - Positioned at the very bottom
-        with ui.element('div').classes('absolute z-20 flex flex-col items-center gap-2 cursor-pointer group').style(
-            'bottom: 1.5rem; left: 50%; transform: translateX(-50%); animation: bounce 3s infinite;'
+        # Scroll Down Indicator - Refined positioning to prevent misalignment
+        with ui.element('div').classes('absolute z-20 cursor-pointer group').style(
+            'bottom: 1.5rem; left: 50%; transform: translateX(-50%);'
         ).on('click', lambda: ui.run_javascript(
             'document.getElementById("home-content").scrollIntoView({behavior: "smooth"})'
         )):
-            ui.label(t('scroll_down')).classes('text-white/60 text-[9px] font-bold uppercase tracking-[0.2em]')
-            ui.icon('keyboard_arrow_down', size='28px').classes('text-white/60 -mt-2')
+            with ui.element('div').classes('flex flex-col items-center gap-2').style('animation: bounce 3s infinite;'):
+                ui.label(t('scroll_down')).classes(
+                    'text-white/60 text-[9px] font-bold uppercase tracking-[0.2em] text-center -mr-[0.2em]'
+                )
+                ui.icon('keyboard_arrow_down', size='28px').classes('text-white/60 -mt-1')
 
             
 def hero_stats_section():

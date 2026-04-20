@@ -48,9 +48,9 @@ async def artists_page():
                 # Modern Search Bar (Single Row)
                 with ui.element('div').classes('modern-search-card mb-6 w-full p-2 sm:p-3 rounded-xl flex items-center gap-2 sm:gap-4'):
                     search = ui.input(
-                        placeholder=t('search_songs'),
+                        placeholder=t('search_artist'),
                         on_change=lambda e: (setattr(state, 'search_query', e.value or ''), setattr(state, 'page', 1), artists_content.refresh())
-                    ).classes('modern-input flex-1 bg-background rounded-lg').props('outlined dense clearable debounce=500 icon=search')
+                    ).classes('modern-input flex-1 bg-background rounded-lg').props('outlined clearable debounce=500 icon=search')
                     
                     if app.storage.user.get('role') == 'admin':
                         ui.button(icon='person_add').on('click.stop', lambda: ui.navigate.to('/admin/edit/artist/0')).props('unelevated round size=md').classes('bg-primary text-white shadow-md hover:scale-110 transition-transform shrink-0 cursor-pointer pointer-events-auto z-50')

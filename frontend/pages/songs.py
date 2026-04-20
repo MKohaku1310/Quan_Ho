@@ -214,7 +214,7 @@ async def song_detail_page(id: int):
                             # Comment Input Group
                             if app.storage.user.get('is_authenticated'):
                                 with ui.column().classes('w-full mt-4'):
-                                    comment_input = ui.input(placeholder=t('comment_placeholder')).props('rounded-2xl outlined dense').classes('w-full modern-input bg-white/60')
+                                    comment_input = ui.input(placeholder=t('comment_placeholder')).props('rounded-2xl outlined').classes('w-full modern-input bg-white/60 flex items-center')
                                     async def post_comment():
                                         if not comment_input.value.strip(): return
                                         if await api_client.create_comment(content=comment_input.value, melody_id=id):

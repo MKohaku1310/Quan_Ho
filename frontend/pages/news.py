@@ -166,18 +166,18 @@ async def news_page():
                 # Modern Filter Bar (Flexible layout)
                 with ui.element('div').classes('modern-search-card mb-6 w-full p-3 rounded-xl flex flex-col sm:flex-row items-center gap-3 relative z-50'):
                     search = ui.input(
-                        placeholder=t('chatbot_placeholder'),
+                        placeholder=t('search_news'),
                         on_change=lambda e: (setattr(state, 'search_query', e.value or ''), setattr(state, 'news_page', 1), setattr(state, 'events_page', 1), content_area.refresh())
-                    ).classes('modern-input flex-1 w-full bg-background rounded-lg').props('outlined dense clearable debounce=500 icon=search')
+                    ).classes('modern-input flex-1 w-full bg-background rounded-lg').props('outlined clearable debounce=500 icon=search')
                     
                     with ui.row().classes('flex-1 w-full sm:w-auto items-center justify-between sm:justify-end gap-3'):
-                        months = [t('all_categories')] + [str(i) for i in range(1, 13)]
+                        months = ['All'] + [str(i) for i in range(1, 13)]
                         month_sel = ui.select(
-                            months, 
-                            value=t('all_categories'),
+                            {m: (t('all_categories') if m == 'All' else f"{t('month_label')} {m}" if m != 'All' else m) for m in months}, 
+                            value='All',
                             label=t('news_tab'),
-                            on_change=lambda e: (setattr(state, 'month_filter', e.value or t('all_categories')), setattr(state, 'news_page', 1), setattr(state, 'events_page', 1), content_area.refresh())
-                        ).classes('modern-select w-28 sm:w-36 bg-background').props('outlined dense rounded-lg options-dense')
+                            on_change=lambda e: (setattr(state, 'month_filter', e.value if e.value != 'All' else ''), setattr(state, 'news_page', 1), setattr(state, 'events_page', 1), content_area.refresh())
+                        ).classes('modern-select w-28 sm:w-36 bg-background').props('outlined rounded-lg options-dense')
                         
                         years = [t('all_categories'), '2024', '2025', '2026']
                         year_sel = ui.select(

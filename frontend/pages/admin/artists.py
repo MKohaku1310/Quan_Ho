@@ -69,7 +69,8 @@ async def admin_artists_page():
                             for item in state.items:
                                 with ui.row().classes('w-full items-center p-4 border-b border-border/50 hover:bg-muted/30 transition-colors'):
                                     with ui.row().classes('flex-1 items-center gap-4'):
-                                        ui.avatar(image=item.get('image_url') or '').classes('shadow-sm bg-muted')
+                                        with ui.avatar().classes('shadow-sm bg-muted'):
+                                            ui.image(item.get('image_url') or '/static/common/lotus-ornament.png')
                                         ui.label(tc(item, 'name')).classes('font-bold')
                                     
                                     gen = item.get('generation', 'truyen-thong')
