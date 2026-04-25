@@ -212,41 +212,66 @@ class APIClient:
         return res is not None
 
     async def ask_chatbot(self, message: str, history: Optional[List[Dict[str, str]]] = None) -> Optional[str]:
-        # Hoi chatbot
+        # Hoi chatbot - dung timeout dai hon vi Gemini API can thoi gian xu ly
         lang = app.storage.user.get('language', 'vi')
         data = {"message": message, "language": lang}
         if history:
             data["history"] = history
-        res = await self._post("chatbot", data)
-        return res.get('response') if res else None
+        try:
+            self.clear_last_error()
+            async with httpx.AsyncClient(timeout=60.0, follow_redirects=True) as client:
+                url = f"{API_BASE_URL}/chatbot"
+                response = await client.post(url, json=data)
+                if response.status_code == 200:
+                    res = response.json()
+                    return res.get('response')
+                else:
+                    self._set_error(f"Chatbot API error: {response.status_code}")
+                    print(f"Chatbot API error: {response.status_code} - {response.text[:300]}")
+        except httpx.TimeoutException:
+            self._set_error("Chatbot timeout")
+            print("Chatbot API timeout after 60s")
+        except Exception as e:
+            self._set_error(str(e))
+            print(f"Chatbot API exception: {e}")
+        return None
 
 
-    async def get_melodies(self, skip: int = 0, limit: int = 100, category: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def get_melodies(self, skip: int = 0, limit: int = 100, category: Optional[str] = None, search: Optional[str] = None) -> List[Dict[str, Any]]:
         params = {"skip": skip, "limit": limit}
         if category: params["category"] = category
+        if search: params["search"] = search
         return await self._get("melodies", params=params)
 
-    async def get_melodies_count(self, category: Optional[str] = None) -> int:
-        params = {"category": category} if category else {}
+    async def get_melodies_count(self, category: Optional[str] = None, search: Optional[str] = None) -> int:
+        params = {}
+        if category: params["category"] = category
+        if search: params["search"] = search
         res = await self._get("melodies/count", params=params)
         return res.get('total', 0) if isinstance(res, dict) else 0
 
-    async def get_artists(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+    async def get_artists(self, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> List[Dict[str, Any]]:
         params = {"skip": skip, "limit": limit}
+        if search: params["search"] = search
         return await self._get("artists", params=params)
 
-    async def get_artists_count(self) -> int:
-        res = await self._get("artists/count")
+    async def get_artists_count(self, search: Optional[str] = None) -> int:
+        params = {"search": search} if search else {}
+        res = await self._get("artists/count", params=params)
         return res.get('total', 0) if isinstance(res, dict) else 0
 
-    async def get_locations(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+    async def get_locations(self, skip: int = 0, limit: int = 100, type: Optional[str] = None, district: Optional[str] = None, search: Optional[str] = None) -> List[Dict[str, Any]]:
         params = {"skip": skip, "limit": limit}
+        if type: params["type"] = type
+        if district: params["district"] = district
+        if search: params["search"] = search
         return await self._get("locations", params=params)
 
-    async def get_locations_count(self, type: Optional[str] = None, district: Optional[str] = None) -> int:
+    async def get_locations_count(self, type: Optional[str] = None, district: Optional[str] = None, search: Optional[str] = None) -> int:
         params = {}
         if type: params["type"] = type
         if district: params["district"] = district
+        if search: params["search"] = search
         res = await self._get("locations/count", params=params)
         return res.get('total', 0) if isinstance(res, dict) else 0
 
@@ -259,24 +284,30 @@ class APIClient:
     async def get_village(self, village_id: int) -> Optional[Dict[str, Any]]:
         return await self._get(f"locations/{int(village_id)}", use_token=False)
 
-    async def get_articles(self, article_type: Optional[str] = None, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+    async def get_articles(self, article_type: Optional[str] = None, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> List[Dict[str, Any]]:
         params = {"skip": skip, "limit": limit}
         if article_type:
             params["category"] = article_type
+        if search:
+            params["search"] = search
         return await self._get("articles", params=params)
 
-    async def get_articles_count(self, article_type: Optional[str] = None) -> int:
-        params = {"category": article_type} if article_type else {}
+    async def get_articles_count(self, article_type: Optional[str] = None, search: Optional[str] = None) -> int:
+        params = {}
+        if article_type: params["category"] = article_type
+        if search: params["search"] = search
         res = await self._get("articles/count", params=params)
         return res.get('total', 0) if isinstance(res, dict) else 0
 
-    async def get_events(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+    async def get_events(self, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> List[Dict[str, Any]]:
         params = {"skip": skip, "limit": limit}
+        if search: params["search"] = search
         use_token = bool(app.storage.user.get('access_token'))
         return await self._get("events", params=params, use_token=use_token)
 
-    async def get_events_count(self) -> int:
-        res = await self._get("events/count")
+    async def get_events_count(self, search: Optional[str] = None) -> int:
+        params = {"search": search} if search else {}
+        res = await self._get("events/count", params=params)
         return res.get('total', 0) if isinstance(res, dict) else 0
 
     async def get_event_registrations(self, event_id: int) -> List[Dict[str, Any]]:

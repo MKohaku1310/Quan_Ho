@@ -1,10 +1,19 @@
 import os
+import sys
 try:
-    import google.generativeai as genai
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+import asyncio
+import concurrent.futures
+try:
+    from google import genai
+    from google.genai import types
     HAS_GENAI = True
 except ImportError:
     HAS_GENAI = False
-    print("WARNING: google-generativeai not installed. Chatbot AI features will be disabled.")
+    print("WARNING: google-genai not installed. Chatbot AI features will be disabled.")
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db import get_db
@@ -17,15 +26,16 @@ from sqlalchemy import or_
 
 # Load environment variables from absolute path
 from pathlib import Path
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(BASE_DIR / ".env")
 
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 
 # Configure Gemini
 api_key = os.getenv("GEMINI_API_KEY")
+client = None
 if api_key and HAS_GENAI:
-    genai.configure(api_key=api_key)
+    client = genai.Client(api_key=api_key)
 
 class ChatMessage(BaseModel):
     message: str
@@ -33,17 +43,16 @@ class ChatMessage(BaseModel):
     language: str = "vi"
 
 def get_context_summary(db: Session):
-    """Lấy tóm tắt dữ liệu từ DB để đưa vào prompt cho AI"""
-    songs = db.query(models.Melody).limit(10).all()
-    events = db.query(models.Event).limit(5).all()
-    articles = db.query(models.Article).limit(5).all()
-    villages = db.query(models.Location).filter(models.Location.type == "lang-quan-ho").limit(10).all()
+    """Lấy tóm tắt dữ liệu từ DB để đưa vào prompt cho AI - Giới hạn hơn để tiết kiệm token"""
+    songs = db.query(models.Melody).limit(5).all()
+    events = db.query(models.Event).limit(3).all()
+    articles = db.query(models.Article).limit(3).all()
+    villages = db.query(models.Location).filter(models.Location.type == "lang-quan-ho").limit(5).all()
     
-    context = "Dữ liệu từ website Quan Họ Bắc Ninh:\n"
-    context += "- Bài hát: " + ", ".join([s.name for s in songs]) + "\n"
-    context += "- Sự kiện: " + ", ".join([e.title for e in events]) + "\n"
-    context += "- Làng: " + ", ".join([v.name for v in villages]) + "\n"
-    context += "- Tin tức: " + ", ".join([a.title for a in articles]) + "\n"
+    context = "Một số dữ liệu tiêu biểu từ website:\n"
+    context += "- Làn điệu: " + ", ".join([s.name for s in songs]) + "\n"
+    context += "- Sự kiện sắp tới: " + ", ".join([e.title for e in events]) + "\n"
+    context += "- Làng Quan họ cổ: " + ", ".join([v.name for v in villages]) + "\n"
     return context
 
 def get_relevant_context(db: Session, query: str) -> str:
@@ -90,8 +99,11 @@ def get_relevant_context(db: Session, query: str) -> str:
 async def ask_chatbot(msg: ChatMessage, db: Session = Depends(get_db)):
     text = msg.message.lower()
     
+    print(f"[CHATBOT] Received message: {msg.message[:80]}...")
+    print(f"[CHATBOT] API key present: {bool(api_key)}, HAS_GENAI: {HAS_GENAI}, Client: {bool(client)}")
+    
     # 1. AI GENERATION (Primary Path)
-    if api_key and HAS_GENAI:
+    if client and HAS_GENAI:
         try:
             context = get_context_summary(db)
             relevant_context = get_relevant_context(db, msg.message)
@@ -127,31 +139,91 @@ async def ask_chatbot(msg: ChatMessage, db: Session = Depends(get_db)):
             {history_str}
             """
             
-            model = genai.GenerativeModel(
-                model_name='gemini-flash-latest',
-                system_instruction=system_instruction
-            )
+            # 1. KEYWORD MATCHING (Quick Response Layer) - Move here to be faster
+            if any(k in text for k in ['lịch sử', 'ý nghĩa', 'nguồn gốc']):
+                return {"response": "Dạ, Quan họ Bắc Ninh có lịch sử ngàn năm, là di sản văn hóa phi vật thể đại diện của nhân loại. Quý khách có thể tìm hiểu thêm ở mục 'Giới thiệu' để biết chi tiết hơn về cội nguồn của những làn điệu mượt mà này ạ."}
             
-            response = await model.generate_content_async(msg.message)
+            if any(k in text for k in ['đăng ký', 'tham gia']):
+                return {"response": "Dạ thưa Quý khách, để đăng ký tham gia các sự kiện văn hóa, Quý khách vui lòng vào mục 'SỰ KIỆN' trên thanh menu, chọn một lễ hội và nhấn nút 'Đăng ký' nhé. Liền chị rất mong được đón tiếp Quý khách ạ!"}
             
-            if response and response.text:
-                return {"response": response.text.strip()}
-            else:
-                return {"response": "Dạ, em Liền chị xin lỗi nhưng câu hỏi này em chưa rõ ý ạ. Quý khách có thể hỏi lại về các làn điệu, làng quan họ hoặc các nghệ nhân được không ạ?"}
+            if any(k in text for k in ['buồn', 'vui', 'nhớ', 'yêu']):
+                return {"response": "Dạ, người Quan họ có câu 'Người ơi người ở đừng về'. Lúc này nghe một vài làn điệu cổ như 'Tương phùng tương ngộ' chắc hẳn lòng sẽ nhẹ nhõm và yêu đời hơn nhiều đó Quý khách ạ."}
+
+            # 2. AI GENERATION (Primary Path)
+            models_to_try = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash-lite']
+            max_retries = 3
+            retry_delay = 1
+            
+            for model_name in models_to_try:
+                for attempt in range(max_retries):
+                    try:
+                        print(f"[CHATBOT] Trying model: {model_name} (attempt {attempt+1}/{max_retries})")
+                        
+                        # Tat cac bo loc an toan de tranh loi 400 hoac chan phan hoi
+                        safety_settings = [
+                            types.SafetySetting(category="HARM_CATEGORY_HARASSMENT", threshold="BLOCK_NONE"),
+                            types.SafetySetting(category="HARM_CATEGORY_HATE_SPEECH", threshold="BLOCK_NONE"),
+                            types.SafetySetting(category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold="BLOCK_NONE"),
+                            types.SafetySetting(category="HARM_CATEGORY_DANGEROUS_CONTENT", threshold="BLOCK_NONE"),
+                        ]
+                        
+                        # Chay sync API trong thread pool de tranh treo event loop
+                        loop = asyncio.get_event_loop()
+                        with concurrent.futures.ThreadPoolExecutor() as pool:
+                            response = await loop.run_in_executor(
+                                pool,
+                                lambda: client.models.generate_content(
+                                    model=model_name,
+                                    contents=msg.message,
+                                    config=types.GenerateContentConfig(
+                                        system_instruction=system_instruction,
+                                        safety_settings=safety_settings
+                                    )
+                                )
+                            )
+                        
+                        if response and response.text:
+                            print(f"[CHATBOT] SUCCESS with model {model_name}")
+                            return {"response": response.text.strip()}
+                        else:
+                            print(f"[CHATBOT] Model {model_name} returned empty response, candidates: {response.candidates if response else 'None'}")
+                            return {"response": "Dạ, em Liền chị xin lỗi nhưng câu hỏi này em chưa rõ ý ạ. Quý khách có thể hỏi lại về các làn điệu, làng quan họ hoặc các nghệ nhân được không ạ?"}
+                            
+                    except Exception as api_err:
+                        err_msg = str(api_err)
+                        print(f"[CHATBOT] ERROR with {model_name}: {err_msg[:200]}")
+                        
+                        if "429" in err_msg:
+                            if attempt < max_retries - 1:
+                                print(f"[CHATBOT] Rate limited (429), retrying in {retry_delay}s...")
+                                await asyncio.sleep(retry_delay)
+                                retry_delay *= 2
+                                continue
+                            else:
+                                # Het retry cho model nay, thu model tiep theo
+                                print(f"[CHATBOT] All retries exhausted for {model_name}, trying next model...")
+                                break
+                        elif "404" in err_msg or "NOT_FOUND" in err_msg:
+                            print(f"[CHATBOT] Model {model_name} not found, trying next...")
+                            break
+                        else:
+                            # Loi khac (500, network, etc), thu model tiep
+                            print(f"[CHATBOT] Non-retryable error, trying next model...")
+                            break
+                
+                # Reset retry delay cho model tiep theo
+                retry_delay = 2
+            
+            # Tat ca model deu that bai
+            print("[CHATBOT] ALL MODELS FAILED!")
+            return {"response": "Dạ, em Liền chị xin lỗi ạ. Hiện tại hệ thống AI đang gặp sự cố kỹ thuật. Quý khách vui lòng thử lại sau ít phút nhé!"}
+
         except Exception as e:
-            print(f"CHATBOT AI ERROR: {e}")
+            print(f"[CHATBOT] CRITICAL ERROR: {type(e).__name__}: {e}")
+            if "429" in str(e):
+                return {"response": "Dạ, em Liền chị xin lỗi ạ. Hiện tại đang có nhiều Quý khách cùng thưa chuyện quá nên em hơi bận một chút, Quý khách vui lòng đợi em vài giây rồi hỏi lại em nhé!"}
             # Fallback to keyword matching if AI fails
     
-    # 2. KEYWORD MATCHING (Fallback Layer)
-    if any(k in text for k in ['lịch sử', 'ý nghĩa', 'nguồn gốc']):
-        return {"response": "Dạ, Quan họ Bắc Ninh có lịch sử ngàn năm, là di sản văn hóa phi vật thể đại diện của nhân loại. Bạn có thể tìm hiểu thêm ở mục 'Giới thiệu' ạ."}
-    
-    if any(k in text for k in ['đăng ký', 'tham gia']):
-        return {"response": "Thưa bạn, để đăng ký tham gia các sự kiện văn hóa, bạn vui lòng vào mục 'Sự kiện' trên thanh menu, chọn một lễ hội và nhấn nút 'Đăng ký' nhé!"}
-    
-    if any(k in text for k in ['buồn', 'vui', 'nhớ', 'yêu']):
-        return {"response": "Dạ, người Quan họ có câu 'Người ơi người ở đừng về'. Lúc này nghe một vài làn điệu cổ như 'Tương phùng tương ngộ' chắc hẳn lòng sẽ nhẹ nhõm hơn nhiều đó bạn."}
-
     # 3. FINAL FALLBACK
     if not api_key or not HAS_GENAI:
         return {"response": "Dạ, em Liền chị xin lỗi Quý khách. Hiện tại hệ thống Trí tuệ nhân tạo (Gemini API) chưa được cấu hình khóa (API Key). Em chỉ có thể trả lời các thông tin cơ bản về Quan họ. Quý khách vui lòng kiểm tra tệp .env để kích hoạt em nhé!"}

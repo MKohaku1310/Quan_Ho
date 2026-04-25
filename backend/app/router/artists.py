@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from typing import List, Optional, Dict, Any
 from app import crud, schemas
 from app.db import get_db
 
@@ -29,12 +29,12 @@ def update_artist(
     return db_artist
 
 @router.get("", response_model=List[schemas.Artist])
-def read_artists(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.get_artists(db, skip=skip, limit=limit)
+def read_artists(skip: int = 0, limit: int = 100, search: Optional[str] = None, db: Session = Depends(get_db)):
+    return crud.get_artists(db, skip=skip, limit=limit, search=search)
 
 @router.get("/count")
-def get_artists_count(db: Session = Depends(get_db)):
-    return {"total": crud.count_artists(db)}
+def get_artists_count(search: Optional[str] = None, db: Session = Depends(get_db)):
+    return {"total": crud.count_artists(db, search=search)}
 
 @router.get("/{artist_id}", response_model=schemas.Artist)
 def read_artist(artist_id: int, db: Session = Depends(get_db)):

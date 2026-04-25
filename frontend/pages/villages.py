@@ -13,7 +13,7 @@ async def villages_page():
         class State:
             def __init__(self):
                 self.search_query = ''
-                self.district_filter = t('all_categories')
+                self.district_filter = ''
                 self.page = 1
                 self.items_per_page = 12
                 self.total_count = 0
@@ -23,9 +23,9 @@ async def villages_page():
 
         @ui.refreshable
         async def village_list():
-            state.total_count = await api_client.get_locations_count()
+            state.total_count = await api_client.get_locations_count(type='lang-quan-ho', district=state.district_filter, search=state.search_query)
             skip = (state.page - 1) * state.items_per_page
-            state.villages = await api_client.get_villages(skip=skip, limit=state.items_per_page)
+            state.villages = await api_client.get_locations(skip=skip, limit=state.items_per_page, type='lang-quan-ho', district=state.district_filter, search=state.search_query)
 
             if not state.villages:
                 components.empty_state(t('no_villages_found'))

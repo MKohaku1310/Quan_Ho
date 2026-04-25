@@ -34,18 +34,20 @@ def read_melodies(
     limit: int = 100, 
     village: Optional[str] = None,
     category: Optional[str] = None,
+    search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    melodies = crud.get_melodies(db, skip=skip, limit=limit, village=village, category=category)
+    melodies = crud.get_melodies(db, skip=skip, limit=limit, village=village, category=category, search=search)
     return melodies
 
 @router.get("/count")
 def get_melodies_count(
     village: Optional[str] = None,
     category: Optional[str] = None,
+    search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    return {"total": crud.count_melodies(db, village=village, category=category)}
+    return {"total": crud.count_melodies(db, village=village, category=category, search=search)}
 
 @router.get("/search")
 def search_melodies(search: str, db: Session = Depends(get_db)):

@@ -44,13 +44,14 @@ def read_articles(
     skip: int = 0, 
     limit: int = 100, 
     category: Optional[str] = None,
+    search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    return crud.get_articles(db, skip=skip, limit=limit, category=category)
+    return crud.get_articles(db, skip=skip, limit=limit, category=category, search=search)
 
 @router.get("/count")
-def get_articles_count(category: Optional[str] = None, db: Session = Depends(get_db)):
-    return {"total": crud.count_articles(db, category=category)}
+def get_articles_count(category: Optional[str] = None, search: Optional[str] = None, db: Session = Depends(get_db)):
+    return {"total": crud.count_articles(db, category=category, search=search)}
 
 @router.get("/{article_id}", response_model=schemas.Article)
 def read_article(article_id: int, db: Session = Depends(get_db)):

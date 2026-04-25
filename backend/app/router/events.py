@@ -86,16 +86,17 @@ def delete_event(
 def read_events(
     skip: int = 0, 
     limit: int = 100, 
+    search: Optional[str] = None,
     token: Optional[str] = Depends(oauth2_optional),
     db: Session = Depends(get_db)
 ):
     user_id = _get_optional_user_id(token, db)
-    events = crud.get_events(db, skip=skip, limit=limit)
+    events = crud.get_events(db, skip=skip, limit=limit, search=search)
     return [_build_event_response(event, db, user_id=user_id) for event in events]
 
 @router.get("/count")
-def get_events_count(db: Session = Depends(get_db)):
-    return {"total": crud.count_events(db)}
+def get_events_count(search: Optional[str] = None, db: Session = Depends(get_db)):
+    return {"total": crud.count_events(db, search=search)}
 
 @router.get("/{event_id}", response_model=schemas.Event)
 def read_event(

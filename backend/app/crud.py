@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, or_
 from typing import List, Optional
 from app import models, schemas, security
 import hashlib
@@ -142,20 +142,33 @@ def get_melodies(
     skip: int = 0, 
     limit: int = 100, 
     village: Optional[str] = None,
-    category: Optional[str] = None
+    category: Optional[str] = None,
+    search: Optional[str] = None
 ) -> List[models.Melody]:
     query = db.query(models.Melody)
     if village:
         query = query.filter(models.Melody.village == village)
     if category:
         query = query.filter(models.Melody.category == category)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Melody.name).ilike(search_norm),
+                func.lower(models.Melody.description).ilike(search_norm),
+                func.lower(models.Melody.lyrics).ilike(search_norm)
+            )
+        )
     return query.offset(skip).limit(limit).all()
 
 def get_melodies_by_search(db: Session, search: str, limit: int = 20) -> List[models.Melody]:
+    search_norm = f"%{search.strip().lower()}%"
     return db.query(models.Melody).filter(
-        models.Melody.name.contains(search) | 
-        models.Melody.description.contains(search) |
-        models.Melody.lyrics.contains(search)
+        or_(
+            func.lower(models.Melody.name).ilike(search_norm),
+            func.lower(models.Melody.description).ilike(search_norm),
+            func.lower(models.Melody.lyrics).ilike(search_norm)
+        )
     ).limit(limit).all()
 
 def create_artist(db: Session, artist: schemas.ArtistCreate) -> models.Artist:
@@ -168,8 +181,18 @@ def create_artist(db: Session, artist: schemas.ArtistCreate) -> models.Artist:
 def get_artist(db: Session, artist_id: int) -> Optional[models.Artist]:
     return db.query(models.Artist).filter(models.Artist.id == artist_id).first()
 
-def get_artists(db: Session, skip: int = 0, limit: int = 100) -> List[models.Artist]:
-    return db.query(models.Artist).offset(skip).limit(limit).all()
+def get_artists(db: Session, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> List[models.Artist]:
+    query = db.query(models.Artist)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Artist.name).ilike(search_norm),
+                func.lower(models.Artist.description).ilike(search_norm),
+                func.lower(models.Artist.biography).ilike(search_norm)
+            )
+        )
+    return query.offset(skip).limit(limit).all()
 
 def create_article(db: Session, article: schemas.ArticleCreate, author_id: Optional[int]) -> models.Article:
     db_article = models.Article(**article.model_dump(), author_id=author_id)
@@ -178,10 +201,19 @@ def create_article(db: Session, article: schemas.ArticleCreate, author_id: Optio
     db.refresh(db_article)
     return db_article
 
-def get_articles(db: Session, skip: int = 0, limit: int = 100, category: Optional[str] = None) -> List[models.Article]:
+def get_articles(db: Session, skip: int = 0, limit: int = 100, category: Optional[str] = None, search: Optional[str] = None) -> List[models.Article]:
     query = db.query(models.Article)
     if category:
         query = query.filter(models.Article.category == category)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Article.title).ilike(search_norm),
+                func.lower(models.Article.content).ilike(search_norm),
+                func.lower(models.Article.description).ilike(search_norm)
+            )
+        )
     return query.offset(skip).limit(limit).all()
 
 def get_article(db: Session, article_id: int) -> Optional[models.Article]:
@@ -199,7 +231,8 @@ def get_locations(
     skip: int = 0,
     limit: int = 100,
     type: Optional[str] = None,
-    district: Optional[str] = None
+    district: Optional[str] = None,
+    search: Optional[str] = None
 ) -> List[models.Location]:
     query = db.query(models.Location)
     if type:
@@ -207,6 +240,15 @@ def get_locations(
     if district:
         district_norm = district.strip().lower()
         query = query.filter(func.lower(func.trim(models.Location.district)) == district_norm)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Location.name).ilike(search_norm),
+                func.lower(models.Location.description).ilike(search_norm),
+                func.lower(models.Location.history).ilike(search_norm)
+            )
+        )
     return query.offset(skip).limit(limit).all()
 
 def create_event(db: Session, event: schemas.EventCreate) -> models.Event:
@@ -216,8 +258,18 @@ def create_event(db: Session, event: schemas.EventCreate) -> models.Event:
     db.refresh(db_event)
     return db_event
 
-def get_events(db: Session, skip: int = 0, limit: int = 100) -> List[models.Event]:
-    return db.query(models.Event).offset(skip).limit(limit).all()
+def get_events(db: Session, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> List[models.Event]:
+    query = db.query(models.Event)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Event.title).ilike(search_norm),
+                func.lower(models.Event.description).ilike(search_norm),
+                func.lower(models.Event.location).ilike(search_norm)
+            )
+        )
+    return query.offset(skip).limit(limit).all()
 
 def create_event_registration(db: Session, event_id: int, user_id: int, registration_data: dict) -> models.EventRegistration:
     db_reg = models.EventRegistration(
@@ -382,34 +434,81 @@ def delete_comment(db: Session, comment_id: int) -> bool:
 def count_users(db: Session) -> int:
     return db.query(models.User).count()
 
-def count_melodies(db: Session, village: Optional[str] = None, category: Optional[str] = None) -> int:
+def count_melodies(db: Session, village: Optional[str] = None, category: Optional[str] = None, search: Optional[str] = None) -> int:
     query = db.query(models.Melody)
     if village:
         query = query.filter(models.Melody.village == village)
     if category:
         query = query.filter(models.Melody.category == category)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Melody.name).ilike(search_norm),
+                func.lower(models.Melody.description).ilike(search_norm),
+                func.lower(models.Melody.lyrics).ilike(search_norm)
+            )
+        )
     return query.count()
 
-def count_artists(db: Session) -> int:
-    return db.query(models.Artist).count()
+def count_artists(db: Session, search: Optional[str] = None) -> int:
+    query = db.query(models.Artist)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Artist.name).ilike(search_norm),
+                func.lower(models.Artist.description).ilike(search_norm),
+                func.lower(models.Artist.biography).ilike(search_norm)
+            )
+        )
+    return query.count()
 
-def count_articles(db: Session, category: Optional[str] = None) -> int:
+def count_articles(db: Session, category: Optional[str] = None, search: Optional[str] = None) -> int:
     query = db.query(models.Article)
     if category:
         query = query.filter(models.Article.category == category)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Article.title).ilike(search_norm),
+                func.lower(models.Article.content).ilike(search_norm),
+                func.lower(models.Article.description).ilike(search_norm)
+            )
+        )
     return query.count()
 
-def count_locations(db: Session, type: Optional[str] = None, district: Optional[str] = None) -> int:
+def count_locations(db: Session, type: Optional[str] = None, district: Optional[str] = None, search: Optional[str] = None) -> int:
     query = db.query(models.Location)
     if type:
         query = query.filter(models.Location.type == type)
     if district:
         district_norm = district.strip().lower()
         query = query.filter(func.lower(func.trim(models.Location.district)) == district_norm)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Location.name).ilike(search_norm),
+                func.lower(models.Location.description).ilike(search_norm),
+                func.lower(models.Location.history).ilike(search_norm)
+            )
+        )
     return query.count()
 
-def count_events(db: Session) -> int:
-    return db.query(models.Event).count()
+def count_events(db: Session, search: Optional[str] = None) -> int:
+    query = db.query(models.Event)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Event.title).ilike(search_norm),
+                func.lower(models.Event.description).ilike(search_norm),
+                func.lower(models.Event.location).ilike(search_norm)
+            )
+        )
+    return query.count()
 
 def count_registrations(db: Session, event_id: Optional[int] = None) -> int:
     query = db.query(models.EventRegistration)

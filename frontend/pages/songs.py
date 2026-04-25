@@ -39,17 +39,9 @@ async def songs_page():
                     cat_map = {t('cat_co'): 'co', t('cat_moi'): 'moi', t('cat_cai_bien'): 'cai-bien'}
                     target_cat = cat_map.get(state.category)
 
-                    if state.search:
-                        # Search API does not support pagination/filtering on backend yet
-                        results = await api_client.search_melodies(state.search)
-                        if target_cat:
-                            results = [m for m in results if m.get('category') == target_cat]
-                        
-                        state.total_count = len(results)
-                        melodies = results[skip : skip + limit]
-                    else:
-                        state.total_count = await api_client.get_melodies_count(category=target_cat)
-                        melodies = await api_client.get_melodies(skip=skip, limit=limit, category=target_cat)
+                    # Use improved API that supports combined search + filtering + pagination
+                    state.total_count = await api_client.get_melodies_count(category=target_cat, search=state.search)
+                    melodies = await api_client.get_melodies(skip=skip, limit=limit, category=target_cat, search=state.search)
 
                     # Compact Modern Search & Filter Bar (Single Row)
                     with ui.element('div').classes('modern-search-card mb-6 w-full p-2 sm:p-3 rounded-xl flex items-center gap-2 sm:gap-4'):

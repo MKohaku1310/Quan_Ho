@@ -45,9 +45,10 @@ def read_locations(
     limit: int = 100, 
     type: Optional[str] = None,
     district: Optional[str] = None,
+    search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    locations = crud.get_locations(db, skip=skip, limit=limit, type=type, district=district)
+    locations = crud.get_locations(db, skip=skip, limit=limit, type=type, district=district, search=search)
     for loc in locations:
         if not loc.featured_songs:
             melodies = db.query(models.Melody).filter(models.Melody.village == loc.name).limit(3).all()
@@ -59,9 +60,10 @@ def read_locations(
 def get_locations_count(
     type: Optional[str] = None,
     district: Optional[str] = None,
+    search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    return {"total": crud.count_locations(db, type=type, district=district)}
+    return {"total": crud.count_locations(db, type=type, district=district, search=search)}
 
 @router.get("/{location_id}", response_model=schemas.Location)
 def read_location(location_id: int, db: Session = Depends(get_db)):

@@ -106,15 +106,15 @@ async def news_page():
 
         @ui.refreshable
         async def content_area():
-            # Load News
-            state.news_count = await api_client.get_articles_count(article_type='tin-tuc')
+            # Load News with Search
+            state.news_count = await api_client.get_articles_count(article_type='tin-tuc', search=state.search_query)
             news_skip = (state.news_page - 1) * state.items_per_page
-            state.news_items = await api_client.get_articles(article_type='tin-tuc', skip=news_skip, limit=state.items_per_page)
+            state.news_items = await api_client.get_articles(article_type='tin-tuc', skip=news_skip, limit=state.items_per_page, search=state.search_query)
 
-            # Load Events
-            state.events_count = await api_client.get_events_count()
+            # Load Events with Search
+            state.events_count = await api_client.get_events_count(search=state.search_query)
             events_skip = (state.events_page - 1) * state.items_per_page
-            state.events_items = await api_client.get_events(skip=events_skip, limit=state.items_per_page)
+            state.events_items = await api_client.get_events(skip=events_skip, limit=state.items_per_page, search=state.search_query)
 
             with ui.tabs().classes('w-full border-b border-border bg-card/30 rounded-t-2xl shadow-sm') as tabs:
                 news_tab = ui.tab(t('news_tab'), icon='article').classes('font-bold px-4 sm:px-8 py-4')
@@ -173,9 +173,9 @@ async def news_page():
                     with ui.row().classes('flex-1 w-full sm:w-auto items-center justify-between sm:justify-end gap-3'):
                         months = ['All'] + [str(i) for i in range(1, 13)]
                         month_sel = ui.select(
-                            {m: (t('all_categories') if m == 'All' else f"{t('month_label')} {m}" if m != 'All' else m) for m in months}, 
+                            {m: (t('all_categories') if m == 'All' else f"{t('month_label')} {m}") for m in months}, 
                             value='All',
-                            label=t('news_tab'),
+                            label=t('month_label'),
                             on_change=lambda e: (setattr(state, 'month_filter', e.value if e.value != 'All' else ''), setattr(state, 'news_page', 1), setattr(state, 'events_page', 1), content_area.refresh())
                         ).classes('modern-select w-28 sm:w-36 bg-background').props('outlined rounded-lg options-dense')
                         
@@ -183,7 +183,7 @@ async def news_page():
                         year_sel = ui.select(
                             years, 
                             value=t('all_categories'),
-                            label='Năm',
+                            label=t('year_label'),
                             on_change=lambda e: (setattr(state, 'year_filter', e.value or t('all_categories')), setattr(state, 'news_page', 1), setattr(state, 'events_page', 1), content_area.refresh())
                         ).classes('modern-select w-28 sm:w-36 bg-background').props('outlined dense rounded-lg options-dense')
                         

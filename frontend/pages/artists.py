@@ -23,9 +23,9 @@ async def artists_page():
 
         @ui.refreshable
         async def artists_content():
-            state.total_count = await api_client.get_artists_count()
+            state.total_count = await api_client.get_artists_count(search=state.search_query)
             skip = (state.page - 1) * state.items_per_page
-            state.artists = await api_client.get_artists(skip=skip, limit=state.items_per_page)
+            state.artists = await api_client.get_artists(skip=skip, limit=state.items_per_page, search=state.search_query)
 
             if not state.artists:
                 components.empty_state(t('searching_artists'))
