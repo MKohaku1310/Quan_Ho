@@ -352,8 +352,35 @@ def event_grid_card(item, on_register=None):
                         ui.label(t('slots_remaining').format(slots=slots)).classes('font-medium')
                 
                 is_registered = item.get('is_registered', False)
-                btn_text = t('registered_btn') if is_registered else t('register_participate')
+                btn_text = 'HỦY ĐĂNG KÝ' if is_registered else t('register_participate')
+                btn_icon = 'cancel' if is_registered else 'how_to_reg'
+                btn_color = 'red-500' if is_registered else 'primary'
                 
-                btn = ui.button(btn_text, icon='how_to_reg' if not is_registered else 'check_circle').classes('w-full mt-auto py-2.5 rounded-lg font-bold tracking-wide shadow-sm').props(f'color="{"grey" if is_registered else "primary"}" {"disable" if is_registered else ""} unelevated')
-                if on_register:
-                    btn.on('click', lambda e: on_register(item, btn))
+                async def handle_click():
+                    if is_registered:
+                        with ui.dialog() as confirm, ui.card().classes('p-8 rounded-2xl max-w-sm'):
+                            ui.label('Xác nhận hủy đăng ký?').classes('text-xl font-bold mb-4')
+                            ui.label('Bạn sẽ không còn trong danh sách tham gia sự kiện này.').classes('text-muted-foreground mb-6')
+                            with ui.row().classes('w-full justify-end gap-3'):
+                                ui.button(t('cancel'), on_click=confirm.close).props('flat')
+                                async def do_unreg():
+                                    unreg_btn.props('loading')
+                                    try:
+                                        if await api_client.unregister_event(item['id']):
+                                            ui.notify('Đã hủy đăng ký thành công', type='positive')
+                                            confirm.close()
+                                            ui.navigate.reload()
+                                        else:
+                                            error = api_client.get_last_error()
+                                            ui.notify(f'Không thể hủy đăng ký: {error or "Lỗi không xác định"}', type='negative')
+                                    finally:
+                                        unreg_btn.props(remove='loading')
+                                        
+                                unreg_btn = ui.button('Hủy đăng ký', on_click=do_unreg).props('unelevated color=negative')
+                        confirm.open()
+                    elif on_register:
+                        on_register(item, btn)
+
+                btn = ui.button(btn_text, icon=btn_icon, on_click=handle_click).classes('w-full mt-auto py-2.5 rounded-lg font-bold tracking-wide shadow-sm').props(f'color="{btn_color}" unelevated')
+                if is_registered:
+                    btn.classes('bg-red-50 text-red-600 border border-red-100 shadow-none hover:bg-red-600 hover:text-white transition-all')

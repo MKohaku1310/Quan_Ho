@@ -106,12 +106,12 @@ async def news_page():
 
         @ui.refreshable
         async def content_area():
-            # Load News with Search
-            state.news_count = await api_client.get_articles_count(article_type='tin-tuc', search=state.search_query)
+            # Load all News Articles (removing strict 'tin-tuc' filter to show all heritage news)
+            state.news_count = await api_client.get_articles_count(search=state.search_query)
             news_skip = (state.news_page - 1) * state.items_per_page
-            state.news_items = await api_client.get_articles(article_type='tin-tuc', skip=news_skip, limit=state.items_per_page, search=state.search_query)
+            state.news_items = await api_client.get_articles(skip=news_skip, limit=state.items_per_page, search=state.search_query)
 
-            # Load Events with Search
+            # Load Events
             state.events_count = await api_client.get_events_count(search=state.search_query)
             events_skip = (state.events_page - 1) * state.items_per_page
             state.events_items = await api_client.get_events(skip=events_skip, limit=state.items_per_page, search=state.search_query)
@@ -275,13 +275,35 @@ async def _render_detail_view(data, is_event=False, related_news=None):
                     ui.html(tc(data, 'content') or tc(data, 'description') or t('updating')).classes('text-xl leading-[2.2] text-foreground/90 text-justify font-medium')
                     
                     if is_event:
+                        async def handle_unregister(event_id):
+                            with ui.dialog() as confirm, ui.card().classes('p-8 rounded-2xl max-w-sm'):
+                                ui.label('Xác nhận hủy đăng ký?').classes('text-xl font-bold mb-4')
+                                ui.label('Bạn sẽ không còn trong danh sách tham gia sự kiện này.').classes('text-muted-foreground mb-6')
+                                with ui.row().classes('w-full justify-end gap-3'):
+                                    ui.button(t('cancel'), on_click=confirm.close).props('flat')
+                                    async def do_unreg():
+                                        unreg_btn_det.props('loading')
+                                        try:
+                                            if await api_client.unregister_event(event_id):
+                                                ui.notify('Đã hủy đăng ký thành công', type='positive')
+                                                confirm.close()
+                                                ui.navigate.reload()
+                                            else:
+                                                error = api_client.get_last_error()
+                                                ui.notify(f'Không thể hủy đăng ký: {error or "Lỗi không xác định"}', type='negative')
+                                        finally:
+                                            unreg_btn_det.props(remove='loading')
+                                    unreg_btn_det = ui.button('Hủy đăng ký', on_click=do_unreg).props('unelevated color=negative')
+                            confirm.open()
+
                         with ui.row().classes('w-full justify-center mt-16 pt-8 border-t border-border/40'):
                             is_reg = data.get('is_registered', False)
-                            btn_text = t('already_registered') if is_reg else t('register_event')
-                            btn_props = 'color="grey" disable icon="check_circle"' if is_reg else 'color="primary" unelevated size="lg" icon="how_to_reg"'
-                            
-                            btn = ui.button(btn_text).props(btn_props).classes('px-12 py-4 rounded-2xl font-black shadow-xl shadow-primary/20 hover:scale-105 transition-transform uppercase tracking-widest')
-                            if not is_reg:
+                            if is_reg:
+                                with ui.column().classes('items-center gap-3'):
+                                    ui.button(t('already_registered')).props('color="grey" disable icon="check_circle" size="lg"').classes('px-12 py-4 rounded-2xl font-black shadow-xl uppercase tracking-widest')
+                                    ui.button('Hủy đăng ký tham gia', on_click=lambda: handle_unregister(data['id'])).props('flat color="negative" size="sm"').classes('font-bold')
+                            else:
+                                btn = ui.button(t('register_event')).props('color="primary" unelevated size="lg" icon="how_to_reg"').classes('px-12 py-4 rounded-2xl font-black shadow-xl shadow-primary/20 hover:scale-105 transition-transform uppercase tracking-widest')
                                 btn.on('click', lambda: _show_registration_dialog(data, btn))
                     
                     # Social Interaction Row

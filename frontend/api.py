@@ -4,7 +4,7 @@ from nicegui import app, ui
 import os
 
 # Lay URL API tu bien moi truong, mac dinh la localhost
-API_BASE_URL = os.getenv("API_URL", "http://localhost:8000/api")
+API_BASE_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api")
 if API_BASE_URL.endswith('/'):
     API_BASE_URL = API_BASE_URL[:-1]
 
@@ -38,12 +38,20 @@ class APIClient:
                     return response.json()
                 elif response.status_code == 401:
                     await self.logout()
-                    return []
+                    return None
                 else:
-                    self._set_error(f"{response.status_code}: {response.text[:300]}")
+                    err_msg = f"API Error {response.status_code}: {response.text[:100]}"
+                    print(f"DEBUG: {err_msg}")
+                    self._set_error(err_msg)
+                    if response.status_code >= 500:
+                        ui.notify(f"Lỗi hệ thống ({response.status_code}).", type='negative')
+                    return None
         except Exception as e:
-            self._set_error(str(e))
-        return []
+            err_msg = f"Connection Error: {str(e)}"
+            print(f"DEBUG: {err_msg}")
+            self._set_error(err_msg)
+            # ui.notify("Không thể kết nối đến máy chủ Backend.", type='negative')
+            return None
 
 
     async def _post(self, endpoint: str, data: Dict[str, Any], use_token: bool = False) -> Optional[Dict[str, Any]]:
@@ -128,6 +136,7 @@ class APIClient:
 
             async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 url = f"{API_BASE_URL}/{endpoint}"
+                print(f"DEBUG: DELETE URL = {url}")
                 response = await client.delete(url, headers=headers)
                 if response.status_code in [200, 204]:
                     return {"message": "Deleted successfully"}
@@ -171,6 +180,12 @@ class APIClient:
         app.storage.user.clear()
         app.storage.user.update({'access_token': None, 'is_authenticated': False, 'role': None, 'user_name': None})
         ui.navigate.to('/')
+
+    async def get_current_user_optional(self) -> Optional[Dict[str, Any]]:
+        # Helper to get current user if possible, otherwise None
+        if not app.storage.user.get('is_authenticated'):
+            return None
+        return await self.get_me()
 
     async def get_me(self) -> Optional[Dict[str, Any]]:
         # Lay thong tin ca nhan
@@ -326,6 +341,10 @@ class APIClient:
 
     async def register_event(self, event_id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         return await self._post(f"events/{event_id}/register", data, use_token=True)
+        
+    async def unregister_event(self, event_id: int) -> bool:
+        res = await self._post(f"events/{event_id}/unregister", {}, use_token=True)
+        return res is not None
 
     async def search_melodies(self, query: str) -> List[Dict[str, Any]]:
         if not query:
@@ -431,6 +450,7 @@ class APIClient:
                 response = await client.get(f"{API_BASE_URL}/events/{event_id}", headers=headers)
                 if response.status_code == 200:
                     return response.json()
+                print(f"API ERROR: {response.status_code} - {response.text[:200]}")
                 self._set_error(f"{response.status_code}: {response.text[:300]}")
         except Exception as e:
             self._set_error(str(e))
@@ -472,6 +492,59 @@ class APIClient:
 
     async def remove_favorite(self, melody_id: int) -> bool:
         res = await self._delete(f"favorites/{melody_id}", use_token=True)
+        return res is not None
+
+    # Shop API
+    async def get_products(self, skip: int = 0, limit: int = 100, category: Optional[str] = None, search: Optional[str] = None) -> List[Dict[str, Any]]:
+        params = {"skip": skip, "limit": limit}
+        if category: params["category"] = category
+        if search: params["search"] = search
+        res = await self._get("products", params=params)
+        return res if isinstance(res, list) else []
+
+    async def get_products_count(self, category: Optional[str] = None, search: Optional[str] = None) -> int:
+        params = {}
+        if category: params["category"] = category
+        if search: params["search"] = search
+        res = await self._get("products/count", params=params)
+        return res.get('total', 0) if isinstance(res, dict) else 0
+
+    async def get_product(self, product_id: int) -> Optional[Dict[str, Any]]:
+        return await self._get(f"products/{product_id}")
+
+    async def create_order(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        use_token = bool(app.storage.user.get('access_token'))
+        return await self._post("orders", data, use_token=use_token)
+
+    async def get_my_orders(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+        params = {"skip": skip, "limit": limit}
+        res = await self._get("orders", params=params, use_token=True)
+        return res if isinstance(res, list) else []
+
+    async def get_order(self, order_id: int) -> Optional[Dict[str, Any]]:
+        return await self._get(f"orders/{order_id}", use_token=True)
+
+    # Admin Shop API
+    async def admin_get_all_orders(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+        params = {"skip": skip, "limit": limit}
+        res = await self._get("orders/all", params=params, use_token=True)
+        return res if isinstance(res, list) else []
+
+    async def admin_get_orders_count(self) -> int:
+        res = await self._get("orders/count", use_token=True)
+        return res.get('total', 0) if isinstance(res, dict) else 0
+
+    async def admin_update_order_status(self, order_id: int, status: str) -> Optional[Dict[str, Any]]:
+        return await self._patch(f"orders/{order_id}/status", {"status": status}, use_token=True)
+
+    async def admin_create_product(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        return await self._post("products", data, use_token=True)
+
+    async def admin_update_product(self, id: int, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        return await self._put(f"products/{id}", data, use_token=True)
+
+    async def admin_delete_product(self, id: int) -> bool:
+        res = await self._delete(f"products/{id}", use_token=True)
         return res is not None
 
 api_client = APIClient()

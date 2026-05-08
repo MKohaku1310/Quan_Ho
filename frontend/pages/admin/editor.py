@@ -18,7 +18,8 @@ async def admin_editor_page(et_type: str, et_id: int):
         'artist': (t('et_artist'), 'groups'),
         'village': (t('et_village'), 'map'),
         'news': (t('et_news'), 'article'),
-        'event': (t('et_event'), 'event')
+        'event': (t('et_event'), 'event'),
+        'product': (t('manage_products'), 'inventory_2')
     }
     
     label, icon = type_map.get(et_type, (t('et_content'), 'edit'))
@@ -33,6 +34,7 @@ async def admin_editor_page(et_type: str, et_id: int):
         elif et_type == 'village': data = await api_client.get_village(et_id)
         elif et_type == 'news': data = await api_client.get_article(et_id)
         elif et_type == 'event': data = await api_client.get_event(et_id)
+        elif et_type == 'product': data = await api_client.get_product(et_id)
     
     if is_edit and not data:
         ui.notify(t('not_found'), type='negative')
@@ -105,6 +107,8 @@ async def admin_editor_page(et_type: str, et_id: int):
                                         fields['content'] = ui.textarea(t('field_detail_content'), value=data.get('content')).classes('w-full modern-input').props('outlined rounded-2xl auto-grow')
                                     elif et_type == 'event':
                                         fields['description'] = ui.textarea(t('field_event_desc'), value=data.get('description')).classes('w-full modern-input').props('outlined rounded-2xl auto-grow')
+                                    elif et_type == 'product':
+                                        fields['description'] = ui.textarea(t('field_description'), value=data.get('description')).classes('w-full modern-input').props('outlined rounded-2xl auto-grow')
 
                                 # --- ENGLISH PANEL ---
                                 with ui.tab_panel(en_tab).classes('p-0 gap-6 flex flex-col'):
@@ -128,6 +132,8 @@ async def admin_editor_page(et_type: str, et_id: int):
                                         fields['content_en'] = ui.textarea(f"{t('field_detail_content')} (EN)", value=data.get('content_en')).classes('w-full modern-input').props('outlined rounded-2xl auto-grow')
                                     elif et_type == 'event':
                                         fields['description_en'] = ui.textarea(f"{t('field_event_desc')} (EN)", value=data.get('description_en')).classes('w-full modern-input').props('outlined rounded-2xl auto-grow')
+                                    elif et_type == 'product':
+                                        fields['description_en'] = ui.textarea(f"{t('field_description')} (EN)", value=data.get('description_en')).classes('w-full modern-input').props('outlined rounded-2xl auto-grow')
 
                     # === RIGHT COLUMN: META & MEDIA (4 Cols) ===
                     with ui.column().classes('lg:col-span-4 gap-8 w-full sticky top-24'):
@@ -183,6 +189,16 @@ async def admin_editor_page(et_type: str, et_id: int):
                                     fields['status'] = ui.select({'upcoming': t('status_upcoming'), 'ongoing': t('status_ongoing'), 'finished': t('status_finished')}, value=data.get('status', 'upcoming'), label=t('field_status')).classes('w-full modern-input').props('outlined rounded-2xl')
                                     fields['location_id'] = ui.select(locations_list, value=data.get('location_id'), label=t('field_location')).classes('w-full modern-input').props('outlined rounded-2xl')
                                     fields['max_participants'] = ui.number(t('field_max_participants'), value=data.get('max_participants', 100)).classes('w-full modern-input').props('outlined rounded-2xl')
+                                elif et_type == 'product':
+                                    fields['price'] = ui.number(t('product_price'), value=data.get('price', 0)).classes('w-full modern-input').props('outlined rounded-2xl')
+                                    fields['stock'] = ui.number(t('product_stock'), value=data.get('stock', 0)).classes('w-full modern-input').props('outlined rounded-2xl')
+                                    fields['category'] = ui.select({
+                                        'costume': t('cat_costume'), 
+                                        'souvenir': t('cat_souvenir'), 
+                                        'specialty': t('cat_specialty'), 
+                                        'digital': t('cat_digital'), 
+                                        'ticket': t('cat_ticket')
+                                    }, value=data.get('category', 'souvenir'), label=t('product_category')).classes('w-full modern-input').props('outlined rounded-2xl')
 
                         # Save Card
                         with ui.card().classes('w-full p-6 rounded-3xl glass-card border-none shadow-elevated bg-primary/5'):
@@ -220,12 +236,14 @@ async def admin_editor_page(et_type: str, et_id: int):
                                     elif et_type == 'village': res = await api_client.update_location(et_id, payload)
                                     elif et_type == 'news': res = await api_client.update_article(et_id, payload)
                                     elif et_type == 'event': res = await api_client.update_event(et_id, payload)
+                                    elif et_type == 'product': res = await api_client.admin_update_product(et_id, payload)
                                 else:
                                     if et_type == 'song': res = await api_client.create_melody(payload)
                                     elif et_type == 'artist': res = await api_client.create_artist(payload)
                                     elif et_type == 'village': res = await api_client.create_location(payload)
                                     elif et_type == 'news': res = await api_client.create_article(payload)
                                     elif et_type == 'event': res = await api_client.create_event(payload)
+                                    elif et_type == 'product': res = await api_client.admin_create_product(payload)
                                 
                                 save_btn.props(remove='loading')
                                 if res:

@@ -102,7 +102,17 @@ async def ask_chatbot(msg: ChatMessage, db: Session = Depends(get_db)):
     print(f"[CHATBOT] Received message: {msg.message[:80]}...")
     print(f"[CHATBOT] API key present: {bool(api_key)}, HAS_GENAI: {HAS_GENAI}, Client: {bool(client)}")
     
-    # 1. AI GENERATION (Primary Path)
+    # 1. KEYWORD MATCHING (Quick Response Layer)
+    if any(k in text for k in ['lịch sử', 'ý nghĩa', 'nguồn gốc']):
+        return {"response": "Dạ, Quan họ Bắc Ninh có lịch sử ngàn năm, là di sản văn hóa phi vật thể đại diện của nhân loại. Quý khách có thể tìm hiểu thêm ở mục 'Giới thiệu' để biết chi tiết hơn về cội nguồn của những làn điệu mượt mà này ạ."}
+    
+    if any(k in text for k in ['đăng ký', 'tham gia']):
+        return {"response": "Dạ thưa Quý khách, để đăng ký tham gia các sự kiện văn hóa, Quý khách vui lòng vào mục 'SỰ KIỆN' trên thanh menu, chọn một lễ hội và nhấn nút 'Đăng ký' nhé. Liền chị rất mong được đón tiếp Quý khách ạ!"}
+    
+    if any(k in text for k in ['buồn', 'vui', 'nhớ', 'yêu']):
+        return {"response": "Dạ, người Quan họ có câu 'Người ơi người ở đừng về'. Lúc này nghe một vài làn điệu cổ như 'Tương phùng tương ngộ' chắc hẳn lòng sẽ nhẹ nhõm và yêu đời hơn nhiều đó Quý khách ạ."}
+        
+    # 2. AI GENERATION (Primary Path)
     if client and HAS_GENAI:
         try:
             context = get_context_summary(db)
@@ -139,20 +149,10 @@ async def ask_chatbot(msg: ChatMessage, db: Session = Depends(get_db)):
             {history_str}
             """
             
-            # 1. KEYWORD MATCHING (Quick Response Layer) - Move here to be faster
-            if any(k in text for k in ['lịch sử', 'ý nghĩa', 'nguồn gốc']):
-                return {"response": "Dạ, Quan họ Bắc Ninh có lịch sử ngàn năm, là di sản văn hóa phi vật thể đại diện của nhân loại. Quý khách có thể tìm hiểu thêm ở mục 'Giới thiệu' để biết chi tiết hơn về cội nguồn của những làn điệu mượt mà này ạ."}
-            
-            if any(k in text for k in ['đăng ký', 'tham gia']):
-                return {"response": "Dạ thưa Quý khách, để đăng ký tham gia các sự kiện văn hóa, Quý khách vui lòng vào mục 'SỰ KIỆN' trên thanh menu, chọn một lễ hội và nhấn nút 'Đăng ký' nhé. Liền chị rất mong được đón tiếp Quý khách ạ!"}
-            
-            if any(k in text for k in ['buồn', 'vui', 'nhớ', 'yêu']):
-                return {"response": "Dạ, người Quan họ có câu 'Người ơi người ở đừng về'. Lúc này nghe một vài làn điệu cổ như 'Tương phùng tương ngộ' chắc hẳn lòng sẽ nhẹ nhõm và yêu đời hơn nhiều đó Quý khách ạ."}
-
             # 2. AI GENERATION (Primary Path)
-            models_to_try = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash-lite']
+            models_to_try = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash']
             max_retries = 3
-            retry_delay = 1
+            retry_delay = 2
             
             for model_name in models_to_try:
                 for attempt in range(max_retries):

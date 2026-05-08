@@ -4,12 +4,12 @@ import os
 # Import các trang để đăng ký route
 from pages import (
     home, introduction, songs, artists, villages, news, chatbot, 
-    auth, profile
+    auth, profile, shop
 )
 from pages.admin import (
     hub, editor, accounts, melodies, artists as admin_artists, 
-    news as admin_news, villages as admin_villages, 
-    comments, registrations
+    news as admin_news, villages as admin_villages, events as admin_events,
+    comments, registrations, shop as admin_shop
 )
 
 # ---------------------------------------------------------------------------

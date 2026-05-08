@@ -163,3 +163,15 @@ def read_event_registrations(
     if not db_event:
         raise HTTPException(status_code=404, detail="Event not found")
     return crud.get_event_registrations(db, event_id)
+
+@router.post("/{event_id}/unregister")
+async def unregister_from_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(auth.get_current_user)
+):
+    """Hủy đăng ký tham gia sự kiện"""
+    success = crud.delete_event_registration(db, event_id, current_user.id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Registration not found")
+    return {"message": "Successfully unregistered from event"}

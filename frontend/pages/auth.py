@@ -39,10 +39,10 @@ def register_page():
 
                             async def handle_register():
                                 if not all([name.value, email.value, password.value]):
-                                    ui.notify(t('fill_all_fields'), type='warning')
+                                    ui.notify(t('fill_all_fields'), type='warning', position='top')
                                     return
                                 if password.value != confirm_pass.value:
-                                    ui.notify(t('password_mismatch'), type='warning')
+                                    ui.notify(t('password_mismatch'), type='warning', position='top')
                                     return
                                 
                                 reg_btn.props('loading')
@@ -53,7 +53,11 @@ def register_page():
                                     ui.notify(t('register_success'), type='positive', position='top')
                                     ui.navigate.to('/dang-nhap')
                                 else:
-                                    ui.notify(t('register_failed'), type='negative')
+                                    err = api_client.get_last_error()
+                                    if err and "Email already registered" in err:
+                                        ui.notify("Email này đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác.", type='negative', position='top')
+                                    else:
+                                        ui.notify(f"{t('register_failed')} {err if err else ''}", type='negative', position='top')
                                     
                             reg_btn = ui.button(t('register_now_btn'), on_click=handle_register).props('unelevated rounded-xl').classes('w-full bg-primary text-white font-black py-3 mt-4 shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform text-base uppercase tracking-wider')
                             
@@ -90,7 +94,7 @@ def login_page():
 
                         async def handle_login():
                             if not email.value or not password.value:
-                                ui.notify(t('enter_email_password'), type='warning')
+                                ui.notify(t('enter_email_password'), type='warning', position='top')
                                 return
                             
                             login_btn.props('loading')
@@ -101,7 +105,11 @@ def login_page():
                                 ui.notify(f"{t('login_welcome')} {app.storage.user.get('user_name')}!", type='positive', position='top')
                                 ui.navigate.to('/')
                             else:
-                                ui.notify(t('login_failed'), type='negative')
+                                err = api_client.get_last_error()
+                                if err and "Incorrect email or password" in err:
+                                    ui.notify(t('login_failed'), type='negative', position='top')
+                                else:
+                                    ui.notify(f"{t('login_failed')} {err if err else ''}", type='negative', position='top')
                                 
                         login_btn = ui.button(t('login'), on_click=handle_login).props('unelevated rounded-xl').classes('w-full bg-primary text-white font-black py-3 shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform text-base uppercase tracking-wider')
                         

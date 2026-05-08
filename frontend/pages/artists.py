@@ -10,7 +10,7 @@ async def artists_page():
     with theme.frame():
         components.page_header(t('home_featured_artists'), t('home_artists_subtitle'))
 
-        # Shared state for filtering
+        # Local state for filtering
         class ArtistState:
             def __init__(self):
                 self.search_query = ''
@@ -18,42 +18,54 @@ async def artists_page():
                 self.items_per_page = 8
                 self.total_count = 0
                 self.artists = []
+                self.loading = False
         
         state = ArtistState()
 
-        @ui.refreshable
-        async def artists_content():
-            state.total_count = await api_client.get_artists_count(search=state.search_query)
-            skip = (state.page - 1) * state.items_per_page
-            state.artists = await api_client.get_artists(skip=skip, limit=state.items_per_page, search=state.search_query)
-
-            if not state.artists:
-                components.empty_state(t('searching_artists'))
-            else:
-                with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full px-2'):
-                    for i, artist in enumerate(state.artists):
-                        components.artist_card(
-                            artist.get('id'),
-                            tc(artist, 'name'),
-                            artist.get('image_url', '/static/common/chatbot-avatar.png'),
-                            tc(artist, 'village'),
-                            index=i + ((state.page - 1) * state.items_per_page)
-                        )
-                
-                # Use generic pagination component
-                components.pagination_controls(state, state.total_count, artists_content)
-
         with ui.element('section').classes('pt-6 pb-16 bg-background w-full'):
             with theme.container():
-                # Modern Search Bar (Single Row)
-                with ui.element('div').classes('modern-search-card mb-6 w-full p-2 sm:p-3 rounded-xl flex items-center gap-2 sm:gap-4'):
-                    search = ui.input(
-                        placeholder=t('search_artist'),
-                        on_change=lambda e: (setattr(state, 'search_query', e.value or ''), setattr(state, 'page', 1), artists_content.refresh())
-                    ).classes('modern-input flex-1 bg-background rounded-lg').props('outlined clearable debounce=500 icon=search')
+                # Modern Search Bar (Outside refreshable)
+                with ui.element('div').classes('modern-search-card mb-10 w-full p-2 sm:p-3 rounded-2xl flex items-center gap-4 border border-border/40 bg-card shadow-sm'):
+                    ui.input(placeholder=t('search_artist'), on_change=lambda e: (setattr(state, 'page', 1), artists_content.refresh())) \
+                        .props('outlined dense clearable debounce=500 icon=search') \
+                        .classes('modern-input flex-1 bg-background rounded-xl') \
+                        .bind_value(state, 'search_query')
                     
                     if app.storage.user.get('role') == 'admin':
-                        ui.button(icon='person_add').on('click.stop', lambda: ui.navigate.to('/admin/edit/artist/0')).props('unelevated round size=md').classes('bg-primary text-white shadow-md hover:scale-110 transition-transform shrink-0 cursor-pointer pointer-events-auto z-50')
+                        ui.button(icon='person_add', on_click=lambda: ui.navigate.to('/admin/edit/artist/0')) \
+                            .props('unelevated round size=md') \
+                            .classes('bg-primary text-white shadow-md hover:scale-110 transition-transform shrink-0')
+
+                @ui.refreshable
+                async def artists_content():
+                    # Show loading spinner while fetching
+                    with ui.column().classes('w-full items-center justify-center py-10').bind_visibility_from(state, 'loading'):
+                        ui.spinner(size='lg', color='primary')
+                        ui.label(t('searching_artists')).classes('text-xs text-muted-foreground animate-pulse')
+
+                    state.loading = True
+                    try:
+                        state.total_count = await api_client.get_artists_count(search=state.search_query)
+                        skip = (state.page - 1) * state.items_per_page
+                        state.artists = await api_client.get_artists(skip=skip, limit=state.items_per_page, search=state.search_query)
+                    finally:
+                        state.loading = False
+
+                    if not state.artists:
+                        components.empty_state(t('searching_artists'))
+                    else:
+                        with ui.row().classes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full px-2'):
+                            for i, artist in enumerate(state.artists):
+                                components.artist_card(
+                                    artist.get('id'),
+                                    tc(artist, 'name'),
+                                    artist.get('image_url', '/static/common/chatbot-avatar.png'),
+                                    tc(artist, 'village'),
+                                    index=i + ((state.page - 1) * state.items_per_page)
+                                )
+                        
+                        # Use generic pagination component
+                        components.pagination_controls(state, state.total_count, artists_content)
 
                 await artists_content()
 

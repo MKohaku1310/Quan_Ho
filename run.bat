@@ -7,7 +7,7 @@ if not exist venv (
     call venv\Scripts\activate
 )
 
-start cmd /c "call venv\Scripts\activate && cd backend && python -m uvicorn app.main:app --port 8000"
+start cmd /c "call venv\Scripts\activate && cd backend && python -m uvicorn app.main:app --port 8000 --reload"
 start cmd /c "call venv\Scripts\activate && cd frontend && python main.py"
 
 echo He thong dang chay tai: http://localhost:8080

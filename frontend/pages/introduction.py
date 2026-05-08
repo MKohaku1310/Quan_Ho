@@ -210,36 +210,58 @@ def introduction_page():
             lightbox_content.refresh()
             lightbox.open()
 
-        # ── 8. Video Section (SONG STYLE) ───────────────────────────────────
+        # ── 8. Video Section (DIRECT EMBED) ───────────────────────────────────
         with ui.element('section').classes('py-24 bg-background w-full overflow-hidden'):
             with theme.container():
                 components.section_title(t('intro_videos'), t('intro_videos_desc'))
                 
-                videos = [
-                    {
-                        'title': t('intro_vid_1_title'),
-                        'url': 'https://www.youtube.com/watch?v=5U7z0Zc8B2A',
-                        'thumb': 'https://img.youtube.com/vi/5U7z0Zc8B2A/hqdefault.jpg'
-                    },
-                    {
-                        'title': t('intro_vid_2_title'),
-                        'url': 'https://www.youtube.com/watch?v=9NfB8kbeUyk',
-                        'thumb': 'https://img.youtube.com/vi/9NfB8kbeUyk/hqdefault.jpg'
-                    }
-                ]
+                # Video 1: Sân khấu
+                with ui.row().classes('grid grid-cols-1 lg:grid-cols-12 gap-8 mt-12 w-full items-center'):
+                    # Embed Column
+                    with ui.column().classes('lg:col-span-7 w-full'):
+                        with ui.card().classes('overflow-hidden rounded-2xl border border-border bg-black shadow-2xl p-0 w-full aspect-video'):
+                            ui.html(f'''
+                                <iframe width="100%" height="100%" 
+                                    src="https://www.youtube.com/embed/6pivza65Vzk" 
+                                    title="{t('intro_vid_1_title')}" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen>
+                                </iframe>
+                            ''').classes('w-full h-full')
+                    
+                    # Image/Info Column
+                    with ui.column().classes('lg:col-span-5 gap-6'):
+                        with ui.element('div').classes('relative rounded-2xl overflow-hidden shadow-lg aspect-[4/3]'):
+                            ui.image('/C:/Users/ADMIN/.gemini/antigravity/brain/08a09c09-1fda-42d8-bfd9-d34f86b08c2e/quan_ho_performance_stage_1777309278605.png').classes('w-full h-full object-cover')
+                            with ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6'):
+                                ui.label('Chương trình biểu diễn nghệ thuật').classes('text-white font-display text-xl font-bold')
+                        ui.label('Thưởng thức trọn vẹn chương trình biểu diễn Dân ca Quan họ Bắc Ninh tại Nhà hát Quan họ, nơi các làn điệu cổ được tái hiện sống động qua giọng ca của các nghệ nhân ưu tú.').classes('text-muted-foreground text-sm leading-relaxed italic')
 
-                with ui.row().classes('grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12 w-full'):
-                    for vid in videos:
-                        with ui.card().classes('overflow-hidden rounded-xl border border-border bg-card shadow-lg p-0 w-full group cursor-pointer').on(
-                            'click', lambda v=vid['url']: ui.run_javascript(f'window.open("{v}", "_blank")')
-                        ):
-                            with ui.element('div').classes('relative w-full aspect-video'):
-                                ui.image(vid['thumb']).classes('w-full h-full object-cover transition-transform duration-700 group-hover:scale-105')
-                                # Play overlay
-                                with ui.element('div').classes('absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/40 group-hover:bg-black/30 transition-colors'):
-                                    with ui.element('div').classes('flex h-16 w-16 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-transform group-hover:scale-110'):
-                                        ui.icon('play_arrow', size='36px')
-                                    ui.label(vid['title']).classes('text-white text-sm font-bold drop-shadow-md')
+                ui.element('div').classes('h-16') # Spacer
+
+                # Video 2: Trên thuyền
+                with ui.row().classes('grid grid-cols-1 lg:grid-cols-12 gap-8 w-full items-center'):
+                    # Image/Info Column (Order reversed for layout balance)
+                    with ui.column().classes('lg:col-span-5 order-2 lg:order-1 gap-6'):
+                        with ui.element('div').classes('relative rounded-2xl overflow-hidden shadow-lg aspect-[4/3]'):
+                            ui.image('/C:/Users/ADMIN/.gemini/antigravity/brain/08a09c09-1fda-42d8-bfd9-d34f86b08c2e/quan_ho_singers_river_1777309293982.png').classes('w-full h-full object-cover')
+                            with ui.element('div').classes('absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6'):
+                                ui.label('Phim tư liệu: Tìm hiểu về Quan họ').classes('text-white font-display text-xl font-bold')
+                        ui.label('Bộ phim tư liệu của VTC10 đi sâu vào lịch sử hình thành, ý nghĩa của các phong tục "kết chạ", "nghề chơi" và giá trị tinh thần vô giá của di sản Kinh Bắc.').classes('text-muted-foreground text-sm leading-relaxed italic')
+
+                    # Embed Column
+                    with ui.column().classes('lg:col-span-7 order-1 lg:order-2 w-full'):
+                        with ui.card().classes('overflow-hidden rounded-2xl border border-border bg-black shadow-2xl p-0 w-full aspect-video'):
+                            ui.html(f'''
+                                <iframe width="100%" height="100%" 
+                                    src="https://www.youtube.com/embed/CSdoYvvanCY" 
+                                    title="{t('intro_vid_2_title')}" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen>
+                                </iframe>
+                            ''').classes('w-full h-full')
 
         # ── 9. Quote Section (UNESCO) ────────────────────────────────────────
         with ui.element('section').classes('py-24 bg-card border-t border-border w-full relative overflow-hidden'):

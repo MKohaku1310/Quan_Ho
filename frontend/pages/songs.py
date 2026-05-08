@@ -21,7 +21,7 @@ async def songs_page():
         class SongState:
             def __init__(self):
                 self.search = ''
-                self.category = t('all_categories')
+                self.category = 'all'
                 self.page = 1
                 self.items_per_page = 12
                 self.total_count = 0
@@ -30,37 +30,42 @@ async def songs_page():
         
         with ui.element('section').classes('pt-6 pb-12 bg-background w-full'):
             with theme.container():
+                # Modern Search & Filter Bar (Outside refreshable to prevent losing focus/value)
+                with ui.element('div').classes('modern-search-card mb-10 w-full p-2 sm:p-3 rounded-2xl flex items-center gap-4 border border-border/40 bg-card shadow-sm'):
+                    # Search Part
+                    ui.input(placeholder=t('search_songs'), on_change=lambda e: (setattr(state, 'page', 1), songs_content.refresh())) \
+                        .props('outlined dense clearable debounce=500 icon=search') \
+                        .classes('modern-input flex-1 bg-background rounded-xl') \
+                        .bind_value(state, 'search')
+                    
+                    # Filter Part (Compact)
+                    cats = {
+                        'all': t('all_categories'),
+                        'co': t('cat_co'),
+                        'moi': t('cat_moi'),
+                        'cai-bien': t('cat_cai_bien')
+                    }
+                    ui.select(cats, value=state.category, on_change=lambda e: (setattr(state, 'page', 1), songs_content.refresh())) \
+                        .props('dense outlined rounded-xl options-dense') \
+                        .classes('modern-select w-40 sm:w-56 bg-background') \
+                        .bind_value(state, 'category')
+                    
+                    if app.storage.user.get('role') == 'admin':
+                        ui.button(icon='add', on_click=lambda: ui.navigate.to('/admin/edit/song/0')) \
+                            .props('unelevated round size=md') \
+                            .classes('bg-primary text-white shadow-md hover:scale-110 transition-transform shrink-0')
+
                 @ui.refreshable
                 async def songs_content():
                     skip = (state.page - 1) * state.items_per_page
                     limit = state.items_per_page
                     
                     # Determine category for API filter
-                    cat_map = {t('cat_co'): 'co', t('cat_moi'): 'moi', t('cat_cai_bien'): 'cai-bien'}
-                    target_cat = cat_map.get(state.category)
+                    target_cat = state.category if state.category != 'all' else None
 
                     # Use improved API that supports combined search + filtering + pagination
                     state.total_count = await api_client.get_melodies_count(category=target_cat, search=state.search)
                     melodies = await api_client.get_melodies(skip=skip, limit=limit, category=target_cat, search=state.search)
-
-                    # Compact Modern Search & Filter Bar (Single Row)
-                    with ui.element('div').classes('modern-search-card mb-6 w-full p-2 sm:p-3 rounded-xl flex items-center gap-2 sm:gap-4'):
-                        # Search Part
-                        search_input = ui.input(
-                            placeholder=t('search_songs'),
-                            on_change=lambda e: (setattr(state, 'search', e.value or ''), setattr(state, 'page', 1), songs_content.refresh())
-                        ).props('outlined dense clearable debounce=500 icon=search').classes('modern-input flex-1 bg-background rounded-lg')
-                        
-                        # Filter Part (Compact)
-                        cats = [t('all_categories'), t('cat_co'), t('cat_moi'), t('cat_cai_bien')]
-                        cat_select = ui.select(
-                            cats, 
-                            value=state.category,
-                            on_change=lambda e: (setattr(state, 'category', e.value or t('all_categories')), setattr(state, 'page', 1), songs_content.refresh())
-                        ).props('dense outlined rounded-lg options-dense').classes('modern-select w-32 sm:w-48 bg-background')
-                        
-                        if app.storage.user.get('role') == 'admin':
-                            ui.button(icon='add').on('click.stop', lambda: ui.navigate.to('/admin/edit/song/0')).props('unelevated round size=md').classes('bg-primary text-white shadow-md hover:scale-110 transition-transform shrink-0 cursor-pointer pointer-events-auto z-50')
 
                     if not melodies:
                         components.empty_state(t('no_songs_found'))
@@ -241,9 +246,10 @@ async def song_form_page(id: int = None):
                     name = ui.input(t('song_name'), value=song.get('name')).classes('w-full').props('outlined')
                     artist_id = ui.select(artist_options, label=t('select_artist'), value=song.get('artist_id')).classes('w-full').props('outlined')
                     
-                    rev_cat_map = {'co': t('cat_co'), 'moi': t('cat_moi'), 'cai-bien': t('cat_cai_bien')}
-                    category = ui.select([t('cat_co'), t('cat_moi'), t('cat_cai_bien')], 
-                                         label=t('category_label'), value=rev_cat_map.get(song.get('category'), t('cat_co'))).classes('w-full').props('outlined')
+                    cat_options = {'co': t('cat_co'), 'moi': t('cat_moi'), 'cai-bien': t('cat_cai_bien')}
+                    category = ui.select(cat_options, 
+                                         label=t('category_label'), 
+                                         value=song.get('category', 'co')).classes('w-full').props('outlined')
                     
                     duration = ui.input(t('duration_label'), value=song.get('duration')).classes('w-full').props('outlined')
                     image_url = ui.input(t('link_image'), value=song.get('image_url')).classes('w-full').props('outlined')
@@ -255,15 +261,13 @@ async def song_form_page(id: int = None):
                             ui.notify(t('song_name_required'), type='warning')
                             return
                         
-                        cat_map = {t('cat_co'): 'co', t('cat_moi'): 'moi', t('cat_cai_bien'): 'cai-bien'}
-                        
                         final_image = image_url.value
                         if video_url.value and not final_image:
                             yt_match = re.search(r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})', video_url.value)
                             if yt_match: final_image = f"https://img.youtube.com/vi/{yt_match.group(1)}/hqdefault.jpg"
 
                         payload = {
-                            'name': name.value, 'artist_id': artist_id.value, 'category': cat_map.get(category.value, 'co'),
+                            'name': name.value, 'artist_id': artist_id.value, 'category': category.value,
                             'duration': duration.value, 'image_url': final_image, 'video_url': video_url.value, 'lyrics': lyrics.value
                         }
                         

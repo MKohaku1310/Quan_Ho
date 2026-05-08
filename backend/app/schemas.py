@@ -47,6 +47,20 @@ class ArticleStatus(str, Enum):
     draft = "draft"
     published = "published"
 
+class ProductCategory(str, Enum):
+    costume = "costume"
+    souvenir = "souvenir"
+    specialty = "specialty"
+    digital = "digital"
+    ticket = "ticket"
+
+class OrderStatus(str, Enum):
+    pending = "pending"
+    processing = "processing"
+    shipped = "shipped"
+    delivered = "delivered"
+    cancelled = "cancelled"
+
 class UserBase(BaseModel):
     name: str
     email: str
@@ -319,3 +333,62 @@ class FavoriteItem(BaseModel):
     melody_id: int
     created_at: Optional[datetime] = None
     melody: Optional[Melody] = None
+
+# Shop Schemas
+class ProductBase(BaseModel):
+    name: str
+    name_en: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    description_en: Optional[str] = None
+    price: float
+    stock: int = 0
+    category: ProductCategory = ProductCategory.souvenir
+    image_url: Optional[str] = None
+
+class ProductCreate(ProductBase):
+    pass
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    price: Optional[float] = None
+    stock: Optional[int] = None
+    category: Optional[ProductCategory] = None
+
+class Product(ProductBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+class OrderItemBase(BaseModel):
+    product_id: int
+    quantity: int
+
+class OrderItemCreate(OrderItemBase):
+    pass
+
+class OrderItem(OrderItemBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    price_at_purchase: float
+    product: Optional[Product] = None
+
+class OrderBase(BaseModel):
+    shipping_address: str
+    contact_phone: str
+    note: Optional[str] = None
+
+class OrderCreate(OrderBase):
+    items: List[OrderItemCreate]
+
+class Order(OrderBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    user_id: Optional[int] = None
+    total_price: float
+    status: OrderStatus
+    created_at: datetime
+    updated_at: datetime
+    items: List[OrderItem]
+    user: Optional[User] = None

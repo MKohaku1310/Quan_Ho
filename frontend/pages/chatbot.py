@@ -66,22 +66,34 @@ async def chatbot_page():
                         (t('quick_famous_songs'), t('quick_famous_songs')),
                         (t('quick_49_villages'), t('quick_49_villages'))
                     ]
+                    
+                    def create_quick_handler(v):
+                        async def handler(e=None):
+                            await handle_send(v)
+                        return handler
+                        
                     for label, val in quick_options:
-                        ui.button(label, on_click=lambda v=val: handle_send(v)).props('outline rounded-full dense size="sm"').classes('text-[11px] font-bold px-4 shrink-0 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10')
+                        ui.button(label, on_click=create_quick_handler(val)).props('outline rounded-full dense size="sm"').classes('text-[11px] font-bold px-4 shrink-0 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10')
 
                 # Input Section
                 with ui.row().classes('w-full bg-card shadow-elevated rounded-2xl p-2 border border-border items-center shrink-0'):
                     msg_input = ui.input(placeholder=t('chatbot_ask_placeholder')).props('rounded borderless').classes('flex-1 px-4 bg-transparent')
                     
                     async def handle_send(text=None):
+                        # Ensure text is not an event object
+                        if text and not isinstance(text, str):
+                            text = None
+                            
                         val = text or msg_input.value
                         if not val: return
                         if not text: msg_input.value = ''
                         
                         # Add user message
-                        app.storage.user['chat_history'].append({
+                        history = app.storage.user['chat_history']
+                        history.append({
                             'role': 'user', 'text': val, 'time': datetime.now().strftime('%H:%M')
                         })
+                        app.storage.user['chat_history'] = history # Force persistence
                         message_list.refresh()
                         
                         # Show typing
@@ -93,15 +105,17 @@ async def chatbot_page():
                         await asyncio.sleep(1.0) # Artificial delay for better feel
                         
                         # Add bot response
-                        app.storage.user['chat_history'].append({
+                        history = app.storage.user['chat_history']
+                        history.append({
                             'role': 'bot', 'text': response or t('chatbot_error'), 'time': datetime.now().strftime('%H:%M')
                         })
+                        app.storage.user['chat_history'] = history # Force persistence
                         
                         state.is_typing = False
                         message_list.refresh()
 
                     ui.button(icon='send', on_click=handle_send).props('round unelevated shadow-md').classes('bg-primary text-white')
-                    msg_input.on('keydown.enter', lambda: handle_send())
+                    msg_input.on('keydown.enter', handle_send)
 
                 # Footer hint
                 ui.label(t('chatbot_hint')).classes('text-[10px] text-muted-foreground w-full text-center mt-3 opacity-60')

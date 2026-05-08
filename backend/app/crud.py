@@ -298,6 +298,17 @@ def get_event_registrations(db: Session, event_id: int) -> List[models.EventRegi
         models.EventRegistration.event_id == event_id
     ).order_by(models.EventRegistration.created_at.desc()).all()
 
+def delete_event_registration(db: Session, event_id: int, user_id: int) -> bool:
+    reg = db.query(models.EventRegistration).filter(
+        models.EventRegistration.event_id == event_id,
+        models.EventRegistration.user_id == user_id
+    ).first()
+    if not reg:
+        return False
+    db.delete(reg)
+    db.commit()
+    return True
+
 def create_comment(db: Session, comment: schemas.CommentCreate, user_id: int) -> models.Comment:
     db_comment = models.Comment(**comment.model_dump(), user_id=user_id)
     db.add(db_comment)
@@ -523,3 +534,138 @@ def count_comments(db: Session, melody_id: Optional[int] = None, article_id: Opt
     if article_id:
         query = query.filter(models.Comment.article_id == article_id)
     return query.count()
+
+# --- SHOP FUNCTIONS ---
+
+def get_product(db: Session, product_id: int) -> Optional[models.Product]:
+    return db.query(models.Product).filter(models.Product.id == product_id).first()
+
+def get_products(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    category: Optional[str] = None,
+    search: Optional[str] = None
+) -> List[models.Product]:
+    query = db.query(models.Product)
+    if category:
+        query = query.filter(models.Product.category == category)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Product.name).ilike(search_norm),
+                func.lower(models.Product.description).ilike(search_norm)
+            )
+        )
+    return query.offset(skip).limit(limit).all()
+
+def count_products(db: Session, category: Optional[str] = None, search: Optional[str] = None) -> int:
+    query = db.query(models.Product)
+    if category:
+        query = query.filter(models.Product.category == category)
+    if search:
+        search_norm = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(models.Product.name).ilike(search_norm),
+                func.lower(models.Product.description).ilike(search_norm)
+            )
+        )
+    return query.count()
+
+def create_product(db: Session, product: schemas.ProductCreate) -> models.Product:
+    db_product = models.Product(**product.model_dump())
+    db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+def update_product(db: Session, product_id: int, product_update: dict) -> Optional[models.Product]:
+    db_product = get_product(db, product_id)
+    if not db_product:
+        return None
+    for key, value in product_update.items():
+        if hasattr(db_product, key):
+            setattr(db_product, key, value)
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+def delete_product(db: Session, product_id: int) -> bool:
+    db_product = get_product(db, product_id)
+    if not db_product:
+        return False
+    db.delete(db_product)
+    db.commit()
+    return True
+
+def create_order(db: Session, order: schemas.OrderCreate, user_id: Optional[int]) -> models.Order:
+    # 1. Calculate total price and validate stock
+    total_price = 0
+    order_items_to_create = []
+    
+    for item in order.items:
+        product = get_product(db, item.product_id)
+        if not product:
+            raise Exception(f"Product {item.product_id} not found")
+        if product.stock < item.quantity:
+            raise Exception(f"Insufficient stock for product {product.name}")
+        
+        item_total = product.price * item.quantity
+        total_price += item_total
+        
+        # Decrement stock
+        product.stock -= item.quantity
+        
+        order_items_to_create.append(models.OrderItem(
+            product_id=item.product_id,
+            quantity=item.quantity,
+            price_at_purchase=product.price
+        ))
+    
+    # 2. Create Order
+    db_order = models.Order(
+        user_id=user_id,
+        total_price=total_price,
+        shipping_address=order.shipping_address,
+        contact_phone=order.contact_phone,
+        note=order.note,
+        status=models.OrderStatus.pending
+    )
+    db.add(db_order)
+    db.commit() # Commit to get order ID
+    db.refresh(db_order)
+    
+    # 3. Add items
+    for db_item in order_items_to_create:
+        db_item.order_id = db_order.id
+        db.add(db_item)
+    
+    db.commit()
+    db.refresh(db_order)
+    return db_order
+
+def get_orders(db: Session, skip: int = 0, limit: int = 100, user_id: Optional[int] = None) -> List[models.Order]:
+    query = db.query(models.Order)
+    if user_id:
+        query = query.filter(models.Order.user_id == user_id)
+    return query.order_by(models.Order.created_at.desc()).offset(skip).limit(limit).all()
+
+def count_orders(db: Session, user_id: Optional[int] = None) -> int:
+    query = db.query(models.Order)
+    if user_id:
+        query = query.filter(models.Order.user_id == user_id)
+    return query.count()
+
+def get_order(db: Session, order_id: int) -> Optional[models.Order]:
+    return db.query(models.Order).filter(models.Order.id == order_id).first()
+
+def update_order_status(db: Session, order_id: int, status: str) -> Optional[models.Order]:
+    db_order = get_order(db, order_id)
+    if not db_order:
+        return None
+    db_order.status = status
+    db.commit()
+    db.refresh(db_order)
+    return db_order

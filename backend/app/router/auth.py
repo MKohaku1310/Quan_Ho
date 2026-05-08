@@ -9,6 +9,7 @@ from typing import List
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_optional = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
 @router.post("/register", response_model=schemas.User)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -62,6 +63,18 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         print(f"DEBUG BACKEND: User with email {email} not found in DB")
         raise credentials_exception
     return user
+
+async def get_current_user_optional(token: str = Depends(oauth2_optional), db: Session = Depends(get_db)):
+    if not token:
+        return None
+    try:
+        payload = security.decode_access_token(token)
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        return crud.get_user_by_email(db, email=email)
+    except Exception:
+        return None
 
 async def get_current_active_admin(current_user: schemas.User = Depends(get_current_user)):
     role_value = getattr(current_user.role, "value", current_user.role)

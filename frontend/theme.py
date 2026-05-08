@@ -278,7 +278,7 @@ def apply_theme():
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
-        padding-top: 56px; /* Khoảng cách cho navbar cố định */
+        padding-top: 64px; /* Khoảng cách cho navbar cố định (h-16) */
     }
 
     /* Footer không bị ẩn */
@@ -288,7 +288,7 @@ def apply_theme():
         margin-top: auto !important;
     }
 
-    .nicegui-content > main > * {
+    .nicegui-content > main > *:not(.fixed) {
         width: 100% !important;
     }
 
@@ -394,9 +394,11 @@ def apply_theme():
                 border-color: rgba(178, 30, 30, 0.8) !important;
                 transform: translateY(-1px);
             }
-            .modern-input .q-field__label {
-                color: hsl(var(--muted-foreground)) !important;
+            .modern-input .q-field__label,
+            .modern-input .q-placeholder {
+                color: hsl(var(--foreground) / 0.6) !important;
                 font-weight: 500;
+                opacity: 1 !important;
             }
 
             .elevated-btn {

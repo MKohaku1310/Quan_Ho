@@ -50,6 +50,20 @@ class ArticleStatus(str, PyEnum):
     draft = "draft"
     published = "published"
 
+class ProductCategory(str, PyEnum):
+    costume = "costume"      # Trang phục
+    souvenir = "souvenir"    # Đồ lưu niệm
+    specialty = "specialty"  # Đặc sản
+    digital = "digital"      # Sản phẩm số
+    ticket = "ticket"        # Vé sự kiện
+
+class OrderStatus(str, PyEnum):
+    pending = "pending"        # Chờ xác nhận
+    processing = "processing"  # Đang xử lý
+    shipped = "shipped"        # Đang giao
+    delivered = "delivered"    # Đã giao
+    cancelled = "cancelled"    # Đã hủy
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -233,3 +247,44 @@ class Comment(Base):
     parent_id = Column(Integer, ForeignKey("comments.id", ondelete="CASCADE"))
     created_at = Column(DateTime, server_default=func.now())
     user = relationship("User")
+
+class Product(Base):
+    __tablename__ = "products"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    name_en = Column(String(255))
+    slug = Column(String(255), unique=True, index=True)
+    description = Column(Text)
+    description_en = Column(Text)
+    price = Column(Float, nullable=False)
+    stock = Column(Integer, default=0)
+    category = Column(Enum(ProductCategory), default=ProductCategory.souvenir, index=True)
+    image_url = Column(String(500))
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+class Order(Base):
+    __tablename__ = "orders"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    total_price = Column(Float, nullable=False)
+    status = Column(Enum(OrderStatus), default=OrderStatus.pending, index=True)
+    shipping_address = Column(Text, nullable=False)
+    contact_phone = Column(String(20), nullable=False)
+    note = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    user = relationship("User")
+    items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+
+class OrderItem(Base):
+    __tablename__ = "order_items"
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"))
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="SET NULL"), nullable=True)
+    quantity = Column(Integer, nullable=False)
+    price_at_purchase = Column(Float, nullable=False)
+    
+    order = relationship("Order", back_populates="items")
+    product = relationship("Product")
